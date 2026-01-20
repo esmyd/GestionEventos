@@ -1,0 +1,513 @@
+[2026-01-10 19:35:30] [INFO] ==================================================
+[2026-01-10 19:35:30] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:35:30] [INFO] ==================================================
+[2026-01-10 19:35:30] [INFO] Aplicación inicializada
+[2026-01-10 19:35:30] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:35:30] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:35:35] [DEBUG] Ventana de login creada
+[2026-01-10 19:35:35] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:35:35] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:36:49] [INFO] Aplicación finalizada
+[2026-01-10 19:36:53] [INFO] ==================================================
+[2026-01-10 19:36:53] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:36:53] [INFO] ==================================================
+[2026-01-10 19:36:53] [INFO] Aplicación inicializada
+[2026-01-10 19:36:53] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:36:53] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:36:54] [DEBUG] Ventana de login creada
+[2026-01-10 19:36:54] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:36:54] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:36:56] [INFO] Login exitoso para usuario: admin
+[2026-01-10 19:36:56] [DEBUG] Cargando ventana principal...
+[2026-01-10 19:36:56] [INFO] Ventana principal mostrada
+[2026-01-10 19:36:58] [INFO] Aplicación finalizada
+[2026-01-10 19:38:29] [INFO] ==================================================
+[2026-01-10 19:38:29] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:38:29] [INFO] ==================================================
+[2026-01-10 19:38:29] [INFO] Aplicación inicializada
+[2026-01-10 19:38:29] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:38:29] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:38:30] [DEBUG] Ventana de login creada
+[2026-01-10 19:38:30] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:38:30] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:44:21] [INFO] Aplicación finalizada
+[2026-01-10 19:44:22] [INFO] ==================================================
+[2026-01-10 19:44:22] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:44:22] [INFO] ==================================================
+[2026-01-10 19:44:22] [INFO] Aplicación inicializada
+[2026-01-10 19:44:22] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:44:22] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:44:23] [DEBUG] Ventana de login creada
+[2026-01-10 19:44:23] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:44:23] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:44:47] [INFO] Login exitoso para usuario: admin
+[2026-01-10 19:44:47] [DEBUG] Cargando ventana principal...
+[2026-01-10 19:44:47] [INFO] Ventana principal mostrada
+[2026-01-10 19:45:10] [INFO] Aplicación finalizada
+[2026-01-10 19:45:14] [INFO] ==================================================
+[2026-01-10 19:45:14] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:45:14] [INFO] ==================================================
+[2026-01-10 19:45:14] [INFO] Aplicación inicializada
+[2026-01-10 19:45:14] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:45:14] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:45:15] [DEBUG] Ventana de login creada
+[2026-01-10 19:45:15] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:45:15] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:45:33] [INFO] Aplicación finalizada
+[2026-01-10 19:47:08] [INFO] ==================================================
+[2026-01-10 19:47:08] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:47:08] [INFO] ==================================================
+[2026-01-10 19:47:08] [INFO] Aplicación inicializada
+[2026-01-10 19:47:08] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:47:08] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:47:08] [DEBUG] Ventana de login creada
+[2026-01-10 19:47:08] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:47:08] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:47:38] [INFO] Aplicación finalizada
+[2026-01-10 19:49:12] [INFO] ==================================================
+[2026-01-10 19:49:12] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:49:12] [INFO] ==================================================
+[2026-01-10 19:49:12] [INFO] Aplicación inicializada
+[2026-01-10 19:49:12] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:49:12] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:49:13] [DEBUG] Ventana de login creada
+[2026-01-10 19:49:13] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:49:13] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:49:22] [INFO] Aplicación finalizada
+[2026-01-10 19:50:12] [INFO] ==================================================
+[2026-01-10 19:50:12] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:50:12] [INFO] ==================================================
+[2026-01-10 19:50:12] [INFO] Aplicación inicializada
+[2026-01-10 19:50:12] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:50:12] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:50:13] [DEBUG] Ventana de login creada
+[2026-01-10 19:50:13] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:50:13] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:50:22] [INFO] Aplicación finalizada
+[2026-01-10 19:50:36] [INFO] ==================================================
+[2026-01-10 19:50:36] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:50:36] [INFO] ==================================================
+[2026-01-10 19:50:36] [INFO] Aplicación inicializada
+[2026-01-10 19:50:36] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:50:36] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:50:37] [DEBUG] Ventana de login creada
+[2026-01-10 19:50:37] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:50:37] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:50:40] [INFO] Login exitoso para usuario: admin
+[2026-01-10 19:50:40] [DEBUG] Cargando ventana principal...
+[2026-01-10 19:50:40] [INFO] Ventana principal mostrada
+[2026-01-10 19:50:46] [DEBUG] Inicializando vista de pagos
+[2026-01-10 19:50:46] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 19:50:46] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 19:54:05] [INFO] Aplicación finalizada
+[2026-01-10 19:54:05] [INFO] ==================================================
+[2026-01-10 19:54:05] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:54:05] [INFO] ==================================================
+[2026-01-10 19:54:05] [INFO] Aplicación inicializada
+[2026-01-10 19:54:05] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:54:05] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:54:06] [DEBUG] Ventana de login creada
+[2026-01-10 19:54:06] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:54:06] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:54:07] [INFO] Login exitoso para usuario: admin
+[2026-01-10 19:54:07] [DEBUG] Cargando ventana principal...
+[2026-01-10 19:54:07] [INFO] Ventana principal mostrada
+[2026-01-10 19:54:16] [DEBUG] Inicializando vista de pagos
+[2026-01-10 19:54:16] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 19:54:16] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 19:56:12] [DEBUG] Inicializando vista de pagos
+[2026-01-10 19:56:12] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 19:56:12] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 19:56:22] [INFO] Aplicación finalizada
+[2026-01-10 19:59:56] [INFO] ==================================================
+[2026-01-10 19:59:56] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 19:59:56] [INFO] ==================================================
+[2026-01-10 19:59:56] [INFO] Aplicación inicializada
+[2026-01-10 19:59:56] [DEBUG] Mostrando ventana de login...
+[2026-01-10 19:59:56] [DEBUG] Ventana anterior limpiada
+[2026-01-10 19:59:56] [DEBUG] Ventana de login creada
+[2026-01-10 19:59:56] [INFO] Aplicación creada exitosamente
+[2026-01-10 19:59:56] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 19:59:57] [INFO] Login exitoso para usuario: admin
+[2026-01-10 19:59:57] [DEBUG] Cargando ventana principal...
+[2026-01-10 19:59:57] [INFO] Ventana principal mostrada
+[2026-01-10 20:00:03] [DEBUG] Inicializando vista de pagos
+[2026-01-10 20:00:03] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 20:00:03] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 20:00:21] [INFO] Aplicación finalizada
+[2026-01-10 20:00:31] [INFO] ==================================================
+[2026-01-10 20:00:31] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:00:31] [INFO] ==================================================
+[2026-01-10 20:00:31] [INFO] Aplicación inicializada
+[2026-01-10 20:00:31] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:00:31] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:00:31] [DEBUG] Ventana de login creada
+[2026-01-10 20:00:31] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:00:31] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:00:32] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:00:32] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:00:32] [INFO] Ventana principal mostrada
+[2026-01-10 20:08:06] [INFO] Aplicación finalizada
+[2026-01-10 20:08:09] [INFO] ==================================================
+[2026-01-10 20:08:09] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:08:09] [INFO] ==================================================
+[2026-01-10 20:08:09] [INFO] Aplicación inicializada
+[2026-01-10 20:08:09] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:08:09] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:08:10] [DEBUG] Ventana de login creada
+[2026-01-10 20:08:10] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:08:10] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:08:11] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:08:11] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:08:11] [INFO] Ventana principal mostrada
+[2026-01-10 20:08:28] [INFO] Aplicación finalizada
+[2026-01-10 20:11:12] [INFO] ==================================================
+[2026-01-10 20:11:12] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:11:12] [INFO] ==================================================
+[2026-01-10 20:11:12] [INFO] Aplicación inicializada
+[2026-01-10 20:11:12] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:11:12] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:11:12] [DEBUG] Ventana de login creada
+[2026-01-10 20:11:12] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:11:12] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:11:13] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:11:13] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:11:14] [INFO] Ventana principal mostrada
+[2026-01-10 20:11:29] [INFO] Aplicación finalizada
+[2026-01-10 20:15:27] [INFO] ==================================================
+[2026-01-10 20:15:27] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:15:27] [INFO] ==================================================
+[2026-01-10 20:15:27] [INFO] Aplicación inicializada
+[2026-01-10 20:15:27] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:15:27] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:15:27] [DEBUG] Ventana de login creada
+[2026-01-10 20:15:27] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:15:27] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:15:28] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:15:28] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:15:28] [INFO] Ventana principal mostrada
+[2026-01-10 20:19:41] [INFO] Aplicación finalizada
+[2026-01-10 20:19:44] [INFO] ==================================================
+[2026-01-10 20:19:44] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:19:44] [INFO] ==================================================
+[2026-01-10 20:19:44] [INFO] Aplicación inicializada
+[2026-01-10 20:19:44] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:19:44] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:19:45] [DEBUG] Ventana de login creada
+[2026-01-10 20:19:45] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:19:45] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:19:46] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:19:46] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:19:46] [INFO] Ventana principal mostrada
+[2026-01-10 20:22:28] [INFO] Aplicación finalizada
+[2026-01-10 20:22:30] [INFO] ==================================================
+[2026-01-10 20:22:30] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:22:30] [INFO] ==================================================
+[2026-01-10 20:22:30] [INFO] Aplicación inicializada
+[2026-01-10 20:22:30] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:22:30] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:22:30] [DEBUG] Ventana de login creada
+[2026-01-10 20:22:30] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:22:30] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:22:31] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:22:31] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:22:32] [INFO] Ventana principal mostrada
+[2026-01-10 20:23:18] [INFO] Aplicación finalizada
+[2026-01-10 20:26:29] [INFO] ==================================================
+[2026-01-10 20:26:29] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:26:29] [INFO] ==================================================
+[2026-01-10 20:26:29] [INFO] Aplicación inicializada
+[2026-01-10 20:26:29] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:26:29] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:26:30] [DEBUG] Ventana de login creada
+[2026-01-10 20:26:30] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:26:30] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:26:31] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:26:31] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:26:31] [INFO] Ventana principal mostrada
+[2026-01-10 20:27:52] [INFO] Aplicación finalizada
+[2026-01-10 20:29:57] [INFO] ==================================================
+[2026-01-10 20:29:57] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:29:57] [INFO] ==================================================
+[2026-01-10 20:29:57] [INFO] Aplicación inicializada
+[2026-01-10 20:29:57] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:29:57] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:29:57] [DEBUG] Ventana de login creada
+[2026-01-10 20:29:57] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:29:57] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:29:59] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:29:59] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:29:59] [INFO] Ventana principal mostrada
+[2026-01-10 20:30:22] [INFO] Aplicación finalizada
+[2026-01-10 20:32:58] [INFO] ==================================================
+[2026-01-10 20:32:58] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:32:58] [INFO] ==================================================
+[2026-01-10 20:32:58] [INFO] Aplicación inicializada
+[2026-01-10 20:32:58] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:32:58] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:32:59] [DEBUG] Ventana de login creada
+[2026-01-10 20:32:59] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:32:59] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:33:00] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:33:00] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:33:00] [INFO] Ventana principal mostrada
+[2026-01-10 20:36:50] [INFO] Aplicación finalizada
+[2026-01-10 20:40:22] [INFO] ==================================================
+[2026-01-10 20:40:22] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:40:22] [INFO] ==================================================
+[2026-01-10 20:40:22] [INFO] Aplicación inicializada
+[2026-01-10 20:40:22] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:40:22] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:40:23] [DEBUG] Ventana de login creada
+[2026-01-10 20:40:23] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:40:23] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:40:24] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:40:24] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:40:24] [INFO] Ventana principal mostrada
+[2026-01-10 20:41:38] [DEBUG] Inicializando vista de pagos
+[2026-01-10 20:41:38] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 20:41:38] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 20:41:54] [DEBUG] Inicializando vista de pagos
+[2026-01-10 20:41:54] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 20:41:54] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 20:46:51] [INFO] ==================================================
+[2026-01-10 20:46:51] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:46:51] [INFO] ==================================================
+[2026-01-10 20:46:51] [INFO] Aplicación inicializada
+[2026-01-10 20:46:51] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:46:51] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:46:52] [DEBUG] Ventana de login creada
+[2026-01-10 20:46:52] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:46:52] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:46:53] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:46:53] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:46:53] [INFO] Ventana principal mostrada
+[2026-01-10 20:46:54] [DEBUG] Inicializando vista de pagos
+[2026-01-10 20:46:54] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 20:46:54] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 20:47:31] [INFO] Aplicación finalizada
+[2026-01-10 20:52:33] [INFO] ==================================================
+[2026-01-10 20:52:33] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:52:33] [INFO] ==================================================
+[2026-01-10 20:52:33] [INFO] Aplicación inicializada
+[2026-01-10 20:52:33] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:52:33] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:52:33] [DEBUG] Ventana de login creada
+[2026-01-10 20:52:33] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:52:33] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:52:35] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:52:35] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:52:35] [INFO] Ventana principal mostrada
+[2026-01-10 20:56:18] [INFO] Aplicación finalizada
+[2026-01-10 20:56:18] [INFO] ==================================================
+[2026-01-10 20:56:18] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:56:18] [INFO] ==================================================
+[2026-01-10 20:56:19] [INFO] Aplicación inicializada
+[2026-01-10 20:56:19] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:56:19] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:56:19] [DEBUG] Ventana de login creada
+[2026-01-10 20:56:19] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:56:19] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:56:20] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:56:20] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:56:20] [INFO] Ventana principal mostrada
+[2026-01-10 20:56:31] [INFO] Aplicación finalizada
+[2026-01-10 20:58:16] [INFO] ==================================================
+[2026-01-10 20:58:16] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 20:58:16] [INFO] ==================================================
+[2026-01-10 20:58:16] [INFO] Aplicación inicializada
+[2026-01-10 20:58:16] [DEBUG] Mostrando ventana de login...
+[2026-01-10 20:58:16] [DEBUG] Ventana anterior limpiada
+[2026-01-10 20:58:17] [DEBUG] Ventana de login creada
+[2026-01-10 20:58:17] [INFO] Aplicación creada exitosamente
+[2026-01-10 20:58:17] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 20:58:18] [INFO] Login exitoso para usuario: admin
+[2026-01-10 20:58:18] [DEBUG] Cargando ventana principal...
+[2026-01-10 20:58:18] [INFO] Ventana principal mostrada
+[2026-01-10 20:58:32] [INFO] Aplicación finalizada
+[2026-01-10 21:03:29] [INFO] ==================================================
+[2026-01-10 21:03:29] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:03:29] [INFO] ==================================================
+[2026-01-10 21:03:29] [INFO] Aplicación inicializada
+[2026-01-10 21:03:29] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:03:29] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:03:29] [DEBUG] Ventana de login creada
+[2026-01-10 21:03:29] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:03:29] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:03:30] [INFO] Login exitoso para usuario: admin
+[2026-01-10 21:03:30] [DEBUG] Cargando ventana principal...
+[2026-01-10 21:03:31] [INFO] Ventana principal mostrada
+[2026-01-10 21:04:02] [INFO] Aplicación finalizada
+[2026-01-10 21:07:58] [INFO] ==================================================
+[2026-01-10 21:07:58] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:07:58] [INFO] ==================================================
+[2026-01-10 21:07:58] [INFO] Aplicación inicializada
+[2026-01-10 21:07:58] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:07:58] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:07:58] [DEBUG] Ventana de login creada
+[2026-01-10 21:07:58] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:07:58] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:07:59] [INFO] Login exitoso para usuario: admin
+[2026-01-10 21:07:59] [DEBUG] Cargando ventana principal...
+[2026-01-10 21:07:59] [INFO] Ventana principal mostrada
+[2026-01-10 21:08:04] [INFO] Aplicación finalizada
+[2026-01-10 21:09:50] [INFO] ==================================================
+[2026-01-10 21:09:50] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:09:50] [INFO] ==================================================
+[2026-01-10 21:09:50] [INFO] Aplicación inicializada
+[2026-01-10 21:09:50] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:09:50] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:09:51] [DEBUG] Ventana de login creada
+[2026-01-10 21:09:51] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:09:51] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:09:51] [INFO] Login exitoso para usuario: admin
+[2026-01-10 21:09:51] [DEBUG] Cargando ventana principal...
+[2026-01-10 21:09:52] [INFO] Ventana principal mostrada
+[2026-01-10 21:10:33] [INFO] Aplicación finalizada
+[2026-01-10 21:13:46] [INFO] ==================================================
+[2026-01-10 21:13:46] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:13:46] [INFO] ==================================================
+[2026-01-10 21:13:46] [INFO] Aplicación inicializada
+[2026-01-10 21:13:46] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:13:46] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:13:47] [DEBUG] Ventana de login creada
+[2026-01-10 21:13:47] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:13:47] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:13:48] [INFO] Login exitoso para usuario: admin
+[2026-01-10 21:13:48] [DEBUG] Cargando ventana principal...
+[2026-01-10 21:13:48] [INFO] Ventana principal mostrada
+[2026-01-10 21:14:29] [DEBUG] Inicializando vista de pagos
+[2026-01-10 21:14:29] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 21:14:29] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 21:14:40] [INFO] Aplicación finalizada
+[2026-01-10 21:14:42] [INFO] ==================================================
+[2026-01-10 21:14:42] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:14:42] [INFO] ==================================================
+[2026-01-10 21:14:42] [INFO] Aplicación inicializada
+[2026-01-10 21:14:42] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:14:42] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:14:43] [DEBUG] Ventana de login creada
+[2026-01-10 21:14:43] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:14:43] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:14:52] [INFO] Aplicación finalizada
+[2026-01-10 21:15:23] [INFO] ==================================================
+[2026-01-10 21:15:23] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:15:23] [INFO] ==================================================
+[2026-01-10 21:15:23] [INFO] Aplicación inicializada
+[2026-01-10 21:15:23] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:15:23] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:15:24] [DEBUG] Ventana de login creada
+[2026-01-10 21:15:24] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:15:24] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:16:25] [INFO] Aplicación finalizada
+[2026-01-10 21:16:39] [INFO] ==================================================
+[2026-01-10 21:16:39] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:16:39] [INFO] ==================================================
+[2026-01-10 21:16:39] [INFO] Aplicación inicializada
+[2026-01-10 21:16:39] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:16:39] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:16:39] [DEBUG] Ventana de login creada
+[2026-01-10 21:16:39] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:16:39] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:16:48] [INFO] Aplicación finalizada
+[2026-01-10 21:17:26] [INFO] ==================================================
+[2026-01-10 21:17:26] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:17:26] [INFO] ==================================================
+[2026-01-10 21:17:26] [INFO] Aplicación inicializada
+[2026-01-10 21:17:26] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:17:26] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:17:26] [DEBUG] Ventana de login creada
+[2026-01-10 21:17:26] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:17:26] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:17:29] [INFO] Login exitoso para usuario: gerente
+[2026-01-10 21:17:29] [DEBUG] Cargando ventana principal...
+[2026-01-10 21:17:29] [INFO] Ventana principal mostrada
+[2026-01-10 21:17:35] [DEBUG] Inicializando vista de pagos
+[2026-01-10 21:17:35] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 21:17:35] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 21:19:15] [INFO] Aplicación finalizada
+[2026-01-10 21:20:17] [INFO] ==================================================
+[2026-01-10 21:20:17] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 21:20:17] [INFO] ==================================================
+[2026-01-10 21:20:17] [INFO] Aplicación inicializada
+[2026-01-10 21:20:17] [DEBUG] Mostrando ventana de login...
+[2026-01-10 21:20:17] [DEBUG] Ventana anterior limpiada
+[2026-01-10 21:20:18] [DEBUG] Ventana de login creada
+[2026-01-10 21:20:18] [INFO] Aplicación creada exitosamente
+[2026-01-10 21:20:18] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 21:20:29] [INFO] Login exitoso para usuario: admin
+[2026-01-10 21:20:29] [DEBUG] Cargando ventana principal...
+[2026-01-10 21:20:30] [INFO] Ventana principal mostrada
+[2026-01-10 21:20:49] [DEBUG] Inicializando vista de pagos
+[2026-01-10 21:20:49] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-10 21:20:49] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-10 21:21:51] [INFO] Aplicación finalizada
+[2026-01-10 23:52:04] [INFO] ==================================================
+[2026-01-10 23:52:04] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-10 23:52:04] [INFO] ==================================================
+[2026-01-10 23:52:05] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-10 23:52:05] [INFO] Endpoints disponibles:
+[2026-01-10 23:52:05] [INFO]   - POST /api/auth/login
+[2026-01-10 23:52:05] [INFO]   - GET  /api/health
+[2026-01-10 23:52:05] [INFO]   - GET  /api/usuarios
+[2026-01-10 23:52:05] [INFO]   - GET  /api/clientes
+[2026-01-10 23:52:05] [INFO]   - GET  /api/productos
+[2026-01-10 23:52:05] [INFO]   - GET  /api/eventos
+[2026-01-10 23:52:05] [INFO]   - GET  /api/pagos
+[2026-01-10 23:52:05] [INFO]   - GET  /api/reportes/metricas
+[2026-01-10 23:52:05] [INFO]   ... y muchos más
+[2026-01-10 23:52:05] [INFO] ==================================================
+[2026-01-10 23:52:05] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-10 23:52:05] [INFO] ==================================================
+[2026-01-10 23:52:05] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-10 23:52:05] [INFO] Endpoints disponibles:
+[2026-01-10 23:52:05] [INFO]   - POST /api/auth/login
+[2026-01-10 23:52:05] [INFO]   - GET  /api/health
+[2026-01-10 23:52:05] [INFO]   - GET  /api/usuarios
+[2026-01-10 23:52:05] [INFO]   - GET  /api/clientes
+[2026-01-10 23:52:05] [INFO]   - GET  /api/productos
+[2026-01-10 23:52:05] [INFO]   - GET  /api/eventos
+[2026-01-10 23:52:05] [INFO]   - GET  /api/pagos
+[2026-01-10 23:52:05] [INFO]   - GET  /api/reportes/metricas
+[2026-01-10 23:52:05] [INFO]   ... y muchos más
+[2026-01-10 23:54:14] [INFO] ==================================================
+[2026-01-10 23:54:14] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-10 23:54:14] [INFO] ==================================================
+[2026-01-10 23:54:15] [INFO] Aplicación inicializada
+[2026-01-10 23:54:15] [DEBUG] Mostrando ventana de login...
+[2026-01-10 23:54:15] [DEBUG] Ventana anterior limpiada
+[2026-01-10 23:54:15] [DEBUG] Ventana de login creada
+[2026-01-10 23:54:15] [INFO] Aplicación creada exitosamente
+[2026-01-10 23:54:15] [INFO] Iniciando loop principal de la aplicación
+[2026-01-10 23:54:19] [INFO] Login exitoso para usuario: admin
+[2026-01-10 23:54:19] [DEBUG] Cargando ventana principal...
+[2026-01-10 23:54:19] [INFO] Ventana principal mostrada
+[2026-01-10 23:54:22] [INFO] Aplicación finalizada
+[2026-01-10 23:55:07] [INFO] ==================================================
+[2026-01-10 23:55:07] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-10 23:55:07] [INFO] ==================================================
+[2026-01-10 23:55:07] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-10 23:55:07] [INFO] Endpoints disponibles:
+[2026-01-10 23:55:07] [INFO]   - POST /api/auth/login
+[2026-01-10 23:55:07] [INFO]   - GET  /api/health
+[2026-01-10 23:55:07] [INFO]   - GET  /api/usuarios
+[2026-01-10 23:55:07] [INFO]   - GET  /api/clientes
+[2026-01-10 23:55:07] [INFO]   - GET  /api/productos
+[2026-01-10 23:55:07] [INFO]   - GET  /api/eventos
+[2026-01-10 23:55:07] [INFO]   - GET  /api/pagos
+[2026-01-10 23:55:07] [INFO]   - GET  /api/reportes/metricas
+[2026-01-10 23:55:07] [INFO]   ... y muchos más
+[2026-01-10 23:55:08] [INFO] ==================================================
+[2026-01-10 23:55:08] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-10 23:55:08] [INFO] ==================================================
+[2026-01-10 23:55:08] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-10 23:55:08] [INFO] Endpoints disponibles:
+[2026-01-10 23:55:08] [INFO]   - POST /api/auth/login
+[2026-01-10 23:55:08] [INFO]   - GET  /api/health
+[2026-01-10 23:55:08] [INFO]   - GET  /api/usuarios
+[2026-01-10 23:55:08] [INFO]   - GET  /api/clientes
+[2026-01-10 23:55:08] [INFO]   - GET  /api/productos
+[2026-01-10 23:55:08] [INFO]   - GET  /api/eventos
+[2026-01-10 23:55:08] [INFO]   - GET  /api/pagos
+[2026-01-10 23:55:08] [INFO]   - GET  /api/reportes/metricas
+[2026-01-10 23:55:08] [INFO]   ... y muchos más

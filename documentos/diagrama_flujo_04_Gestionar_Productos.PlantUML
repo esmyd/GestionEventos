@@ -1,0 +1,68 @@
+@startuml Diagrama_Flujo_Gestionar_Productos
+skinparam activity {
+  BackgroundColor LightPink
+  BorderColor DarkRed
+  FontSize 10
+}
+
+' ============================================
+' DIAGRAMA DE FLUJO: GESTIONAR PRODUCTOS
+' ============================================
+
+start
+
+:Administrador selecciona
+"Gestión de Productos";
+
+:Sistema muestra lista
+de productos;
+
+:Administrador selecciona acción:
+Crear, Editar o Eliminar;
+
+if (Crear Producto?) then (Crear)
+  :Administrador presiona "Nuevo Producto";
+  
+  partition "Ingreso de Datos" {
+    :Administrador ingresa:
+    Nombre, Categoría, Precio,
+    Descripción, Stock;
+  }
+  
+  :Administrador presiona "Guardar";
+  
+  if (Datos válidos?) then (Sí)
+    :Sistema registra el producto;
+    :Sistema muestra confirmación;
+    stop
+  else (No)
+    :Sistema muestra errores;
+    :Administrador corrige datos;
+  endif
+  
+elseif (Editar Producto?) then (Editar)
+  :Administrador selecciona producto;
+  :Administrador presiona "Editar";
+  :Sistema muestra datos del producto;
+  :Administrador modifica datos;
+  :Administrador presiona "Guardar";
+  :Sistema actualiza el producto;
+  :Sistema muestra confirmación;
+  stop
+  
+else (Eliminar)
+  :Administrador selecciona producto;
+  :Administrador presiona "Eliminar";
+  :Sistema solicita confirmación;
+  
+  if (Confirmado?) then (Sí)
+    :Sistema elimina el producto;
+    :Sistema muestra confirmación;
+    stop
+  else (No)
+    :Operación cancelada;
+    stop
+  endif
+endif
+
+@enduml

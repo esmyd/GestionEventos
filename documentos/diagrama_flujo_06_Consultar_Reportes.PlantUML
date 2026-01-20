@@ -1,0 +1,45 @@
+@startuml Diagrama_Flujo_Consultar_Reportes
+skinparam activity {
+  BackgroundColor LightGray
+  BorderColor DarkGray
+  FontSize 10
+}
+
+' ============================================
+' DIAGRAMA DE FLUJO: CONSULTAR REPORTES
+' ============================================
+
+start
+
+:Gerente/Administrador selecciona
+"Consultar Reportes";
+
+partition "Generación de Reportes" {
+  :Sistema consulta datos:
+  - Eventos por estado
+  - Total de ingresos
+  - Total pagado
+  - Saldo pendiente
+  - Estadísticas por tipo/salón;
+  
+  :Sistema calcula métricas
+  y estadísticas;
+  
+  :Sistema muestra reportes:
+  - Resumen de eventos
+  - Resumen financiero
+  - Gráficos y tablas;
+}
+
+:Usuario puede aplicar filtros:
+Fecha, Estado, Tipo, Salón;
+
+:Sistema actualiza reportes
+con los filtros aplicados;
+
+:Usuario puede exportar
+los reportes (opcional);
+
+stop
+
+@enduml

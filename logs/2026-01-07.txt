@@ -1,0 +1,56 @@
+[2026-01-07 18:51:23] [INFO] ==================================================
+[2026-01-07 18:51:23] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-07 18:51:23] [INFO] ==================================================
+[2026-01-07 18:51:24] [INFO] Aplicación inicializada
+[2026-01-07 18:51:24] [DEBUG] Mostrando ventana de login...
+[2026-01-07 18:51:24] [DEBUG] Ventana anterior limpiada
+[2026-01-07 18:51:28] [DEBUG] Ventana de login creada
+[2026-01-07 18:51:28] [INFO] Aplicación creada exitosamente
+[2026-01-07 18:51:28] [INFO] Iniciando loop principal de la aplicación
+[2026-01-07 18:52:08] [INFO] Aplicación finalizada
+[2026-01-07 18:52:11] [INFO] ==================================================
+[2026-01-07 18:52:11] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-07 18:52:11] [INFO] ==================================================
+[2026-01-07 18:52:11] [INFO] Aplicación inicializada
+[2026-01-07 18:52:11] [DEBUG] Mostrando ventana de login...
+[2026-01-07 18:52:11] [DEBUG] Ventana anterior limpiada
+[2026-01-07 18:52:12] [DEBUG] Ventana de login creada
+[2026-01-07 18:52:12] [INFO] Aplicación creada exitosamente
+[2026-01-07 18:52:12] [INFO] Iniciando loop principal de la aplicación
+[2026-01-07 18:52:13] [INFO] Login exitoso para usuario: admin
+[2026-01-07 18:52:13] [DEBUG] Cargando ventana principal...
+[2026-01-07 18:52:13] [INFO] Ventana principal mostrada
+[2026-01-07 18:52:22] [DEBUG] Inicializando vista de pagos
+[2026-01-07 18:52:22] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-07 18:52:22] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 4
+[2026-01-07 18:54:02] [INFO] Aplicación finalizada
+[2026-01-07 18:56:44] [INFO] ==================================================
+[2026-01-07 18:56:44] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-07 18:56:44] [INFO] ==================================================
+[2026-01-07 18:56:45] [INFO] Aplicación inicializada
+[2026-01-07 18:56:45] [DEBUG] Mostrando ventana de login...
+[2026-01-07 18:56:45] [DEBUG] Ventana anterior limpiada
+[2026-01-07 18:56:45] [DEBUG] Ventana de login creada
+[2026-01-07 18:56:45] [INFO] Aplicación creada exitosamente
+[2026-01-07 18:56:45] [INFO] Iniciando loop principal de la aplicación
+[2026-01-07 18:57:13] [INFO] Login exitoso para usuario: admin
+[2026-01-07 18:57:13] [DEBUG] Cargando ventana principal...
+[2026-01-07 18:57:13] [INFO] Ventana principal mostrada
+[2026-01-07 19:03:59] [DEBUG] Inicializando vista de pagos
+[2026-01-07 19:03:59] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-07 19:03:59] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 4
+[2026-01-07 19:04:09] [DEBUG] Inicializando vista de pagos
+[2026-01-07 19:04:09] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-07 19:04:09] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 4
+[2026-01-07 19:05:32] [INFO] Usuario admin (ID: 1) intentando registrar pago - Evento: 3, Monto: $1000.00
+[2026-01-07 19:05:32] [INFO] Iniciando registro de pago - Evento ID: 3, Monto: $1000.00, Tipo: abono
+[2026-01-07 19:05:32] [DEBUG] Validación de pago - Total actual: $0.00, Monto a agregar: $1000.00, Precio total evento: $2350.00
+[2026-01-07 19:05:32] [INFO] Pago registrado exitosamente - ID: 11, Evento: 3, Monto: $1000.00, Tipo: abono
+[2026-01-07 19:05:34] [DEBUG] Notificación enviada para pago ID: 11, Tipo: abono
+[2026-01-07 19:05:34] [INFO] Pago registrado exitosamente desde la vista - ID: 11, Usuario: admin
+[2026-01-07 19:05:40] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-07 19:05:40] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-07 19:08:19] [DEBUG] Inicializando vista de pagos
+[2026-01-07 19:08:19] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-07 19:08:19] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-07 19:10:04] [INFO] Aplicación finalizada

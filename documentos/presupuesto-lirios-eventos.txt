@@ -1,0 +1,36 @@
+Presupuesto - Evolucion Tecnologica Lirios Eventos
+Fecha: 2026-01-17
+Moneda: USD
+Fuente de alcance: Documento de definiciones N°1 (PROTMK001)
+
+Supuestos
+- Sistema de escritorio en Python (Tkinter) con base de datos MySQL.
+- Integraciones externas "preparadas" (estructura para WhatsApp/Email/Sheets).
+- No incluye app movil, pasarela de pagos en linea ni facturacion electronica.
+- Tarifa de referencia: 20 USD/h.
+
+Detalle por modulo (horas y costo)
+1) Analisis funcional y alcance detallado: 24 h -> 480
+2) Arquitectura + modelo de datos: 32 h -> 640
+3) Usuarios/roles/autenticacion/logs: 48 h -> 960
+4) Clientes: 24 h -> 480
+5) Gestion de eventos + planes/paquetes: 80 h -> 1600
+6) Productos/servicios + inventario + promociones: 64 h -> 1280
+7) Pagos/abonos/saldos: 48 h -> 960
+8) Reportes financieros/operativos: 40 h -> 800
+9) Preparacion de integraciones: 24 h -> 480
+10) QA + pruebas + ajustes: 40 h -> 800
+11) Documentacion + capacitacion + despliegue: 24 h -> 480
+12) Gestion del proyecto (10%): 45 h -> 900
+
+Total estimado de desarrollo: 493 h -> 9860
+
+Hosting y dominio (anual)
+- VPS 2 vCPU / 4 GB RAM / 80 GB SSD: 20-40/mes -> 240-480/anio
+- Backups gestionados: 5-10/mes -> 60-120/anio
+- Dominio .com: 12-18/anio
+Total anual estimado: 312-618/anio
+
+Notas
+- Si se ajusta la tarifa por hora, el total se recalcula proporcionalmente.
+- Las mejoras fuera de alcance se cotizan por separado.

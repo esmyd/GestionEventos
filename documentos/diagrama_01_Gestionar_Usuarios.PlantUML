@@ -1,0 +1,28 @@
+@startuml Diagrama_Gestionar_Usuarios
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+
+left to right direction
+
+' ============================================
+' CASO DE USO PRINCIPAL: GESTIONAR USUARIOS
+' ============================================
+actor Administrador #LightBlue
+
+rectangle "Sistema de Gestion de Eventos - Lirios Eventos" {
+  (Gestionar Usuarios) as UC_GestionarUsuarios
+}
+
+Administrador --> UC_GestionarUsuarios
+
+note right of UC_GestionarUsuarios
+  El administrador puede:
+  - Crear usuarios
+  - Editar usuarios
+  - Eliminar/desactivar usuarios
+  - Listar usuarios
+  - Asignar roles
+end note
+
+@enduml
+

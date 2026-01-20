@@ -1,0 +1,73 @@
+@startuml Diagrama_Estructura_Sistema
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+' ============================================
+' DIAGRAMA DE ESTRUCTURA DEL SISTEMA
+' Organización de módulos y componentes
+' ============================================
+
+package "Sistema de Gestion de Eventos - Lirios Eventos - Diagrama de Estructura del Sistema" {
+
+  [Interfaz de Usuario (Tkinter)] as UI
+
+  UI --> [Modulo de Autenticacion]
+  
+  UI --> [Modulo de Gestion de Eventos]
+  UI --> [Modulo de Gestion de Usuarios]
+  UI --> [Modulo de Gestion de Clientes]
+  UI --> [Modulo de Catalogo]
+  UI --> [Modulo de Pagos]
+  UI --> [Modulo de Inventario]
+  UI --> [Modulo de Reportes]
+
+  [Modulo de Autenticacion] --> [Capa de Lógica de Negocio]
+  [Modulo de Gestion de Eventos] --> [Capa de Lógica de Negocio]
+  [Modulo de Gestion de Usuarios] --> [Capa de Lógica de Negocio]
+  [Modulo de Gestion de Clientes] --> [Capa de Lógica de Negocio]
+  [Modulo de Catalogo] --> [Capa de Lógica de Negocio]
+  [Modulo de Pagos] --> [Capa de Lógica de Negocio]
+  [Modulo de Inventario] --> [Capa de Lógica de Negocio]
+  [Modulo de Reportes] --> [Capa de Lógica de Negocio]
+
+  [Capa de Lógica de Negocio] --> [Capa de Acceso a Datos]
+
+  [Capa de Acceso a Datos] --> [Base de Datos MySQL]
+
+  [Modulo de Pagos] --> [Sistema de Notificaciones]
+  [Modulo de Gestion de Eventos] --> [Sistema de Notificaciones]
+
+  [Sistema de Notificaciones] --> [Servicios Externos]
+  
+  [Servicios Externos] --> [Email]
+  [Servicios Externos] --> [WhatsApp]
+  [Servicios Externos] --> [Google Sheets]
+}
+
+note right of UI
+  Interfaz gráfica Tkinter
+  - Login
+  - Ventana Principal
+  - Módulos de Vista
+end note
+
+note right of "Capa de Lógica de Negocio"
+  Modelos de Negocio:
+  - Autenticación
+  - Eventos
+  - Pagos
+  - Productos
+  - Planes
+  - Usuarios
+  - Clientes
+  - Inventario
+end note
+
+note bottom of "Base de Datos MySQL"
+  MySQL Database:
+  - Tablas principales
+  - Triggers
+  - Procedimientos almacenados
+end note
+
+@enduml

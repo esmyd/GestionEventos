@@ -1,0 +1,31 @@
+@startuml Diagrama_Gestionar_Planes
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+
+left to right direction
+
+' ============================================
+' CASO DE USO PRINCIPAL: GESTIONAR PLANES
+' ============================================
+actor Administrador #LightBlue
+
+rectangle "Sistema de Gestion de Eventos - Lirios Eventos" {
+  (Gestionar Planes) as UC_GestionarPlanes
+}
+
+Administrador --> UC_GestionarPlanes
+
+note right of UC_GestionarPlanes
+  El administrador puede:
+  - Crear planes y paquetes
+  - Editar planes y paquetes
+  - Eliminar planes y paquetes
+  - Listar planes y paquetes
+  - Configurar capacidad (mín/máx)
+  - Asociar productos a planes
+  - Importar desde catálogos PDF
+  57+ paquetes configurados
+end note
+
+@enduml
+

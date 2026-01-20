@@ -1,0 +1,47 @@
+@startuml Diagrama_Gestionar_Eventos
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+
+left to right direction
+
+' ============================================
+' CASO DE USO PRINCIPAL: GESTIONAR EVENTOS
+' ============================================
+actor Administrador #LightBlue
+actor Coordinador #LightYellow
+actor Cliente #LightPink
+
+rectangle "Sistema de Gestion de Eventos - Lirios Eventos" {
+  (Gestionar Eventos) as UC_GestionarEventos
+  (Crear Evento) as UC_CrearEvento
+  (Consultar Eventos) as UC_ConsultarEventos
+  (Editar Evento) as UC_EditarEvento
+  (Actualizar Estado del Evento) as UC_ActualizarEstado
+}
+
+Administrador --> UC_GestionarEventos
+Administrador --> UC_CrearEvento
+Administrador --> UC_ConsultarEventos
+Administrador --> UC_EditarEvento
+Coordinador --> UC_ConsultarEventos
+Coordinador --> UC_ActualizarEstado
+Cliente --> UC_ConsultarEventos
+
+UC_GestionarEventos ..> UC_CrearEvento : <<include>>
+UC_GestionarEventos ..> UC_ConsultarEventos : <<include>>
+UC_GestionarEventos ..> UC_EditarEvento : <<include>>
+UC_EditarEvento ..> UC_ConsultarEventos : <<include>>
+UC_ActualizarEstado ..> UC_ConsultarEventos : <<include>>
+
+note right of UC_GestionarEventos
+  Funcionalidades:
+  - Crear y configurar eventos
+  - Asignar planes y productos
+  - Asignar coordinadores y salones
+  - Seguimiento de estados
+  - Control de fechas y horarios
+  - Cálculo automático de totales
+end note
+
+@enduml
+

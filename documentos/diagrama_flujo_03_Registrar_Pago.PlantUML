@@ -1,0 +1,51 @@
+@startuml Diagrama_Flujo_Registro_Pagos
+skinparam activity {
+  BackgroundColor LightYellow
+  BorderColor DarkOrange
+  FontSize 10
+}
+
+' ============================================
+' DIAGRAMA DE FLUJO: REGISTRO DE PAGOS
+' ============================================
+
+start
+
+:Usuario selecciona
+"Gestión de Pagos";
+
+:Usuario selecciona el evento;
+
+:Sistema muestra información:
+Total, Pagado, Saldo pendiente;
+
+:Usuario presiona "Registrar Pago";
+
+partition "Ingreso de Datos" {
+  :Usuario ingresa:
+  Monto, Método de pago,
+  Fecha, Referencia;
+  
+  :Sistema valida monto
+  y saldo disponible;
+}
+
+:Usuario presiona "Registrar";
+
+if (Información válida?) then (Sí)
+  :Sistema registra el pago;
+  :Sistema actualiza automáticamente
+  Total pagado y Saldo pendiente;
+  
+  :Sistema envía correo electrónico
+  al cliente con confirmación
+  del pago registrado;
+  
+  :Sistema muestra confirmación;
+  stop
+else (No)
+  :Sistema muestra mensaje de error;
+  :Usuario corrige información;
+endif
+
+@enduml

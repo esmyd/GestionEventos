@@ -1,0 +1,30 @@
+@startuml Diagrama_Gestionar_Productos_Servicios
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+
+left to right direction
+
+' ============================================
+' CASO DE USO PRINCIPAL: GESTIONAR PRODUCTOS Y SERVICIOS
+' ============================================
+actor Administrador #LightBlue
+
+rectangle "Sistema de Gestion de Eventos - Lirios Eventos" {
+  (Gestionar Productos y Servicios) as UC_GestionarProductos
+}
+
+Administrador --> UC_GestionarProductos
+
+note right of UC_GestionarProductos
+  El administrador puede:
+  - Crear productos/servicios
+  - Editar productos/servicios
+  - Eliminar productos/servicios
+  - Listar productos/servicios
+  - Controlar stock e inventario
+  - Importar desde catálogo PDF
+  - Gestionar precios y variantes
+end note
+
+@enduml
+

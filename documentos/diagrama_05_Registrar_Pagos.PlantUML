@@ -1,0 +1,45 @@
+@startuml Diagrama_Registrar_Pagos
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+
+left to right direction
+
+' ============================================
+' CASO DE USO PRINCIPAL: REGISTRAR PAGOS
+' ============================================
+actor Administrador #LightBlue
+actor Cliente #LightPink
+actor "Gerente General" as Gerente #LightGreen
+
+rectangle "Sistema de Gestion de Eventos - Lirios Eventos" {
+  (Registrar Pagos) as UC_RegistrarPagos
+  (Registrar Pago) as UC_RegistrarPago
+  (Realizar Abono) as UC_RealizarAbono
+  (Consultar Pagos) as UC_ConsultarPagos
+  (Consultar Saldos) as UC_ConsultarSaldos
+}
+
+Administrador --> UC_RegistrarPagos
+Administrador --> UC_RegistrarPago
+Administrador --> UC_ConsultarPagos
+Cliente --> UC_RealizarAbono
+Cliente --> UC_ConsultarPagos
+Cliente --> UC_ConsultarSaldos
+Gerente --> UC_ConsultarPagos
+
+UC_RegistrarPagos ..> UC_RegistrarPago : <<include>>
+UC_RegistrarPagos ..> UC_ConsultarPagos : <<include>>
+UC_RealizarAbono ..> UC_RegistrarPago : <<include>>
+
+note right of UC_RegistrarPagos
+  Funcionalidades:
+  - Registrar abonos y pagos completos
+  - Múltiples métodos de pago
+    (efectivo, transferencia, tarjeta, cheque)
+  - Cálculo automático de saldos pendientes
+  - Registro de reembolsos
+  - Seguimiento histórico de pagos
+end note
+
+@enduml
+

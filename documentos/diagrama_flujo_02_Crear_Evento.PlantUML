@@ -1,0 +1,51 @@
+@startuml Diagrama_Flujo_Gestion_Eventos
+skinparam activity {
+  BackgroundColor LightGreen
+  BorderColor DarkGreen
+  FontSize 10
+}
+
+' ============================================
+' DIAGRAMA DE FLUJO: GESTIÓN DE EVENTOS
+' ============================================
+
+start
+
+:Usuario selecciona
+"Gestión de Eventos";
+
+:Usuario selecciona
+"Nuevo Evento" o "Editar Evento";
+
+partition "Ingreso de Datos" {
+  :Usuario ingresa información:
+  Cliente, Salón, Tipo, Fecha,
+  Hora, Número de Invitados;
+  
+  :Usuario selecciona Plan/Paquete;
+  
+  :Usuario agrega productos adicionales
+  (opcional);
+  
+  :Sistema calcula total automáticamente;
+}
+
+:Usuario presiona "Guardar Evento";
+
+if (Datos válidos?) then (Sí)
+  if (Validación exitosa?) then (Sí)
+    :Sistema registra el evento;
+    :Sistema asigna estado "Cotización";
+    :Sistema muestra confirmación;
+    stop
+  else (No)
+    :Sistema muestra errores;
+    :Usuario corrige datos;
+  endif
+else (No)
+  :Sistema muestra:
+  "Complete campos requeridos";
+  :Usuario completa campos;
+endif
+
+@enduml

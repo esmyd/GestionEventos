@@ -1,0 +1,191 @@
+[2026-01-03 12:33:17] [INFO] ==================================================
+[2026-01-03 12:33:17] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 12:33:17] [INFO] ==================================================
+[2026-01-03 12:33:18] [INFO] Aplicación inicializada
+[2026-01-03 12:33:18] [DEBUG] Mostrando ventana de login...
+[2026-01-03 12:33:18] [DEBUG] Ventana anterior limpiada
+[2026-01-03 12:33:22] [DEBUG] Ventana de login creada
+[2026-01-03 12:33:22] [INFO] Aplicación creada exitosamente
+[2026-01-03 12:33:22] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 12:33:33] [INFO] ==================================================
+[2026-01-03 12:33:33] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 12:33:33] [INFO] ==================================================
+[2026-01-03 12:33:33] [INFO] Aplicación inicializada
+[2026-01-03 12:33:33] [DEBUG] Mostrando ventana de login...
+[2026-01-03 12:33:33] [DEBUG] Ventana anterior limpiada
+[2026-01-03 12:33:36] [DEBUG] Ventana de login creada
+[2026-01-03 12:33:36] [INFO] Aplicación creada exitosamente
+[2026-01-03 12:33:36] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 12:33:38] [INFO] Login exitoso para usuario: admin
+[2026-01-03 12:33:38] [DEBUG] Cargando ventana principal...
+[2026-01-03 12:33:38] [INFO] Ventana principal mostrada
+[2026-01-03 12:34:03] [DEBUG] Inicializando vista de pagos
+[2026-01-03 12:34:03] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 12:34:03] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 3
+[2026-01-03 13:05:35] [DEBUG] Inicializando vista de pagos
+[2026-01-03 13:05:35] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 13:05:35] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 3
+[2026-01-03 13:20:34] [INFO] Aplicación finalizada
+[2026-01-03 13:27:04] [INFO] ==================================================
+[2026-01-03 13:27:04] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 13:27:04] [INFO] ==================================================
+[2026-01-03 13:27:04] [INFO] Aplicación inicializada
+[2026-01-03 13:27:04] [DEBUG] Mostrando ventana de login...
+[2026-01-03 13:27:04] [DEBUG] Ventana anterior limpiada
+[2026-01-03 13:27:04] [DEBUG] Ventana de login creada
+[2026-01-03 13:27:04] [INFO] Aplicación creada exitosamente
+[2026-01-03 13:27:04] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 13:27:06] [INFO] Login exitoso para usuario: admin
+[2026-01-03 13:27:06] [DEBUG] Cargando ventana principal...
+[2026-01-03 13:27:06] [INFO] Ventana principal mostrada
+[2026-01-03 13:32:34] [INFO] Aplicación finalizada
+[2026-01-03 14:02:24] [INFO] ==================================================
+[2026-01-03 14:02:24] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 14:02:24] [INFO] ==================================================
+[2026-01-03 14:02:24] [INFO] Aplicación inicializada
+[2026-01-03 14:02:24] [DEBUG] Mostrando ventana de login...
+[2026-01-03 14:02:24] [DEBUG] Ventana anterior limpiada
+[2026-01-03 14:02:24] [DEBUG] Ventana de login creada
+[2026-01-03 14:02:24] [INFO] Aplicación creada exitosamente
+[2026-01-03 14:02:24] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 14:02:25] [INFO] Login exitoso para usuario: admin
+[2026-01-03 14:02:25] [DEBUG] Cargando ventana principal...
+[2026-01-03 14:02:26] [INFO] Ventana principal mostrada
+[2026-01-03 14:05:42] [INFO] Aplicación finalizada
+[2026-01-03 14:46:36] [INFO] ==================================================
+[2026-01-03 14:46:36] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 14:46:36] [INFO] ==================================================
+[2026-01-03 14:46:36] [INFO] Aplicación inicializada
+[2026-01-03 14:46:36] [DEBUG] Mostrando ventana de login...
+[2026-01-03 14:46:36] [DEBUG] Ventana anterior limpiada
+[2026-01-03 14:46:36] [DEBUG] Ventana de login creada
+[2026-01-03 14:46:36] [INFO] Aplicación creada exitosamente
+[2026-01-03 14:46:36] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 14:46:39] [INFO] Login exitoso para usuario: admin
+[2026-01-03 14:46:39] [DEBUG] Cargando ventana principal...
+[2026-01-03 14:46:39] [INFO] Ventana principal mostrada
+[2026-01-03 14:46:40] [DEBUG] Inicializando vista de pagos
+[2026-01-03 14:46:40] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 14:46:40] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 3
+[2026-01-03 14:51:19] [INFO] Aplicación finalizada
+[2026-01-03 15:35:17] [INFO] ==================================================
+[2026-01-03 15:35:17] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 15:35:17] [INFO] ==================================================
+[2026-01-03 15:35:18] [INFO] Aplicación inicializada
+[2026-01-03 15:35:18] [DEBUG] Mostrando ventana de login...
+[2026-01-03 15:35:18] [DEBUG] Ventana anterior limpiada
+[2026-01-03 15:35:18] [DEBUG] Ventana de login creada
+[2026-01-03 15:35:18] [INFO] Aplicación creada exitosamente
+[2026-01-03 15:35:18] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 15:35:20] [INFO] Login exitoso para usuario: admin
+[2026-01-03 15:35:20] [DEBUG] Cargando ventana principal...
+[2026-01-03 15:35:20] [INFO] Ventana principal mostrada
+[2026-01-03 15:36:59] [DEBUG] Inicializando vista de pagos
+[2026-01-03 15:36:59] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 15:36:59] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 1
+[2026-01-03 15:37:04] [INFO] Usuario admin (ID: 1) solicitando eliminar pago ID: 6
+[2026-01-03 15:37:05] [INFO] Iniciando eliminación de pago ID: 6
+[2026-01-03 15:37:05] [WARNING] Pago ID 6 no encontrado para eliminar
+[2026-01-03 15:37:05] [ERROR] Error al eliminar pago desde la vista - ID: 6, Usuario: admin
+[2026-01-03 15:37:30] [INFO] Usuario admin (ID: 1) intentando registrar pago - Evento: 1, Monto: $100.00
+[2026-01-03 15:37:30] [INFO] Iniciando registro de pago - Evento ID: 1, Monto: $100.00, Tipo: abono
+[2026-01-03 15:37:30] [DEBUG] Validación de pago - Total actual: $3.00, Monto a agregar: $100.00, Precio total evento: $1167.50
+[2026-01-03 15:37:30] [INFO] Pago registrado exitosamente - ID: 8, Evento: 1, Monto: $100.00, Tipo: abono
+[2026-01-03 15:37:32] [DEBUG] Notificación enviada para pago ID: 8, Tipo: abono
+[2026-01-03 15:37:32] [INFO] Pago registrado exitosamente desde la vista - ID: 8, Usuario: admin
+[2026-01-03 15:37:33] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 15:37:33] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 2
+[2026-01-03 15:40:47] [DEBUG] Inicializando vista de pagos
+[2026-01-03 15:40:47] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 15:40:47] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 2
+[2026-01-03 15:43:43] [INFO] Usuario admin (ID: 1) solicitando eliminar pago ID: 6
+[2026-01-03 15:43:44] [INFO] Iniciando eliminación de pago ID: 6
+[2026-01-03 15:43:44] [WARNING] Pago ID 6 no encontrado para eliminar
+[2026-01-03 15:43:44] [ERROR] Error al eliminar pago desde la vista - ID: 6, Usuario: admin
+[2026-01-03 15:46:27] [INFO] Aplicación finalizada
+[2026-01-03 15:46:30] [INFO] ==================================================
+[2026-01-03 15:46:30] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 15:46:30] [INFO] ==================================================
+[2026-01-03 15:46:30] [INFO] Aplicación inicializada
+[2026-01-03 15:46:30] [DEBUG] Mostrando ventana de login...
+[2026-01-03 15:46:30] [DEBUG] Ventana anterior limpiada
+[2026-01-03 15:46:30] [DEBUG] Ventana de login creada
+[2026-01-03 15:46:30] [INFO] Aplicación creada exitosamente
+[2026-01-03 15:46:30] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 15:46:32] [INFO] Login exitoso para usuario: admin
+[2026-01-03 15:46:32] [DEBUG] Cargando ventana principal...
+[2026-01-03 15:46:32] [INFO] Ventana principal mostrada
+[2026-01-03 15:46:34] [DEBUG] Inicializando vista de pagos
+[2026-01-03 15:46:34] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 15:46:34] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 2
+[2026-01-03 15:46:36] [INFO] Usuario admin (ID: 1) solicitando eliminar pago ID: 6
+[2026-01-03 15:46:37] [INFO] Iniciando eliminación de pago ID: 6
+[2026-01-03 15:46:37] [INFO] Pago eliminado exitosamente - ID: 6, Evento: 1
+[2026-01-03 15:46:37] [INFO] Pago eliminado exitosamente desde la vista - ID: 6, Usuario: admin
+[2026-01-03 15:46:38] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 15:46:38] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 1
+[2026-01-03 15:50:21] [INFO] Usuario admin (ID: 1) intentando registrar pago - Evento: 1, Monto: $150.00
+[2026-01-03 15:50:21] [INFO] Iniciando registro de pago - Evento ID: 1, Monto: $150.00, Tipo: abono
+[2026-01-03 15:50:21] [DEBUG] Validación de pago - Total actual: $100.00, Monto a agregar: $150.00, Precio total evento: $1167.50
+[2026-01-03 15:50:21] [INFO] Pago registrado exitosamente - ID: 9, Evento: 1, Monto: $150.00, Tipo: abono
+[2026-01-03 15:50:24] [DEBUG] Notificación enviada para pago ID: 9, Tipo: abono
+[2026-01-03 15:50:24] [INFO] Pago registrado exitosamente desde la vista - ID: 9, Usuario: admin
+[2026-01-03 15:50:25] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 15:50:25] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 2
+[2026-01-03 15:56:23] [DEBUG] Inicializando vista de pagos
+[2026-01-03 15:56:24] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 15:56:24] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 2
+[2026-01-03 16:02:39] [INFO] Aplicación finalizada
+[2026-01-03 16:03:08] [INFO] ==================================================
+[2026-01-03 16:03:08] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 16:03:08] [INFO] ==================================================
+[2026-01-03 16:03:08] [INFO] Aplicación inicializada
+[2026-01-03 16:03:08] [DEBUG] Mostrando ventana de login...
+[2026-01-03 16:03:08] [DEBUG] Ventana anterior limpiada
+[2026-01-03 16:03:08] [DEBUG] Ventana de login creada
+[2026-01-03 16:03:08] [INFO] Aplicación creada exitosamente
+[2026-01-03 16:03:08] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 16:03:10] [INFO] Login exitoso para usuario: admin
+[2026-01-03 16:03:10] [DEBUG] Cargando ventana principal...
+[2026-01-03 16:03:10] [INFO] Ventana principal mostrada
+[2026-01-03 16:03:18] [INFO] Eliminando físicamente categoría ID 37 (sin productos asociados)
+[2026-01-03 16:03:18] [INFO] Categoría ID 37 eliminada exitosamente
+[2026-01-03 16:06:10] [INFO] Aplicación finalizada
+[2026-01-03 16:06:13] [INFO] ==================================================
+[2026-01-03 16:06:13] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 16:06:13] [INFO] ==================================================
+[2026-01-03 16:06:13] [INFO] Aplicación inicializada
+[2026-01-03 16:06:13] [DEBUG] Mostrando ventana de login...
+[2026-01-03 16:06:13] [DEBUG] Ventana anterior limpiada
+[2026-01-03 16:06:13] [DEBUG] Ventana de login creada
+[2026-01-03 16:06:13] [INFO] Aplicación creada exitosamente
+[2026-01-03 16:06:13] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 16:06:15] [INFO] Login exitoso para usuario: admin
+[2026-01-03 16:06:15] [DEBUG] Cargando ventana principal...
+[2026-01-03 16:06:15] [INFO] Ventana principal mostrada
+[2026-01-03 16:06:26] [INFO] Eliminando físicamente salón ID 3 (sin eventos asociados)
+[2026-01-03 16:06:26] [INFO] Salón ID 3 eliminado exitosamente
+[2026-01-03 16:06:30] [INFO] Eliminando físicamente salón ID 2 (sin eventos asociados)
+[2026-01-03 16:06:30] [INFO] Salón ID 2 eliminado exitosamente
+[2026-01-03 16:06:35] [INFO] Eliminando físicamente salón ID 1 (sin eventos asociados)
+[2026-01-03 16:06:35] [INFO] Salón ID 1 eliminado exitosamente
+[2026-01-03 16:06:39] [INFO] Eliminando físicamente salón ID 5 (sin eventos asociados)
+[2026-01-03 16:06:39] [INFO] Salón ID 5 eliminado exitosamente
+[2026-01-03 16:06:43] [INFO] Eliminando físicamente salón ID 7 (sin eventos asociados)
+[2026-01-03 16:06:43] [INFO] Salón ID 7 eliminado exitosamente
+[2026-01-03 16:08:29] [INFO] Aplicación finalizada
+[2026-01-03 16:08:32] [INFO] ==================================================
+[2026-01-03 16:08:32] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-03 16:08:32] [INFO] ==================================================
+[2026-01-03 16:08:32] [INFO] Aplicación inicializada
+[2026-01-03 16:08:32] [DEBUG] Mostrando ventana de login...
+[2026-01-03 16:08:32] [DEBUG] Ventana anterior limpiada
+[2026-01-03 16:08:32] [DEBUG] Ventana de login creada
+[2026-01-03 16:08:32] [INFO] Aplicación creada exitosamente
+[2026-01-03 16:08:32] [INFO] Iniciando loop principal de la aplicación
+[2026-01-03 16:08:33] [INFO] Login exitoso para usuario: admin
+[2026-01-03 16:08:33] [DEBUG] Cargando ventana principal...
+[2026-01-03 16:08:33] [INFO] Ventana principal mostrada
+[2026-01-03 16:10:16] [DEBUG] Inicializando vista de pagos
+[2026-01-03 16:10:16] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-03 16:10:16] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 2

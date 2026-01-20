@@ -1,0 +1,104 @@
+@startuml Diagrama_Flujo_General_Sistema
+skinparam activity {
+  BackgroundColor LightBlue
+  BorderColor DarkBlue
+  FontSize 11
+}
+
+' ============================================
+' DIAGRAMA DE FLUJO GENERAL DEL SISTEMA
+' Secuencia básica de interacción del usuario
+' desde el inicio de sesión hasta las
+' funcionalidades disponibles según rol
+' ============================================
+
+start
+
+:Usuario inicia la aplicación;
+
+:Se muestra pantalla de inicio de sesión;
+
+:Usuario ingresa nombre de usuario
+y contraseña;
+
+:Usuario presiona "Iniciar Sesión";
+
+if (Credenciales válidas?) then (Sí)
+  :Sistema autentica al usuario;
+  :Sistema identifica el rol del usuario;
+  
+  :Sistema muestra menú principal
+  con opciones según el rol;
+  
+  partition "Según Rol del Usuario" {
+    if (Rol: Administrador) then (Administrador)
+      :Acceso completo a funcionalidades:
+      - Gestión de Usuarios
+      - Gestión de Productos
+      - Gestión de Planes
+      - Gestión de Eventos
+      - Gestión de Pagos
+      - Gestión de Inventario
+      - Reportes y Métricas;
+    elseif (Rol: Gerente General) then (Gerente)
+      :Acceso a funcionalidades:
+      - Consultar Eventos
+      - Consultar Pagos
+      - Consultar Reportes
+      - Ver Métricas y Estadísticas;
+    elseif (Rol: Coordinador) then (Coordinador)
+      :Acceso a funcionalidades:
+      - Consultar Eventos Asignados
+      - Actualizar Estado de Eventos
+      - Gestionar Recursos
+      - Gestionar Inventario
+      - Gestionar Clientes;
+    else (Rol: Cliente)
+      :Acceso a funcionalidades:
+      - Consultar Estado de mi Evento
+      - Realizar Abonos
+      - Consultar Pagos y Saldos;
+    endif
+  }
+  
+  :Usuario selecciona funcionalidad
+  del menú principal;
+  
+  :Sistema muestra la interfaz
+  de la funcionalidad seleccionada;
+  
+  :Usuario realiza acciones permitidas
+  según su rol y permisos;
+  
+  :Usuario puede cambiar de funcionalidad
+  seleccionando otra opción del menú;
+  
+  :Usuario puede cerrar sesión
+  en cualquier momento;
+  
+  if (Usuario cierra sesión?) then (Sí)
+    :Sistema cierra la sesión;
+    :Se muestra nuevamente pantalla
+    de inicio de sesión;
+    stop
+  else (No)
+    :Usuario continúa trabajando
+    con las funcionalidades;
+    :Volver a seleccionar funcionalidad;
+  endif
+  
+else (No)
+  :Sistema muestra mensaje de error:
+  "Credenciales inválidas";
+  :Usuario puede intentar nuevamente
+  o cancelar;
+  
+  if (Usuario intenta nuevamente?) then (Sí)
+    :Volver a ingresar credenciales;
+  else (No)
+    :Finalizar aplicación;
+    stop
+  endif
+endif
+
+@enduml

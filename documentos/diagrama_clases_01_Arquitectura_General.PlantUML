@@ -1,0 +1,156 @@
+@startuml Diagrama_Clases_Arquitectura_General
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+' ============================================
+' DIAGRAMA DE CLASES: ARQUITECTURA GENERAL
+' Clases principales del dominio
+' ============================================
+
+package "Gestión de Usuarios" {
+  class Usuario {
+    - id : INT
+    - nombre_usuario : String
+    - contrasena : String
+    - nombre_completo : String
+    - email : String
+    - telefono : String
+    - rol : Enum
+    - activo : Boolean
+    - fecha_creacion : DateTime
+    - fecha_ultimo_acceso : DateTime
+    + autenticar()
+    + obtenerRol()
+    + estaActivo()
+  }
+  
+  class Cliente {
+    - id : INT
+    - usuario_id : INT
+    - documento_identidad : String
+    - direccion : String
+    - fecha_registro : DateTime
+    + obtenerUsuario()
+    + obtenerEventos()
+    + consultarPagos()
+  }
+}
+
+package "Gestión de Eventos" {
+  class Evento {
+    - id_evento : INT
+    - id_cliente : INT
+    - id_salon : INT
+    - plan_id : INT
+    - nombre_evento : String
+    - tipo_evento : String
+    - fecha_evento : Date
+    - hora_inicio : Time
+    - hora_fin : Time
+    - numero_invitados : INT
+    - estado : Enum
+    - total : Decimal
+    - saldo : Decimal
+    - total_pagado : Decimal
+    - observaciones : String
+    - coordinador_id : INT
+    + calcularTotal()
+    + actualizarEstado()
+    + calcularSaldo()
+  }
+  
+  class Salon {
+    - id_salon : INT
+    - nombre : String
+    - capacidad : INT
+    - ubicacion : String
+    - descripcion : String
+    - precio_base : Decimal
+    - activo : Boolean
+    + obtenerEventos()
+    + validarDisponibilidad()
+    + obtenerCapacidad()
+  }
+}
+
+package "Catálogo" {
+  class Plan {
+    - id : INT
+    - nombre : String
+    - descripcion : String
+    - precio_base : Decimal
+    - capacidad_minima : INT
+    - capacidad_maxima : INT
+    - duracion_horas : INT
+    - incluye : String
+    - activo : Boolean
+    + obtenerProductos()
+    + validarCapacidad()
+    + calcularPrecio()
+  }
+  
+  class Producto {
+    - id : INT
+    - nombre : String
+    - descripcion : String
+    - precio : Decimal
+    - precio_minimo : Decimal
+    - precio_maximo : Decimal
+    - stock_disponible : INT
+    - tipo_servicio : Enum
+    - activo : Boolean
+    + obtenerCategoria()
+    + validarStock()
+    + calcularPrecio()
+  }
+}
+
+package "Gestión Financiera" {
+  class Pago {
+    - id : INT
+    - id_evento : INT
+    - monto : Decimal
+    - tipo_pago : Enum
+    - metodo_pago : Enum
+    - numero_referencia : String
+    - fecha_pago : Date
+    - observaciones : String
+    + obtenerEvento()
+    + validarMonto()
+    + registrar()
+  }
+}
+
+package "Inventario" {
+  class Inventario {
+    - id : INT
+    - producto_id : INT
+    - id_evento : INT
+    - cantidad_solicitada : INT
+    - cantidad_disponible : INT
+    - estado : Enum
+    - fecha_reserva : Date
+    + obtenerProducto()
+    + obtenerEvento()
+    + actualizarEstado()
+    + validarDisponibilidad()
+  }
+}
+
+' Relaciones principales
+Usuario ||--o| Cliente
+Cliente ||--o{ Evento
+Evento }o--|| Salon
+Evento }o--o| Plan
+Evento ||--o{ Pago
+Evento ||--o{ Inventario
+Plan }o--o{ Producto
+Inventario }o--|| Producto
+Usuario ||--o{ Evento : coordina
+
+note right of Evento
+  Entidad central del sistema
+end note
+
+@enduml

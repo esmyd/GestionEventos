@@ -1,0 +1,39 @@
+@startuml Diagrama_Consultar_Reportes
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+
+left to right direction
+
+' ============================================
+' CASO DE USO PRINCIPAL: CONSULTAR REPORTES
+' ============================================
+actor Administrador #LightBlue
+actor "Gerente General" as Gerente #LightGreen
+
+rectangle "Sistema de Gestion de Eventos - Lirios Eventos" {
+  (Consultar Reportes) as UC_ConsultarReportes
+  (Ver Metricas) as UC_VerMetricas
+  (Ver Estadisticas) as UC_VerEstadisticas
+}
+
+Administrador --> UC_ConsultarReportes
+Administrador --> UC_VerMetricas
+Gerente --> UC_ConsultarReportes
+Gerente --> UC_VerMetricas
+Gerente --> UC_VerEstadisticas
+
+UC_ConsultarReportes ..> UC_VerMetricas : <<include>>
+UC_ConsultarReportes ..> UC_VerEstadisticas : <<include>>
+
+note right of UC_ConsultarReportes
+  Funcionalidades:
+  - Resumen de eventos por estado
+  - Resumen financiero
+    (ingresos, pendientes, cobrado)
+  - Estadísticas de eventos
+  - Métricas para toma de decisiones
+  - Análisis de ingresos y pendientes
+end note
+
+@enduml
+

@@ -1,0 +1,127 @@
+@startuml Diagrama_Arquitectura_Sistema
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ============================================
+' DIAGRAMA DE ARQUITECTURA DEL SISTEMA
+' Diseño de la Arquitectura en Capas
+' ============================================
+
+package "CAPA DE PRESENTACIÓN" #LightBlue {
+  component [Aplicación Principal\nmain.py] as App
+  component [Login\nlogin.py] as Login
+  component [Ventana Principal\nventana_principal.py] as Principal
+  
+  package "Módulos de Vista" {
+    component [Vista Eventos] as VEventos
+    component [Vista Pagos] as VPagos
+    component [Vista Productos] as VProductos
+    component [Vista Planes] as VPlanes
+    component [Vista Usuarios] as VUsuarios
+    component [Vista Clientes] as VClientes
+    component [Vista Reportes] as VReportes
+    component [Vista Inventario] as VInventario
+  }
+  
+  App --> Login
+  App --> Principal
+  Principal --> VEventos
+  Principal --> VPagos
+  Principal --> VProductos
+  Principal --> VPlanes
+  Principal --> VUsuarios
+  Principal --> VClientes
+  Principal --> VReportes
+  Principal --> VInventario
+}
+
+package "CAPA DE LÓGICA DE NEGOCIO" #LightGreen {
+  component [Autenticación\nautenticacion.py] as Auth
+  
+  package "Modelos de Negocio" {
+    component [EventoModelo] as MEvento
+    component [PagoModelo] as MPago
+    component [ProductoModelo] as MProducto
+    component [PlanModelo] as MPlan
+    component [UsuarioModelo] as MUsuario
+    component [ClienteModelo] as MCliente
+    component [InventarioModelo] as MInventario
+    component [SalonModelo] as MSalon
+    component [PromocionModelo] as MPromocion
+  }
+  
+  component [BaseDatos\nbase_datos.py] as BD
+  
+  Auth --> BD
+  MEvento --> BD
+  MPago --> BD
+  MProducto --> BD
+  MPlan --> BD
+  MUsuario --> BD
+  MCliente --> BD
+  MInventario --> BD
+  MSalon --> BD
+  MPromocion --> BD
+}
+
+package "CAPA DE ACCESO A DATOS" #LightYellow {
+  database "MySQL Database\nlirios_eventos" as MySQL {
+    component [Tabla: usuarios] as TUsuarios
+    component [Tabla: clientes] as TClientes
+    component [Tabla: eventos] as TEventos
+    component [Tabla: pagos] as TPagos
+    component [Tabla: productos] as TProductos
+    component [Tabla: planes] as TPlanes
+    component [Tabla: salones] as TSalones
+    component [Tabla: inventario] as TInventario
+  }
+}
+
+package "SERVICIOS Y UTILIDADES" #LightCyan {
+  package "Utilidades" {
+    component [Logger] as Logger
+    component [Ventanas] as UtilVentanas
+    component [Widgets Fecha] as UtilFecha
+  }
+  
+  package "Integraciones" {
+    component [WhatsApp] as IntegWA
+    component [Email] as IntegEmail
+    component [Google Sheets] as IntegGS
+    component [Notificaciones] as IntegNotif
+  }
+}
+
+' Relaciones entre capas
+Login --> Auth
+VEventos --> MEvento
+VPagos --> MPago
+VProductos --> MProducto
+VPlanes --> MPlan
+VUsuarios --> MUsuario
+VClientes --> MCliente
+VReportes --> MEvento
+VReportes --> MPago
+VInventario --> MInventario
+
+BD --> MySQL
+
+note right of App
+  Punto de entrada
+  del sistema
+end note
+
+note right of BD
+  Clase base para
+  operaciones de BD
+end note
+
+note bottom of MySQL
+  Base de datos MySQL
+  con estructura
+  relacional normalizada
+end note
+
+@enduml
+

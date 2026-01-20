@@ -1,0 +1,68 @@
+@startuml Diagrama_Flujo_Gestionar_Usuarios
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkCyan
+  FontSize 10
+}
+
+' ============================================
+' DIAGRAMA DE FLUJO: GESTIONAR USUARIOS
+' ============================================
+
+start
+
+:Administrador selecciona
+"Gestión de Usuarios";
+
+:Sistema muestra lista de usuarios;
+
+:Administrador selecciona acción:
+Crear, Editar o Desactivar;
+
+if (Crear Usuario?) then (Crear)
+  :Administrador presiona "Nuevo Usuario";
+  
+  partition "Ingreso de Datos" {
+    :Administrador ingresa:
+    Nombre de usuario, Contraseña,
+    Nombre completo, Email, Teléfono,
+    Rol (Administrador, Coordinador, etc.);
+  }
+  
+  :Administrador presiona "Guardar";
+  
+  if (Datos válidos?) then (Sí)
+    :Sistema registra el usuario;
+    :Sistema muestra confirmación;
+    stop
+  else (No)
+    :Sistema muestra errores;
+    :Administrador corrige datos;
+  endif
+  
+elseif (Editar Usuario?) then (Editar)
+  :Administrador selecciona usuario;
+  :Administrador presiona "Editar";
+  :Sistema muestra datos del usuario;
+  :Administrador modifica datos;
+  :Administrador presiona "Guardar";
+  :Sistema actualiza el usuario;
+  :Sistema muestra confirmación;
+  stop
+  
+else (Desactivar)
+  :Administrador selecciona usuario;
+  :Administrador presiona "Desactivar/Eliminar";
+  :Sistema solicita confirmación;
+  
+  if (Confirmado?) then (Sí)
+    :Sistema desactiva el usuario;
+    :Sistema muestra confirmación;
+    stop
+  else (No)
+    :Operación cancelada;
+    stop
+  endif
+endif
+
+@enduml

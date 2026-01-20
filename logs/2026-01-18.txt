@@ -1,0 +1,1914 @@
+[2026-01-18 19:19:43] [INFO] ==================================================
+[2026-01-18 19:19:43] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:19:43] [INFO] ==================================================
+[2026-01-18 19:19:43] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:19:43] [INFO] Endpoints disponibles:
+[2026-01-18 19:19:43] [INFO]   - POST /api/auth/login
+[2026-01-18 19:19:43] [INFO]   - GET  /api/health
+[2026-01-18 19:19:43] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:19:43] [INFO]   - GET  /api/clientes
+[2026-01-18 19:19:43] [INFO]   - GET  /api/productos
+[2026-01-18 19:19:43] [INFO]   - GET  /api/eventos
+[2026-01-18 19:19:43] [INFO]   - GET  /api/pagos
+[2026-01-18 19:19:43] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:19:43] [INFO]   ... y muchos más
+[2026-01-18 19:19:44] [INFO] ==================================================
+[2026-01-18 19:19:44] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:19:44] [INFO] ==================================================
+[2026-01-18 19:19:44] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:19:44] [INFO] Endpoints disponibles:
+[2026-01-18 19:19:44] [INFO]   - POST /api/auth/login
+[2026-01-18 19:19:44] [INFO]   - GET  /api/health
+[2026-01-18 19:19:44] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:19:44] [INFO]   - GET  /api/clientes
+[2026-01-18 19:19:44] [INFO]   - GET  /api/productos
+[2026-01-18 19:19:44] [INFO]   - GET  /api/eventos
+[2026-01-18 19:19:44] [INFO]   - GET  /api/pagos
+[2026-01-18 19:19:44] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:19:44] [INFO]   ... y muchos más
+[2026-01-18 19:21:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:40] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:21:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:40] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:21:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:47] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:21:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:47] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:21:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:49] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:21:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:21:49] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:24:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:27] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:27] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:24:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:25:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:25:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:25:00] [INFO] Iniciando registro de pago - Evento ID: 5, Monto: $200.00, Tipo: abono
+[2026-01-18 19:25:00] [DEBUG] Validación de pago - Total actual: $0.00, Monto a agregar: $200.00, Precio total evento: $1500.00
+[2026-01-18 19:25:00] [INFO] Pago registrado exitosamente - ID: 1, Evento: 5, Monto: $200.00, Tipo: abono
+[2026-01-18 19:25:02] [DEBUG] Notificación enviada para pago ID: 1, Tipo: abono
+[2026-01-18 19:25:02] [DEBUG] Pago obtenido por ID: 1
+[2026-01-18 19:25:04] [INFO] Estado del evento 5 cambiado a 'en_proceso' después de registrar pago
+[2026-01-18 19:25:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:25:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:25:51] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:25:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:25:51] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:26:08] [INFO] ==================================================
+[2026-01-18 19:26:08] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:26:08] [INFO] ==================================================
+[2026-01-18 19:26:08] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:26:08] [INFO] Endpoints disponibles:
+[2026-01-18 19:26:08] [INFO]   - POST /api/auth/login
+[2026-01-18 19:26:08] [INFO]   - GET  /api/health
+[2026-01-18 19:26:08] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:26:08] [INFO]   - GET  /api/clientes
+[2026-01-18 19:26:08] [INFO]   - GET  /api/productos
+[2026-01-18 19:26:08] [INFO]   - GET  /api/eventos
+[2026-01-18 19:26:08] [INFO]   - GET  /api/pagos
+[2026-01-18 19:26:08] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:26:08] [INFO]   ... y muchos más
+[2026-01-18 19:33:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:33:01] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:33:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:33:01] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:51] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:34:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:51] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:34:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:34:55] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:34:55] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:35:32] [INFO] ==================================================
+[2026-01-18 19:35:32] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:35:32] [INFO] ==================================================
+[2026-01-18 19:35:32] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:35:32] [INFO] Endpoints disponibles:
+[2026-01-18 19:35:32] [INFO]   - POST /api/auth/login
+[2026-01-18 19:35:32] [INFO]   - GET  /api/health
+[2026-01-18 19:35:32] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:35:32] [INFO]   - GET  /api/clientes
+[2026-01-18 19:35:32] [INFO]   - GET  /api/productos
+[2026-01-18 19:35:32] [INFO]   - GET  /api/eventos
+[2026-01-18 19:35:32] [INFO]   - GET  /api/pagos
+[2026-01-18 19:35:32] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:35:32] [INFO]   ... y muchos más
+[2026-01-18 19:35:33] [INFO] ==================================================
+[2026-01-18 19:35:33] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:35:33] [INFO] ==================================================
+[2026-01-18 19:35:33] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:35:33] [INFO] Endpoints disponibles:
+[2026-01-18 19:35:33] [INFO]   - POST /api/auth/login
+[2026-01-18 19:35:33] [INFO]   - GET  /api/health
+[2026-01-18 19:35:33] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:35:33] [INFO]   - GET  /api/clientes
+[2026-01-18 19:35:33] [INFO]   - GET  /api/productos
+[2026-01-18 19:35:33] [INFO]   - GET  /api/eventos
+[2026-01-18 19:35:33] [INFO]   - GET  /api/pagos
+[2026-01-18 19:35:33] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:35:33] [INFO]   ... y muchos más
+[2026-01-18 19:35:38] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:38] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:39] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:35:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:39] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:35:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:45] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:35:45] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:35:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:35:52] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:35:52] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:36:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:36:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:36:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:36:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:36:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:36:49] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:36:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:36:49] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:37:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:07] [INFO] Desactivando salón ID 12
+[2026-01-18 19:37:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:31] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:37:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:31] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:37:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:37:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:38:18] [INFO] ==================================================
+[2026-01-18 19:38:18] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:38:18] [INFO] ==================================================
+[2026-01-18 19:38:18] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:38:18] [INFO] Endpoints disponibles:
+[2026-01-18 19:38:18] [INFO]   - POST /api/auth/login
+[2026-01-18 19:38:18] [INFO]   - GET  /api/health
+[2026-01-18 19:38:18] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:38:18] [INFO]   - GET  /api/clientes
+[2026-01-18 19:38:18] [INFO]   - GET  /api/productos
+[2026-01-18 19:38:18] [INFO]   - GET  /api/eventos
+[2026-01-18 19:38:18] [INFO]   - GET  /api/pagos
+[2026-01-18 19:38:18] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:38:18] [INFO]   ... y muchos más
+[2026-01-18 19:38:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:38:39] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:38:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:38:39] [ERROR] Error al obtener eventos: 'EventoModelo' object has no attribute 'obtener_porcentaje_avance_servicios'
+[2026-01-18 19:43:37] [INFO] ==================================================
+[2026-01-18 19:43:37] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:43:37] [INFO] ==================================================
+[2026-01-18 19:43:37] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:43:37] [INFO] Endpoints disponibles:
+[2026-01-18 19:43:37] [INFO]   - POST /api/auth/login
+[2026-01-18 19:43:37] [INFO]   - GET  /api/health
+[2026-01-18 19:43:37] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:43:37] [INFO]   - GET  /api/clientes
+[2026-01-18 19:43:37] [INFO]   - GET  /api/productos
+[2026-01-18 19:43:37] [INFO]   - GET  /api/eventos
+[2026-01-18 19:43:37] [INFO]   - GET  /api/pagos
+[2026-01-18 19:43:37] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:43:37] [INFO]   ... y muchos más
+[2026-01-18 19:44:37] [INFO] ==================================================
+[2026-01-18 19:44:37] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:44:37] [INFO] ==================================================
+[2026-01-18 19:44:38] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:44:38] [INFO] Endpoints disponibles:
+[2026-01-18 19:44:38] [INFO]   - POST /api/auth/login
+[2026-01-18 19:44:38] [INFO]   - GET  /api/health
+[2026-01-18 19:44:38] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:44:38] [INFO]   - GET  /api/clientes
+[2026-01-18 19:44:38] [INFO]   - GET  /api/productos
+[2026-01-18 19:44:38] [INFO]   - GET  /api/eventos
+[2026-01-18 19:44:38] [INFO]   - GET  /api/pagos
+[2026-01-18 19:44:38] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:44:38] [INFO]   ... y muchos más
+[2026-01-18 19:44:40] [INFO] ==================================================
+[2026-01-18 19:44:40] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:44:40] [INFO] ==================================================
+[2026-01-18 19:44:40] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:44:40] [INFO] Endpoints disponibles:
+[2026-01-18 19:44:40] [INFO]   - POST /api/auth/login
+[2026-01-18 19:44:40] [INFO]   - GET  /api/health
+[2026-01-18 19:44:40] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:44:40] [INFO]   - GET  /api/clientes
+[2026-01-18 19:44:40] [INFO]   - GET  /api/productos
+[2026-01-18 19:44:40] [INFO]   - GET  /api/eventos
+[2026-01-18 19:44:40] [INFO]   - GET  /api/pagos
+[2026-01-18 19:44:40] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:44:40] [INFO]   ... y muchos más
+[2026-01-18 19:45:06] [INFO] ==================================================
+[2026-01-18 19:45:06] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:45:06] [INFO] ==================================================
+[2026-01-18 19:45:06] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:45:06] [INFO] Endpoints disponibles:
+[2026-01-18 19:45:06] [INFO]   - POST /api/auth/login
+[2026-01-18 19:45:06] [INFO]   - GET  /api/health
+[2026-01-18 19:45:06] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:45:06] [INFO]   - GET  /api/clientes
+[2026-01-18 19:45:06] [INFO]   - GET  /api/productos
+[2026-01-18 19:45:06] [INFO]   - GET  /api/eventos
+[2026-01-18 19:45:06] [INFO]   - GET  /api/pagos
+[2026-01-18 19:45:06] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:45:06] [INFO]   ... y muchos más
+[2026-01-18 19:45:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:45:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:45:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:45:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:14] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:14] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:53] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:53] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:56] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:56] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:56] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:46:56] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:47:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:49:14] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 19:49:14] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:15] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:49:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:50:12] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:50:13] [INFO] ==================================================
+[2026-01-18 19:50:13] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:50:13] [INFO] ==================================================
+[2026-01-18 19:50:13] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:50:13] [INFO] Endpoints disponibles:
+[2026-01-18 19:50:13] [INFO]   - POST /api/auth/login
+[2026-01-18 19:50:13] [INFO]   - GET  /api/health
+[2026-01-18 19:50:13] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:50:13] [INFO]   - GET  /api/clientes
+[2026-01-18 19:50:13] [INFO]   - GET  /api/productos
+[2026-01-18 19:50:13] [INFO]   - GET  /api/eventos
+[2026-01-18 19:50:13] [INFO]   - GET  /api/pagos
+[2026-01-18 19:50:13] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:50:13] [INFO]   ... y muchos más
+[2026-01-18 19:50:44] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:50:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:50:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:50:54] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:50:59] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:05] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:12] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:14] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:50] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:50] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:50] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:50] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:57] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:57] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:58] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:51:58] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:52:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:52:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:52:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:52:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:52:58] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:53:47] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:07] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:07] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:07] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:07] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:08] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:36] [INFO] ==================================================
+[2026-01-18 19:54:36] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:54:36] [INFO] ==================================================
+[2026-01-18 19:54:36] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:54:36] [INFO] Endpoints disponibles:
+[2026-01-18 19:54:36] [INFO]   - POST /api/auth/login
+[2026-01-18 19:54:36] [INFO]   - GET  /api/health
+[2026-01-18 19:54:36] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:54:36] [INFO]   - GET  /api/clientes
+[2026-01-18 19:54:36] [INFO]   - GET  /api/productos
+[2026-01-18 19:54:36] [INFO]   - GET  /api/eventos
+[2026-01-18 19:54:36] [INFO]   - GET  /api/pagos
+[2026-01-18 19:54:36] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:54:36] [INFO]   ... y muchos más
+[2026-01-18 19:54:36] [INFO] ==================================================
+[2026-01-18 19:54:36] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:54:36] [INFO] ==================================================
+[2026-01-18 19:54:36] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:54:36] [INFO] Endpoints disponibles:
+[2026-01-18 19:54:36] [INFO]   - POST /api/auth/login
+[2026-01-18 19:54:36] [INFO]   - GET  /api/health
+[2026-01-18 19:54:36] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:54:36] [INFO]   - GET  /api/clientes
+[2026-01-18 19:54:36] [INFO]   - GET  /api/productos
+[2026-01-18 19:54:36] [INFO]   - GET  /api/eventos
+[2026-01-18 19:54:36] [INFO]   - GET  /api/pagos
+[2026-01-18 19:54:36] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:54:36] [INFO]   ... y muchos más
+[2026-01-18 19:54:42] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:42] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:42] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:42] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:54] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:54] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:54] [ERROR] Error al actualizar servicio: 'EventoModelo' object has no attribute 'descartar_servicio_evento'
+[2026-01-18 19:54:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:55] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:55] [ERROR] Error al actualizar servicio: 'EventoModelo' object has no attribute 'descartar_servicio_evento'
+[2026-01-18 19:54:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:56] [ERROR] Error al actualizar servicio: 'EventoModelo' object has no attribute 'descartar_servicio_evento'
+[2026-01-18 19:54:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:54:56] [ERROR] Error al actualizar servicio: 'EventoModelo' object has no attribute 'descartar_servicio_evento'
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:05] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:05] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:55:05] [ERROR] Error al actualizar servicio: 'EventoModelo' object has no attribute 'descartar_servicio_evento'
+[2026-01-18 19:56:35] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:56:35] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:56:38] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:56:38] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:56:39] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:56:39] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:56:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:57:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:57:04] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:57:24] [INFO] ==================================================
+[2026-01-18 19:57:24] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:57:24] [INFO] ==================================================
+[2026-01-18 19:57:24] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:57:24] [INFO] Endpoints disponibles:
+[2026-01-18 19:57:24] [INFO]   - POST /api/auth/login
+[2026-01-18 19:57:24] [INFO]   - GET  /api/health
+[2026-01-18 19:57:24] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:57:24] [INFO]   - GET  /api/clientes
+[2026-01-18 19:57:24] [INFO]   - GET  /api/productos
+[2026-01-18 19:57:24] [INFO]   - GET  /api/eventos
+[2026-01-18 19:57:24] [INFO]   - GET  /api/pagos
+[2026-01-18 19:57:24] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:57:24] [INFO]   ... y muchos más
+[2026-01-18 19:57:47] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:57:47] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:57:54] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:57:54] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:58:18] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:58:20] [INFO] ==================================================
+[2026-01-18 19:58:20] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 19:58:20] [INFO] ==================================================
+[2026-01-18 19:58:20] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 19:58:20] [INFO] Endpoints disponibles:
+[2026-01-18 19:58:20] [INFO]   - POST /api/auth/login
+[2026-01-18 19:58:20] [INFO]   - GET  /api/health
+[2026-01-18 19:58:20] [INFO]   - GET  /api/usuarios
+[2026-01-18 19:58:20] [INFO]   - GET  /api/clientes
+[2026-01-18 19:58:20] [INFO]   - GET  /api/productos
+[2026-01-18 19:58:20] [INFO]   - GET  /api/eventos
+[2026-01-18 19:58:20] [INFO]   - GET  /api/pagos
+[2026-01-18 19:58:20] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 19:58:20] [INFO]   ... y muchos más
+[2026-01-18 19:58:59] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:58:59] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:59:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:59:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:59:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:59:02] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 19:59:12] [DEBUG] Token generado para usuario: admin
+[2026-01-18 19:59:12] [INFO] Login exitoso para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 19:59:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:30] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:30] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:30] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:30] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:00:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:01:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:01:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:02:17] [INFO] ==================================================
+[2026-01-18 20:02:17] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:02:17] [INFO] ==================================================
+[2026-01-18 20:02:17] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:02:17] [INFO] Endpoints disponibles:
+[2026-01-18 20:02:17] [INFO]   - POST /api/auth/login
+[2026-01-18 20:02:17] [INFO]   - GET  /api/health
+[2026-01-18 20:02:17] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:02:17] [INFO]   - GET  /api/clientes
+[2026-01-18 20:02:17] [INFO]   - GET  /api/productos
+[2026-01-18 20:02:17] [INFO]   - GET  /api/eventos
+[2026-01-18 20:02:17] [INFO]   - GET  /api/pagos
+[2026-01-18 20:02:17] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:02:17] [INFO]   ... y muchos más
+[2026-01-18 20:02:21] [INFO] ==================================================
+[2026-01-18 20:02:21] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:02:21] [INFO] ==================================================
+[2026-01-18 20:02:21] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:02:21] [INFO] Endpoints disponibles:
+[2026-01-18 20:02:21] [INFO]   - POST /api/auth/login
+[2026-01-18 20:02:21] [INFO]   - GET  /api/health
+[2026-01-18 20:02:21] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:02:21] [INFO]   - GET  /api/clientes
+[2026-01-18 20:02:21] [INFO]   - GET  /api/productos
+[2026-01-18 20:02:21] [INFO]   - GET  /api/eventos
+[2026-01-18 20:02:21] [INFO]   - GET  /api/pagos
+[2026-01-18 20:02:21] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:02:21] [INFO]   ... y muchos más
+[2026-01-18 20:02:27] [INFO] ==================================================
+[2026-01-18 20:02:27] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:02:27] [INFO] ==================================================
+[2026-01-18 20:02:27] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:02:27] [INFO] Endpoints disponibles:
+[2026-01-18 20:02:27] [INFO]   - POST /api/auth/login
+[2026-01-18 20:02:27] [INFO]   - GET  /api/health
+[2026-01-18 20:02:27] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:02:27] [INFO]   - GET  /api/clientes
+[2026-01-18 20:02:27] [INFO]   - GET  /api/productos
+[2026-01-18 20:02:27] [INFO]   - GET  /api/eventos
+[2026-01-18 20:02:27] [INFO]   - GET  /api/pagos
+[2026-01-18 20:02:27] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:02:27] [INFO]   ... y muchos más
+[2026-01-18 20:02:35] [INFO] ==================================================
+[2026-01-18 20:02:35] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:02:35] [INFO] ==================================================
+[2026-01-18 20:02:35] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:02:35] [INFO] Endpoints disponibles:
+[2026-01-18 20:02:35] [INFO]   - POST /api/auth/login
+[2026-01-18 20:02:35] [INFO]   - GET  /api/health
+[2026-01-18 20:02:35] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:02:35] [INFO]   - GET  /api/clientes
+[2026-01-18 20:02:35] [INFO]   - GET  /api/productos
+[2026-01-18 20:02:35] [INFO]   - GET  /api/eventos
+[2026-01-18 20:02:35] [INFO]   - GET  /api/pagos
+[2026-01-18 20:02:35] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:02:35] [INFO]   ... y muchos más
+[2026-01-18 20:02:46] [INFO] ==================================================
+[2026-01-18 20:02:46] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:02:46] [INFO] ==================================================
+[2026-01-18 20:02:46] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:02:46] [INFO] Endpoints disponibles:
+[2026-01-18 20:02:46] [INFO]   - POST /api/auth/login
+[2026-01-18 20:02:46] [INFO]   - GET  /api/health
+[2026-01-18 20:02:46] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:02:46] [INFO]   - GET  /api/clientes
+[2026-01-18 20:02:46] [INFO]   - GET  /api/productos
+[2026-01-18 20:02:46] [INFO]   - GET  /api/eventos
+[2026-01-18 20:02:46] [INFO]   - GET  /api/pagos
+[2026-01-18 20:02:46] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:02:46] [INFO]   ... y muchos más
+[2026-01-18 20:02:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:02:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:02:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:02:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:03:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [INFO] ==================================================
+[2026-01-18 20:04:19] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:04:19] [INFO] ==================================================
+[2026-01-18 20:04:19] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:04:19] [INFO] Endpoints disponibles:
+[2026-01-18 20:04:19] [INFO]   - POST /api/auth/login
+[2026-01-18 20:04:19] [INFO]   - GET  /api/health
+[2026-01-18 20:04:19] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:04:19] [INFO]   - GET  /api/clientes
+[2026-01-18 20:04:19] [INFO]   - GET  /api/productos
+[2026-01-18 20:04:19] [INFO]   - GET  /api/eventos
+[2026-01-18 20:04:19] [INFO]   - GET  /api/pagos
+[2026-01-18 20:04:19] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:04:19] [INFO]   ... y muchos más
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:04:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:05:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:42] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:06:49] [INFO] ==================================================
+[2026-01-18 20:06:49] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:06:49] [INFO] ==================================================
+[2026-01-18 20:06:49] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:06:49] [INFO] Endpoints disponibles:
+[2026-01-18 20:06:49] [INFO]   - POST /api/auth/login
+[2026-01-18 20:06:49] [INFO]   - GET  /api/health
+[2026-01-18 20:06:49] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:06:49] [INFO]   - GET  /api/clientes
+[2026-01-18 20:06:49] [INFO]   - GET  /api/productos
+[2026-01-18 20:06:49] [INFO]   - GET  /api/eventos
+[2026-01-18 20:06:49] [INFO]   - GET  /api/pagos
+[2026-01-18 20:06:49] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:06:49] [INFO]   ... y muchos más
+[2026-01-18 20:07:30] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:30] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:53] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:07:55] [INFO] ==================================================
+[2026-01-18 20:07:55] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:07:55] [INFO] ==================================================
+[2026-01-18 20:07:55] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:07:55] [INFO] Endpoints disponibles:
+[2026-01-18 20:07:55] [INFO]   - POST /api/auth/login
+[2026-01-18 20:07:55] [INFO]   - GET  /api/health
+[2026-01-18 20:07:55] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:07:55] [INFO]   - GET  /api/clientes
+[2026-01-18 20:07:55] [INFO]   - GET  /api/productos
+[2026-01-18 20:07:55] [INFO]   - GET  /api/eventos
+[2026-01-18 20:07:55] [INFO]   - GET  /api/pagos
+[2026-01-18 20:07:55] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:07:55] [INFO]   ... y muchos más
+[2026-01-18 20:08:10] [INFO] ==================================================
+[2026-01-18 20:08:10] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:08:10] [INFO] ==================================================
+[2026-01-18 20:08:10] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:08:10] [INFO] Endpoints disponibles:
+[2026-01-18 20:08:10] [INFO]   - POST /api/auth/login
+[2026-01-18 20:08:10] [INFO]   - GET  /api/health
+[2026-01-18 20:08:10] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:08:10] [INFO]   - GET  /api/clientes
+[2026-01-18 20:08:10] [INFO]   - GET  /api/productos
+[2026-01-18 20:08:10] [INFO]   - GET  /api/eventos
+[2026-01-18 20:08:10] [INFO]   - GET  /api/pagos
+[2026-01-18 20:08:10] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:08:10] [INFO]   ... y muchos más
+[2026-01-18 20:08:21] [INFO] ==================================================
+[2026-01-18 20:08:21] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:08:21] [INFO] ==================================================
+[2026-01-18 20:08:21] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:08:21] [INFO] Endpoints disponibles:
+[2026-01-18 20:08:21] [INFO]   - POST /api/auth/login
+[2026-01-18 20:08:21] [INFO]   - GET  /api/health
+[2026-01-18 20:08:21] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:08:21] [INFO]   - GET  /api/clientes
+[2026-01-18 20:08:21] [INFO]   - GET  /api/productos
+[2026-01-18 20:08:21] [INFO]   - GET  /api/eventos
+[2026-01-18 20:08:21] [INFO]   - GET  /api/pagos
+[2026-01-18 20:08:21] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:08:21] [INFO]   ... y muchos más
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:24] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:08:57] [INFO] ==================================================
+[2026-01-18 20:08:57] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:08:57] [INFO] ==================================================
+[2026-01-18 20:08:57] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:08:57] [INFO] Endpoints disponibles:
+[2026-01-18 20:08:57] [INFO]   - POST /api/auth/login
+[2026-01-18 20:08:57] [INFO]   - GET  /api/health
+[2026-01-18 20:08:57] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:08:57] [INFO]   - GET  /api/clientes
+[2026-01-18 20:08:57] [INFO]   - GET  /api/productos
+[2026-01-18 20:08:57] [INFO]   - GET  /api/eventos
+[2026-01-18 20:08:57] [INFO]   - GET  /api/pagos
+[2026-01-18 20:08:57] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:08:57] [INFO]   ... y muchos más
+[2026-01-18 20:08:57] [INFO] ==================================================
+[2026-01-18 20:08:57] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 20:08:57] [INFO] ==================================================
+[2026-01-18 20:08:57] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 20:08:57] [INFO] Endpoints disponibles:
+[2026-01-18 20:08:57] [INFO]   - POST /api/auth/login
+[2026-01-18 20:08:57] [INFO]   - GET  /api/health
+[2026-01-18 20:08:57] [INFO]   - GET  /api/usuarios
+[2026-01-18 20:08:57] [INFO]   - GET  /api/clientes
+[2026-01-18 20:08:57] [INFO]   - GET  /api/productos
+[2026-01-18 20:08:57] [INFO]   - GET  /api/eventos
+[2026-01-18 20:08:57] [INFO]   - GET  /api/pagos
+[2026-01-18 20:08:57] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 20:08:57] [INFO]   ... y muchos más
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:09:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:10:45] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 20:10:45] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:57] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:57] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:57] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:10:57] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:11:08] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:11:08] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:11:08] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:11:08] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:45:04] [DEBUG] Token generado para usuario: admin
+[2026-01-18 20:45:04] [INFO] Login exitoso para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:13] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:45:13] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:47:56] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 20:47:56] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:58] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:47:58] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:01] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:05] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:05] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:23] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:23] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 20:48:40] [DEBUG] Token generado para usuario: admin
+[2026-01-18 20:48:40] [INFO] Login exitoso para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:48:40] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:35] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:35] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:46] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:53] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:50:53] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:06] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:06] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:51:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:52:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:52:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:52:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:52:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:52:53] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:52:53] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:53:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:54:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:54:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 20:54:14] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:00:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:01:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:01:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:01:07] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 21:01:07] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 21:01:11] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:11] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:01:13] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:02:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:02:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:02:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:02:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:02:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:11] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:11] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:11] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:11] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:11] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:20] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:20] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:20] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:20] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:20] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:51] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:51] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:51] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:51] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:51] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:03:56] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:04:10] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:04:10] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:04:10] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:04:10] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:04:10] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:05:01] [DEBUG] Token generado para usuario: admin
+[2026-01-18 21:05:01] [INFO] Login exitoso para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:05] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:05] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token generado para usuario: admin
+[2026-01-18 21:05:23] [INFO] Login exitoso para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:05:23] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:06:18] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 21:06:18] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 21:06:28] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:28] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:30] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:35] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:35] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:35] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:39] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:39] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:39] [INFO] Iniciando registro de pago - Evento ID: 5, Monto: $23.00, Tipo: abono
+[2026-01-18 21:06:39] [DEBUG] Validación de pago - Total actual: $200.00, Monto a agregar: $23.00, Precio total evento: $1900.00
+[2026-01-18 21:06:39] [INFO] Pago registrado exitosamente - ID: 2, Evento: 5, Monto: $23.00, Tipo: abono
+[2026-01-18 21:06:41] [DEBUG] Notificación enviada para pago ID: 2, Tipo: abono
+[2026-01-18 21:06:41] [DEBUG] Pago obtenido por ID: 2
+[2026-01-18 21:06:41] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:41] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:06:46] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:09:28] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 21:09:28] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 21:09:36] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:09:36] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:09:48] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:09:49] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 21:09:54] [DEBUG] Token generado para usuario: admin
+[2026-01-18 21:09:54] [INFO] Login exitoso para usuario: admin
+[2026-01-18 21:10:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:10:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:10:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:10:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:10:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:10:29] [INFO] ==================================================
+[2026-01-18 21:10:29] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:10:29] [INFO] ==================================================
+[2026-01-18 21:10:29] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:10:29] [INFO] Endpoints disponibles:
+[2026-01-18 21:10:29] [INFO]   - POST /api/auth/login
+[2026-01-18 21:10:29] [INFO]   - GET  /api/health
+[2026-01-18 21:10:29] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:10:29] [INFO]   - GET  /api/clientes
+[2026-01-18 21:10:29] [INFO]   - GET  /api/productos
+[2026-01-18 21:10:29] [INFO]   - GET  /api/eventos
+[2026-01-18 21:10:29] [INFO]   - GET  /api/pagos
+[2026-01-18 21:10:29] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:10:29] [INFO]   ... y muchos más
+[2026-01-18 21:12:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:12:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:12:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:12:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:12:06] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:12:06] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:13:18] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:13:19] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:13:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:13:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:13:27] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:13:27] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:15:18] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:15:18] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:15:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:15:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:15:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:15:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:15:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:16] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:16] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:16:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:22] [INFO] Iniciando registro de pago - Evento ID: 6, Monto: $100.00, Tipo: abono
+[2026-01-18 21:17:22] [DEBUG] Validación de pago - Total actual: $0.00, Monto a agregar: $100.00, Precio total evento: $1500.00
+[2026-01-18 21:17:22] [INFO] Pago registrado exitosamente - ID: 3, Evento: 6, Monto: $100.00, Tipo: abono
+[2026-01-18 21:17:24] [DEBUG] Notificación enviada para pago ID: 3, Tipo: abono
+[2026-01-18 21:17:24] [DEBUG] Pago obtenido por ID: 3
+[2026-01-18 21:17:25] [INFO] Estado del evento 6 cambiado a 'en_proceso' después de registrar pago
+[2026-01-18 21:17:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:17:43] [INFO] Iniciando registro de pago - Evento ID: 6, Monto: $20.00, Tipo: abono
+[2026-01-18 21:17:43] [DEBUG] Validación de pago - Total actual: $100.00, Monto a agregar: $20.00, Precio total evento: $1500.00
+[2026-01-18 21:17:43] [INFO] Pago registrado exitosamente - ID: 4, Evento: 6, Monto: $20.00, Tipo: abono
+[2026-01-18 21:17:45] [DEBUG] Notificación enviada para pago ID: 4, Tipo: abono
+[2026-01-18 21:17:45] [DEBUG] Pago obtenido por ID: 4
+[2026-01-18 21:17:45] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:19:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:19:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:20:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:20:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:33] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:58] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:58] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:21:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:04] [INFO] ==================================================
+[2026-01-18 21:22:04] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:22:04] [INFO] ==================================================
+[2026-01-18 21:22:04] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:22:04] [INFO] Endpoints disponibles:
+[2026-01-18 21:22:04] [INFO]   - POST /api/auth/login
+[2026-01-18 21:22:04] [INFO]   - GET  /api/health
+[2026-01-18 21:22:04] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:22:04] [INFO]   - GET  /api/clientes
+[2026-01-18 21:22:04] [INFO]   - GET  /api/productos
+[2026-01-18 21:22:04] [INFO]   - GET  /api/eventos
+[2026-01-18 21:22:04] [INFO]   - GET  /api/pagos
+[2026-01-18 21:22:04] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:22:04] [INFO]   ... y muchos más
+[2026-01-18 21:22:05] [INFO] ==================================================
+[2026-01-18 21:22:05] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:22:05] [INFO] ==================================================
+[2026-01-18 21:22:05] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:22:05] [INFO] Endpoints disponibles:
+[2026-01-18 21:22:05] [INFO]   - POST /api/auth/login
+[2026-01-18 21:22:05] [INFO]   - GET  /api/health
+[2026-01-18 21:22:05] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:22:05] [INFO]   - GET  /api/clientes
+[2026-01-18 21:22:05] [INFO]   - GET  /api/productos
+[2026-01-18 21:22:05] [INFO]   - GET  /api/eventos
+[2026-01-18 21:22:05] [INFO]   - GET  /api/pagos
+[2026-01-18 21:22:05] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:22:05] [INFO]   ... y muchos más
+[2026-01-18 21:22:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:10] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:18] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:18] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:18] [INFO] Iniciando registro de pago - Evento ID: 6, Monto: $23.00, Tipo: abono
+[2026-01-18 21:22:18] [DEBUG] Validación de pago - Total actual: $120.00, Monto a agregar: $23.00, Precio total evento: $1500.00
+[2026-01-18 21:22:18] [INFO] Pago registrado exitosamente - ID: 5, Evento: 6, Monto: $23.00, Tipo: abono
+[2026-01-18 21:22:20] [DEBUG] Notificación enviada para pago ID: 5, Tipo: abono
+[2026-01-18 21:22:20] [DEBUG] Pago obtenido por ID: 5
+[2026-01-18 21:22:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:32] [DEBUG] Pago obtenido por ID: 5
+[2026-01-18 21:22:32] [INFO] Iniciando eliminación de pago ID: 5
+[2026-01-18 21:22:32] [INFO] Pago eliminado exitosamente - ID: 5, Evento: 6
+[2026-01-18 21:22:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:38] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:38] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:41] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:49] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:49] [INFO] Iniciando registro de pago - Evento ID: 6, Monto: $23.00, Tipo: abono
+[2026-01-18 21:22:49] [DEBUG] Validación de pago - Total actual: $120.00, Monto a agregar: $23.00, Precio total evento: $1500.00
+[2026-01-18 21:22:49] [INFO] Pago registrado exitosamente - ID: 6, Evento: 6, Monto: $23.00, Tipo: abono
+[2026-01-18 21:22:51] [DEBUG] Notificación enviada para pago ID: 6, Tipo: abono
+[2026-01-18 21:22:51] [DEBUG] Pago obtenido por ID: 6
+[2026-01-18 21:22:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:22:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:28] [INFO] ==================================================
+[2026-01-18 21:23:28] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:23:28] [INFO] ==================================================
+[2026-01-18 21:23:28] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:23:28] [INFO] Endpoints disponibles:
+[2026-01-18 21:23:28] [INFO]   - POST /api/auth/login
+[2026-01-18 21:23:28] [INFO]   - GET  /api/health
+[2026-01-18 21:23:28] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:23:28] [INFO]   - GET  /api/clientes
+[2026-01-18 21:23:28] [INFO]   - GET  /api/productos
+[2026-01-18 21:23:28] [INFO]   - GET  /api/eventos
+[2026-01-18 21:23:28] [INFO]   - GET  /api/pagos
+[2026-01-18 21:23:28] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:23:28] [INFO]   ... y muchos más
+[2026-01-18 21:23:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:29] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:23:40] [INFO] ==================================================
+[2026-01-18 21:23:40] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:23:40] [INFO] ==================================================
+[2026-01-18 21:23:41] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:23:41] [INFO] Endpoints disponibles:
+[2026-01-18 21:23:41] [INFO]   - POST /api/auth/login
+[2026-01-18 21:23:41] [INFO]   - GET  /api/health
+[2026-01-18 21:23:41] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:23:41] [INFO]   - GET  /api/clientes
+[2026-01-18 21:23:41] [INFO]   - GET  /api/productos
+[2026-01-18 21:23:41] [INFO]   - GET  /api/eventos
+[2026-01-18 21:23:41] [INFO]   - GET  /api/pagos
+[2026-01-18 21:23:41] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:23:41] [INFO]   ... y muchos más
+[2026-01-18 21:23:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:04] [DEBUG] Token generado para usuario: gosorio
+[2026-01-18 21:24:04] [INFO] Login exitoso para usuario: gosorio
+[2026-01-18 21:24:11] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:11] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:12] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:12] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:15] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:15] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:15] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:15] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:20] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:32] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:32] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:37] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:37] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:24:45] [DEBUG] Token generado para usuario: admin
+[2026-01-18 21:24:45] [INFO] Login exitoso para usuario: admin
+[2026-01-18 21:24:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:58] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:58] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:58] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:24:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:25:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:25:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:25:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:25:59] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:26:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:26:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:26:04] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:26:04] [INFO] Iniciando registro de pago - Evento ID: 6, Monto: $13.00, Tipo: abono
+[2026-01-18 21:26:04] [DEBUG] Validación de pago - Total actual: $143.00, Monto a agregar: $13.00, Precio total evento: $1500.00
+[2026-01-18 21:26:04] [INFO] Pago registrado exitosamente - ID: 7, Evento: 6, Monto: $13.00, Tipo: abono
+[2026-01-18 21:26:06] [DEBUG] Notificación enviada para pago ID: 7, Tipo: abono
+[2026-01-18 21:26:06] [DEBUG] Pago obtenido por ID: 7
+[2026-01-18 21:26:06] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:14] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:14] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:28:28] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:30:25] [INFO] ==================================================
+[2026-01-18 21:30:25] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:30:25] [INFO] ==================================================
+[2026-01-18 21:30:25] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:30:25] [INFO] Endpoints disponibles:
+[2026-01-18 21:30:25] [INFO]   - POST /api/auth/login
+[2026-01-18 21:30:25] [INFO]   - GET  /api/health
+[2026-01-18 21:30:25] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:30:25] [INFO]   - GET  /api/clientes
+[2026-01-18 21:30:25] [INFO]   - GET  /api/productos
+[2026-01-18 21:30:25] [INFO]   - GET  /api/eventos
+[2026-01-18 21:30:25] [INFO]   - GET  /api/pagos
+[2026-01-18 21:30:25] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:30:25] [INFO]   ... y muchos más
+[2026-01-18 21:30:45] [INFO] ==================================================
+[2026-01-18 21:30:45] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:30:45] [INFO] ==================================================
+[2026-01-18 21:30:45] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:30:45] [INFO] Endpoints disponibles:
+[2026-01-18 21:30:45] [INFO]   - POST /api/auth/login
+[2026-01-18 21:30:45] [INFO]   - GET  /api/health
+[2026-01-18 21:30:45] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:30:45] [INFO]   - GET  /api/clientes
+[2026-01-18 21:30:45] [INFO]   - GET  /api/productos
+[2026-01-18 21:30:45] [INFO]   - GET  /api/eventos
+[2026-01-18 21:30:45] [INFO]   - GET  /api/pagos
+[2026-01-18 21:30:45] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:30:45] [INFO]   ... y muchos más
+[2026-01-18 21:31:09] [INFO] ==================================================
+[2026-01-18 21:31:09] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:31:09] [INFO] ==================================================
+[2026-01-18 21:31:09] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:31:09] [INFO] Endpoints disponibles:
+[2026-01-18 21:31:09] [INFO]   - POST /api/auth/login
+[2026-01-18 21:31:09] [INFO]   - GET  /api/health
+[2026-01-18 21:31:09] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:31:09] [INFO]   - GET  /api/clientes
+[2026-01-18 21:31:09] [INFO]   - GET  /api/productos
+[2026-01-18 21:31:09] [INFO]   - GET  /api/eventos
+[2026-01-18 21:31:09] [INFO]   - GET  /api/pagos
+[2026-01-18 21:31:09] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:31:09] [INFO]   ... y muchos más
+[2026-01-18 21:31:20] [INFO] ==================================================
+[2026-01-18 21:31:20] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:31:20] [INFO] ==================================================
+[2026-01-18 21:31:20] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:31:20] [INFO] Endpoints disponibles:
+[2026-01-18 21:31:20] [INFO]   - POST /api/auth/login
+[2026-01-18 21:31:20] [INFO]   - GET  /api/health
+[2026-01-18 21:31:20] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:31:20] [INFO]   - GET  /api/clientes
+[2026-01-18 21:31:20] [INFO]   - GET  /api/productos
+[2026-01-18 21:31:20] [INFO]   - GET  /api/eventos
+[2026-01-18 21:31:20] [INFO]   - GET  /api/pagos
+[2026-01-18 21:31:20] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:31:20] [INFO]   ... y muchos más
+[2026-01-18 21:31:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:31:32] [ERROR] Error en verificar: 1146 (42S02): Table 'lirios_eventos.rol_permisos' doesn't exist
+[2026-01-18 21:31:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:31:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:31:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:31:32] [ERROR] Error en verificar: 1146 (42S02): Table 'lirios_eventos.rol_permisos' doesn't exist
+[2026-01-18 21:31:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:31:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:34:27] [INFO] ==================================================
+[2026-01-18 21:34:27] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:34:27] [INFO] ==================================================
+[2026-01-18 21:34:27] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:34:27] [INFO] Endpoints disponibles:
+[2026-01-18 21:34:27] [INFO]   - POST /api/auth/login
+[2026-01-18 21:34:27] [INFO]   - GET  /api/health
+[2026-01-18 21:34:27] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:34:27] [INFO]   - GET  /api/clientes
+[2026-01-18 21:34:27] [INFO]   - GET  /api/productos
+[2026-01-18 21:34:27] [INFO]   - GET  /api/eventos
+[2026-01-18 21:34:27] [INFO]   - GET  /api/pagos
+[2026-01-18 21:34:27] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:34:27] [INFO]   ... y muchos más
+[2026-01-18 21:39:46] [INFO] ==================================================
+[2026-01-18 21:39:46] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:39:46] [INFO] ==================================================
+[2026-01-18 21:39:46] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:39:46] [INFO] Endpoints disponibles:
+[2026-01-18 21:39:46] [INFO]   - POST /api/auth/login
+[2026-01-18 21:39:46] [INFO]   - GET  /api/health
+[2026-01-18 21:39:46] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:39:46] [INFO]   - GET  /api/clientes
+[2026-01-18 21:39:46] [INFO]   - GET  /api/productos
+[2026-01-18 21:39:46] [INFO]   - GET  /api/eventos
+[2026-01-18 21:39:46] [INFO]   - GET  /api/pagos
+[2026-01-18 21:39:46] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:39:46] [INFO]   ... y muchos más
+[2026-01-18 21:39:47] [INFO] ==================================================
+[2026-01-18 21:39:47] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 21:39:47] [INFO] ==================================================
+[2026-01-18 21:39:47] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 21:39:47] [INFO] Endpoints disponibles:
+[2026-01-18 21:39:47] [INFO]   - POST /api/auth/login
+[2026-01-18 21:39:47] [INFO]   - GET  /api/health
+[2026-01-18 21:39:47] [INFO]   - GET  /api/usuarios
+[2026-01-18 21:39:47] [INFO]   - GET  /api/clientes
+[2026-01-18 21:39:47] [INFO]   - GET  /api/productos
+[2026-01-18 21:39:47] [INFO]   - GET  /api/eventos
+[2026-01-18 21:39:47] [INFO]   - GET  /api/pagos
+[2026-01-18 21:39:47] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 21:39:47] [INFO]   ... y muchos más
+[2026-01-18 21:39:50] [DEBUG] Token generado para usuario: admin
+[2026-01-18 21:39:50] [INFO] Login exitoso para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:17] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 21:40:30] [DEBUG] Token generado para usuario: gosorio
+[2026-01-18 21:40:30] [INFO] Login exitoso para usuario: gosorio
+[2026-01-18 21:40:33] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:40:33] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:40:33] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 21:40:33] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:23:43] [INFO] ==================================================
+[2026-01-18 23:23:43] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:23:43] [INFO] ==================================================
+[2026-01-18 23:23:43] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:23:43] [INFO] Endpoints disponibles:
+[2026-01-18 23:23:43] [INFO]   - POST /api/auth/login
+[2026-01-18 23:23:43] [INFO]   - GET  /api/health
+[2026-01-18 23:23:43] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:23:43] [INFO]   - GET  /api/clientes
+[2026-01-18 23:23:43] [INFO]   - GET  /api/productos
+[2026-01-18 23:23:43] [INFO]   - GET  /api/eventos
+[2026-01-18 23:23:43] [INFO]   - GET  /api/pagos
+[2026-01-18 23:23:43] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:23:43] [INFO]   ... y muchos más
+[2026-01-18 23:23:44] [INFO] ==================================================
+[2026-01-18 23:23:44] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:23:44] [INFO] ==================================================
+[2026-01-18 23:23:44] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:23:44] [INFO] Endpoints disponibles:
+[2026-01-18 23:23:44] [INFO]   - POST /api/auth/login
+[2026-01-18 23:23:44] [INFO]   - GET  /api/health
+[2026-01-18 23:23:44] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:23:44] [INFO]   - GET  /api/clientes
+[2026-01-18 23:23:44] [INFO]   - GET  /api/productos
+[2026-01-18 23:23:44] [INFO]   - GET  /api/eventos
+[2026-01-18 23:23:44] [INFO]   - GET  /api/pagos
+[2026-01-18 23:23:44] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:23:44] [INFO]   ... y muchos más
+[2026-01-18 23:26:17] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:17] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:21] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:21] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:21] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:21] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:24] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:24] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:25] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:25] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:25] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:25] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:25] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:25] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:25] [DEBUG] Token verificado para usuario: gosorio
+[2026-01-18 23:26:33] [DEBUG] Token generado para usuario: admin
+[2026-01-18 23:26:33] [INFO] Login exitoso para usuario: admin
+[2026-01-18 23:26:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:50] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:26:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:30:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:30:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:30:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:30:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:30:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:30:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:31:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:31:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:31:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:31:00] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:31:18] [DEBUG] Token generado para usuario: admin
+[2026-01-18 23:31:18] [INFO] Login exitoso para usuario: admin
+[2026-01-18 23:31:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:31:22] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:31:26] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 23:31:26] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 23:31:28] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:28] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:31] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:34] [INFO] ==================================================
+[2026-01-18 23:31:34] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:31:34] [INFO] ==================================================
+[2026-01-18 23:31:34] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:31:34] [INFO] Endpoints disponibles:
+[2026-01-18 23:31:34] [INFO]   - POST /api/auth/login
+[2026-01-18 23:31:34] [INFO]   - GET  /api/health
+[2026-01-18 23:31:34] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:31:34] [INFO]   - GET  /api/clientes
+[2026-01-18 23:31:34] [INFO]   - GET  /api/productos
+[2026-01-18 23:31:34] [INFO]   - GET  /api/eventos
+[2026-01-18 23:31:34] [INFO]   - GET  /api/pagos
+[2026-01-18 23:31:34] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:31:34] [INFO]   ... y muchos más
+[2026-01-18 23:31:43] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:43] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:45] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:31:57] [INFO] ==================================================
+[2026-01-18 23:31:57] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:31:57] [INFO] ==================================================
+[2026-01-18 23:31:57] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:31:57] [INFO] Endpoints disponibles:
+[2026-01-18 23:31:57] [INFO]   - POST /api/auth/login
+[2026-01-18 23:31:57] [INFO]   - GET  /api/health
+[2026-01-18 23:31:57] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:31:57] [INFO]   - GET  /api/clientes
+[2026-01-18 23:31:57] [INFO]   - GET  /api/productos
+[2026-01-18 23:31:57] [INFO]   - GET  /api/eventos
+[2026-01-18 23:31:57] [INFO]   - GET  /api/pagos
+[2026-01-18 23:31:57] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:31:57] [INFO]   ... y muchos más
+[2026-01-18 23:32:16] [INFO] ==================================================
+[2026-01-18 23:32:16] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:32:16] [INFO] ==================================================
+[2026-01-18 23:32:16] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:32:16] [INFO] Endpoints disponibles:
+[2026-01-18 23:32:16] [INFO]   - POST /api/auth/login
+[2026-01-18 23:32:16] [INFO]   - GET  /api/health
+[2026-01-18 23:32:16] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:32:16] [INFO]   - GET  /api/clientes
+[2026-01-18 23:32:16] [INFO]   - GET  /api/productos
+[2026-01-18 23:32:16] [INFO]   - GET  /api/eventos
+[2026-01-18 23:32:16] [INFO]   - GET  /api/pagos
+[2026-01-18 23:32:16] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:32:16] [INFO]   ... y muchos más
+[2026-01-18 23:32:16] [DEBUG] Token generado para usuario: admin
+[2026-01-18 23:32:16] [INFO] Login exitoso para usuario: admin
+[2026-01-18 23:33:35] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:35] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:36] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:43] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:33:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:06] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:13] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:13] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:16] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:16] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:20] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:21] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:34:25] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:12] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:15] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:39] [DEBUG] Pago obtenido por ID: 7
+[2026-01-18 23:35:39] [INFO] Iniciando eliminación de pago ID: 7
+[2026-01-18 23:35:39] [INFO] Pago eliminado exitosamente - ID: 7, Evento: 6
+[2026-01-18 23:35:39] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:47] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:48] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:55] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [INFO] ==================================================
+[2026-01-18 23:35:57] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:35:57] [INFO] ==================================================
+[2026-01-18 23:35:57] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:35:57] [INFO] Endpoints disponibles:
+[2026-01-18 23:35:57] [INFO]   - POST /api/auth/login
+[2026-01-18 23:35:57] [INFO]   - GET  /api/health
+[2026-01-18 23:35:57] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:35:57] [INFO]   - GET  /api/clientes
+[2026-01-18 23:35:57] [INFO]   - GET  /api/productos
+[2026-01-18 23:35:57] [INFO]   - GET  /api/eventos
+[2026-01-18 23:35:57] [INFO]   - GET  /api/pagos
+[2026-01-18 23:35:57] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:35:57] [INFO]   ... y muchos más
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:35:57] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:05] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:05] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:07] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:08] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:31] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:32] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:34] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:37] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:36:54] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:38:27] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:38:27] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:39:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:39:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:39:21] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-18 23:39:21] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-18 23:39:22] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:39:22] [DEBUG] Token verificado para usuario: coordinador1
+[2026-01-18 23:39:32] [INFO] ==================================================
+[2026-01-18 23:39:32] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:39:32] [INFO] ==================================================
+[2026-01-18 23:39:32] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:39:32] [INFO] Endpoints disponibles:
+[2026-01-18 23:39:32] [INFO]   - POST /api/auth/login
+[2026-01-18 23:39:32] [INFO]   - GET  /api/health
+[2026-01-18 23:39:32] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:39:32] [INFO]   - GET  /api/clientes
+[2026-01-18 23:39:32] [INFO]   - GET  /api/productos
+[2026-01-18 23:39:32] [INFO]   - GET  /api/eventos
+[2026-01-18 23:39:32] [INFO]   - GET  /api/pagos
+[2026-01-18 23:39:32] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:39:32] [INFO]   ... y muchos más
+[2026-01-18 23:40:45] [DEBUG] Token generado para usuario: admin
+[2026-01-18 23:40:45] [INFO] Login exitoso para usuario: admin
+[2026-01-18 23:41:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:41:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:01] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:02] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:03] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:09] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:10] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:11] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:42:44] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:43:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:43:51] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:43:52] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:43:56] [DEBUG] Token verificado para usuario: admin
+[2026-01-18 23:47:19] [INFO] ==================================================
+[2026-01-18 23:47:19] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-18 23:47:19] [INFO] ==================================================
+[2026-01-18 23:47:19] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-18 23:47:19] [INFO] Endpoints disponibles:
+[2026-01-18 23:47:19] [INFO]   - POST /api/auth/login
+[2026-01-18 23:47:19] [INFO]   - GET  /api/health
+[2026-01-18 23:47:19] [INFO]   - GET  /api/usuarios
+[2026-01-18 23:47:19] [INFO]   - GET  /api/clientes
+[2026-01-18 23:47:19] [INFO]   - GET  /api/productos
+[2026-01-18 23:47:19] [INFO]   - GET  /api/eventos
+[2026-01-18 23:47:19] [INFO]   - GET  /api/pagos
+[2026-01-18 23:47:19] [INFO]   - GET  /api/reportes/metricas
+[2026-01-18 23:47:19] [INFO]   ... y muchos más

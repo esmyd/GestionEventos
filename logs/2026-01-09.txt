@@ -1,0 +1,16 @@
+[2026-01-09 20:02:56] [INFO] ==================================================
+[2026-01-09 20:02:56] [INFO] Iniciando aplicación Lirios Eventos
+[2026-01-09 20:02:56] [INFO] ==================================================
+[2026-01-09 20:02:57] [INFO] Aplicación inicializada
+[2026-01-09 20:02:57] [DEBUG] Mostrando ventana de login...
+[2026-01-09 20:02:57] [DEBUG] Ventana anterior limpiada
+[2026-01-09 20:02:57] [DEBUG] Ventana de login creada
+[2026-01-09 20:02:57] [INFO] Aplicación creada exitosamente
+[2026-01-09 20:02:57] [INFO] Iniciando loop principal de la aplicación
+[2026-01-09 20:03:03] [INFO] Login exitoso para usuario: admin
+[2026-01-09 20:03:03] [DEBUG] Cargando ventana principal...
+[2026-01-09 20:03:03] [INFO] Ventana principal mostrada
+[2026-01-09 20:03:11] [DEBUG] Inicializando vista de pagos
+[2026-01-09 20:03:11] [DEBUG] Cargando datos de pagos en la tabla
+[2026-01-09 20:03:11] [DEBUG] Datos cargados exitosamente - Total de pagos mostrados: 5
+[2026-01-09 20:06:17] [INFO] Aplicación finalizada
