@@ -22,6 +22,8 @@ export const MODULES = {
   REPORTES: 'reportes',
   USUARIOS: 'usuarios',
   PERMISOS: 'permisos',
+  NOTIFICACIONES_NATIVAS: 'notificaciones_nativas',
+  INTEGRACIONES: 'integraciones',
 };
 
 export const PERMISSIONS = {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { salonesService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, Building, Eye, Edit, Trash2, X, Save, AlertCircle } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
@@ -9,6 +10,7 @@ import { hasRole, ROLES } from '../utils/roles';
 const Salones = () => {
   const { usuario } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
+  const isMobile = useIsMobile();
   const [salones, setSalones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -292,9 +294,9 @@ const Salones = () => {
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Salones</h1>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Salones</h1>
           <p style={{ color: '#6b7280' }}>Gestión de salones y espacios</p>
         </div>
         {puedeCrear && (
@@ -338,7 +340,7 @@ const Salones = () => {
 
       {/* Búsqueda y filtros */}
       <div style={{ marginBottom: '1.5rem', display: 'grid', gap: '1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: '1rem' }}>
           <div style={{ position: 'relative' }}>
             <Search
               size={20}
@@ -391,7 +393,7 @@ const Salones = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr 1fr 1fr',
             gap: '1rem',
             padding: '1rem',
             backgroundColor: '#f9fafb',
@@ -492,7 +494,7 @@ const Salones = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
           gap: '1.5rem',
         }}
       >

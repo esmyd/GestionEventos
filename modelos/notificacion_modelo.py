@@ -85,10 +85,22 @@ class NotificacionModelo:
         """Verifica si una notificación ya fue enviada para un evento"""
         consulta = """
         SELECT COUNT(*) as total FROM historial_notificaciones 
-        WHERE evento_id = %s AND tipo_notificacion = %s AND enviado = TRUE
+        WHERE id_evento = %s AND tipo_notificacion = %s AND enviado = TRUE
         """
         resultado = self.base_datos.obtener_uno(consulta, (evento_id, tipo_notificacion))
         return resultado['total'] > 0 if resultado else False
+
+    def obtener_resumen_envios(self, evento_id, tipo_notificacion):
+        """Obtiene cantidad y ultima fecha de envio para un evento y tipo"""
+        consulta = """
+        SELECT COUNT(*) as total, MAX(fecha_envio) as ultimo_envio
+        FROM historial_notificaciones
+        WHERE id_evento = %s AND tipo_notificacion = %s AND enviado = TRUE
+        """
+        return self.base_datos.obtener_uno(consulta, (evento_id, tipo_notificacion)) or {
+            'total': 0,
+            'ultimo_envio': None
+        }
     
     def obtener_destinatarios_adicionales(self, tipo_notificacion):
         """Obtiene los destinatarios adicionales para un tipo de notificación"""

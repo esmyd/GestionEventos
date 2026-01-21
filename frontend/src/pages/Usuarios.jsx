@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usuariosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, User, Eye, Edit, Trash2, X, Save, AlertCircle, Lock } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
@@ -9,6 +10,7 @@ import { hasRole, ROLES } from '../utils/roles';
 const Usuarios = () => {
   const { usuario: usuarioActual } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
+  const isMobile = useIsMobile();
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -312,9 +314,9 @@ const Usuarios = () => {
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Usuarios</h1>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Usuarios</h1>
           <p style={{ color: '#6b7280' }}>Gestión de usuarios del sistema</p>
         </div>
         {puedeCrear && (
@@ -357,8 +359,8 @@ const Usuarios = () => {
       )}
 
       {/* Filtros */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: isMobile ? '100%' : '250px' }}>
           <Search
             size={20}
             style={{
@@ -391,7 +393,7 @@ const Usuarios = () => {
             border: '1px solid #d1d5db',
             borderRadius: '0.375rem',
             fontSize: '1rem',
-            minWidth: '200px',
+            minWidth: isMobile ? '100%' : '200px',
           }}
         >
           <option value="">Todos los roles</option>
@@ -412,75 +414,53 @@ const Usuarios = () => {
           overflow: 'hidden',
         }}
       >
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Usuario
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Nombre Completo
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Email
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Rol
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Estado
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuariosFiltrados.length === 0 ? (
-                <tr>
-                  <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-                    {busqueda || filtroRol ? 'No se encontraron usuarios con ese criterio' : 'No hay usuarios disponibles'}
-                  </td>
-                </tr>
-              ) : (
-                usuariosFiltrados.map((usuario) => (
-                  <tr key={usuario.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div
-                          style={{
-                            width: '2.5rem',
-                            height: '2.5rem',
-                            borderRadius: '50%',
-                            backgroundColor: '#6366f120',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <User size={20} color="#6366f1" />
-                        </div>
-                        <div style={{ fontWeight: '500' }}>{usuario.nombre_usuario || '-'}</div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>{usuario.nombre_completo || '-'}</td>
-                    <td style={{ padding: '1rem' }}>{usuario.email || '-'}</td>
-                    <td style={{ padding: '1rem' }}>
-                      <span
-                        style={{
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.75rem',
-                          fontWeight: '500',
-                          backgroundColor: '#6366f120',
-                          color: '#6366f1',
-                        }}
-                      >
-                        {usuario.rol || '-'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+        {isMobile ? (
+          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {usuariosFiltrados.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                {busqueda || filtroRol ? 'No se encontraron usuarios con ese criterio' : 'No hay usuarios disponibles'}
+              </div>
+            ) : (
+              usuariosFiltrados.map((usuario) => (
+                <div
+                  key={usuario.id}
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.75rem',
+                    padding: '1rem',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div
+                      style={{
+                        width: '2.5rem',
+                        height: '2.5rem',
+                        borderRadius: '50%',
+                        backgroundColor: '#6366f120',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <User size={18} color="#6366f1" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#111827' }}>{usuario.nombre_usuario || '-'}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{usuario.nombre_completo || '-'}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.85rem' }}>
+                      <strong>Email:</strong> {usuario.email || '-'}
+                    </div>
+                    <div style={{ fontSize: '0.85rem' }}>
+                      <strong>Rol:</strong> {usuario.rol || '-'}
+                    </div>
+                    <div>
                       <span
                         style={{
                           padding: '0.25rem 0.75rem',
@@ -493,103 +473,272 @@ const Usuarios = () => {
                       >
                         {usuario.activo ? 'Activo' : 'Inactivo'}
                       </span>
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button
-                          onClick={() => abrirModalDetalle(usuario)}
-                          style={{
-                            padding: '0.5rem',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            borderRadius: '0.375rem',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'background-color 0.2s',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
-                          title="Ver Detalle"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        {puedeEditar && (
-                          <button
-                            onClick={() => abrirModalEditar(usuario)}
-                            style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#10b981',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
-                            title="Editar"
-                          >
-                            <Edit size={16} />
-                          </button>
-                        )}
-                        {puedeCambiarContrasena && (
-                          <button
-                            onClick={() => abrirModalCambiarContrasena(usuario)}
-                            style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#f59e0b',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d97706')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f59e0b')}
-                            title="Cambiar Contraseña"
-                          >
-                            <Lock size={16} />
-                          </button>
-                        )}
-                        {puedeEliminar && (
-                          <button
-                            onClick={() => abrirModalEliminar(usuario)}
-                            style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#ef4444',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
-                            title="Eliminar"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => abrirModalDetalle(usuario)}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        borderRadius: '0.375rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      <Eye size={16} />
+                      Ver
+                    </button>
+                    {puedeEditar && (
+                      <button
+                        onClick={() => abrirModalEditar(usuario)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#10b981',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <Edit size={16} />
+                        Editar
+                      </button>
+                    )}
+                    {puedeCambiarContrasena && (
+                      <button
+                        onClick={() => abrirModalCambiarContrasena(usuario)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#f59e0b',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <Lock size={16} />
+                        Clave
+                      </button>
+                    )}
+                    {puedeEliminar && (
+                      <button
+                        onClick={() => abrirModalEliminar(usuario)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <Trash2 size={16} />
+                        Eliminar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Usuario
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Nombre Completo
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Email
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Rol
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Estado
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {usuariosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                      {busqueda || filtroRol ? 'No se encontraron usuarios con ese criterio' : 'No hay usuarios disponibles'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  usuariosFiltrados.map((usuario) => (
+                    <tr key={usuario.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div
+                            style={{
+                              width: '2.5rem',
+                              height: '2.5rem',
+                              borderRadius: '50%',
+                              backgroundColor: '#6366f120',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <User size={20} color="#6366f1" />
+                          </div>
+                          <div style={{ fontWeight: '500' }}>{usuario.nombre_usuario || '-'}</div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>{usuario.nombre_completo || '-'}</td>
+                      <td style={{ padding: '1rem' }}>{usuario.email || '-'}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <span
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            backgroundColor: '#6366f120',
+                            color: '#6366f1',
+                          }}
+                        >
+                          {usuario.rol || '-'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <span
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            backgroundColor: usuario.activo ? '#10b98120' : '#ef444420',
+                            color: usuario.activo ? '#10b981' : '#ef4444',
+                          }}
+                        >
+                          {usuario.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => abrirModalDetalle(usuario)}
+                            style={{
+                              padding: '0.5rem',
+                              backgroundColor: '#3b82f6',
+                              color: 'white',
+                              borderRadius: '0.375rem',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'background-color 0.2s',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+                            title="Ver Detalle"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          {puedeEditar && (
+                            <button
+                              onClick={() => abrirModalEditar(usuario)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
+                              title="Editar"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          )}
+                          {puedeCambiarContrasena && (
+                            <button
+                              onClick={() => abrirModalCambiarContrasena(usuario)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#f59e0b',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d97706')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f59e0b')}
+                              title="Cambiar Contraseña"
+                            >
+                              <Lock size={16} />
+                            </button>
+                          )}
+                          {puedeEliminar && (
+                            <button
+                              onClick={() => abrirModalEliminar(usuario)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
+                              title="Eliminar"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Modal Crear Usuario */}

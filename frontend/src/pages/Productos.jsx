@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { productosService, categoriasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, Package, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
@@ -9,6 +10,7 @@ import { hasRole, ROLES } from '../utils/roles';
 const Productos = () => {
   const { usuario } = useAuth();
   const { toasts, removeToast, success, error: showError, warning } = useToast();
+  const isMobile = useIsMobile();
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -286,9 +288,9 @@ const Productos = () => {
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Productos</h1>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Productos</h1>
           <p style={{ color: '#6b7280' }}>Gestión de productos y servicios</p>
         </div>
         {puedeCrear && (
@@ -331,8 +333,8 @@ const Productos = () => {
       )}
 
       {/* Filtros */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: isMobile ? '100%' : '250px' }}>
           <Search
             size={20}
             style={{
@@ -365,7 +367,7 @@ const Productos = () => {
             border: '1px solid #d1d5db',
             borderRadius: '0.375rem',
             fontSize: '1rem',
-            minWidth: '200px',
+            minWidth: isMobile ? '100%' : '200px',
           }}
         >
           <option value="">Todas las categorías</option>
@@ -387,156 +389,288 @@ const Productos = () => {
           overflow: 'hidden',
         }}
       >
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Producto
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Categoría
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Precio
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Stock
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Estado
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {productosFiltrados.length === 0 ? (
-                <tr>
-                  <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-                    {busqueda || filtroCategoria ? 'No se encontraron productos con ese criterio' : 'No hay productos disponibles'}
-                  </td>
-                </tr>
-              ) : (
-                productosFiltrados.map((producto) => (
-                  <tr key={producto.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div
-                          style={{
-                            width: '2.5rem',
-                            height: '2.5rem',
-                            borderRadius: '0.375rem',
-                            backgroundColor: '#6366f120',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Package size={20} color="#6366f1" />
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: '500' }}>{producto.nombre || '-'}</div>
-                          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {producto.descripcion || '-'}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>{producto.nombre_categoria || '-'}</td>
-                    <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '500' }}>
-                      {formatearMoneda(producto.precio || 0)}
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'right' }}>{producto.stock || 0}</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <span
+        {isMobile ? (
+          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {productosFiltrados.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                {busqueda || filtroCategoria ? 'No se encontraron productos con ese criterio' : 'No hay productos disponibles'}
+              </div>
+            ) : (
+              productosFiltrados.map((producto) => (
+                <div
+                  key={producto.id}
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.75rem',
+                    padding: '1rem',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div
+                      style={{
+                        width: '2.5rem',
+                        height: '2.5rem',
+                        borderRadius: '0.375rem',
+                        backgroundColor: '#6366f120',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Package size={18} color="#6366f1" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#111827' }}>{producto.nombre || '-'}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{producto.nombre_categoria || '-'}</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                    {producto.descripcion || '-'}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Precio</div>
+                      <div style={{ fontWeight: '600' }}>{formatearMoneda(producto.precio || 0)}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Stock</div>
+                      <div style={{ fontWeight: '600' }}>{producto.stock || 0}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <span
+                      style={{
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: '500',
+                        backgroundColor: producto.activo !== false ? '#10b98120' : '#ef444420',
+                        color: producto.activo !== false ? '#10b981' : '#ef4444',
+                      }}
+                    >
+                      {producto.activo !== false ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => abrirModalDetalle(producto)}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        borderRadius: '0.375rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      <Eye size={16} strokeWidth={2.5} />
+                      Ver
+                    </button>
+                    {puedeEditar && (
+                      <button
+                        onClick={() => abrirModalEditar(producto)}
                         style={{
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.75rem',
-                          fontWeight: '500',
-                          backgroundColor: producto.activo !== false ? '#10b98120' : '#ef444420',
-                          color: producto.activo !== false ? '#10b981' : '#ef4444',
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#10b981',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
                         }}
                       >
-                        {producto.activo !== false ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button
-                          onClick={() => abrirModalDetalle(producto)}
-                          style={{
-                            padding: '0.5rem',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            borderRadius: '0.375rem',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'background-color 0.2s',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
-                          title="Ver Detalle"
-                        >
-                          <Eye size={18} strokeWidth={2.5} />
-                        </button>
-                        {puedeEditar && (
-                          <button
-                            onClick={() => abrirModalEditar(producto)}
-                            style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#10b981',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
-                            title="Editar"
-                          >
-                            <Edit size={18} strokeWidth={2.5} />
-                          </button>
-                        )}
-                        {puedeEliminar && (
-                          <button
-                            onClick={() => abrirModalEliminar(producto)}
-                            style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#ef4444',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
-                            title="Eliminar"
-                          >
-                            <Trash2 size={18} strokeWidth={2.5} />
-                          </button>
-                        )}
-                      </div>
+                        <Edit size={16} strokeWidth={2.5} />
+                        Editar
+                      </button>
+                    )}
+                    {puedeEliminar && (
+                      <button
+                        onClick={() => abrirModalEliminar(producto)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <Trash2 size={16} strokeWidth={2.5} />
+                        Eliminar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Producto
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Categoría
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Precio
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Stock
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Estado
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {productosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                      {busqueda || filtroCategoria ? 'No se encontraron productos con ese criterio' : 'No hay productos disponibles'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  productosFiltrados.map((producto) => (
+                    <tr key={producto.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div
+                            style={{
+                              width: '2.5rem',
+                              height: '2.5rem',
+                              borderRadius: '0.375rem',
+                              backgroundColor: '#6366f120',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Package size={20} color="#6366f1" />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: '500' }}>{producto.nombre || '-'}</div>
+                            <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {producto.descripcion || '-'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>{producto.nombre_categoria || '-'}</td>
+                      <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '500' }}>
+                        {formatearMoneda(producto.precio || 0)}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'right' }}>{producto.stock || 0}</td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <span
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            backgroundColor: producto.activo !== false ? '#10b98120' : '#ef444420',
+                            color: producto.activo !== false ? '#10b981' : '#ef4444',
+                          }}
+                        >
+                          {producto.activo !== false ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => abrirModalDetalle(producto)}
+                            style={{
+                              padding: '0.5rem',
+                              backgroundColor: '#3b82f6',
+                              color: 'white',
+                              borderRadius: '0.375rem',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'background-color 0.2s',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+                            title="Ver Detalle"
+                          >
+                            <Eye size={18} strokeWidth={2.5} />
+                          </button>
+                          {puedeEditar && (
+                            <button
+                              onClick={() => abrirModalEditar(producto)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
+                              title="Editar"
+                            >
+                              <Edit size={18} strokeWidth={2.5} />
+                            </button>
+                          )}
+                          {puedeEliminar && (
+                            <button
+                              onClick={() => abrirModalEliminar(producto)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
+                              title="Eliminar"
+                            >
+                              <Trash2 size={18} strokeWidth={2.5} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Modal Crear Producto */}

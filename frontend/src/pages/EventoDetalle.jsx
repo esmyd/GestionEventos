@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { eventosService, pagosService, planesService, productosService, usuariosService } from '../services/api';
+import { eventosService, pagosService, planesService, productosService, usuariosService, notificacionesNativasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2 } from 'lucide-react';
 import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/ToastContainer';
 
 const EventoDetalle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { usuario } = useAuth();
+  const { toasts, removeToast, success, error: showError } = useToast();
   const [evento, setEvento] = useState(null);
   const [pagos, setPagos] = useState([]);
   const [productosAdicionales, setProductosAdicionales] = useState([]);
@@ -31,6 +34,11 @@ const EventoDetalle = () => {
   const [eliminandoEvento, setEliminandoEvento] = useState(false);
   const [errorEliminarEvento, setErrorEliminarEvento] = useState('');
   const [mostrarConfirmReembolso, setMostrarConfirmReembolso] = useState(false);
+  const [notificacionesProximas, setNotificacionesProximas] = useState([]);
+  const [cargandoNotificaciones, setCargandoNotificaciones] = useState(false);
+  const [forzandoNotificacion, setForzandoNotificacion] = useState(null);
+  const [previewRecordatorio, setPreviewRecordatorio] = useState(null);
+  const [mostrarPreview, setMostrarPreview] = useState(false);
   const [formProducto, setFormProducto] = useState({ producto_id: '', cantidad: '1' });
   const [errorProducto, setErrorProducto] = useState('');
   const [agregandoProducto, setAgregandoProducto] = useState(false);
@@ -60,6 +68,7 @@ const EventoDetalle = () => {
   const puedeEliminarProducto = hasPermission(usuario, PERMISSIONS.EVENTOS_ELIMINAR_PRODUCTO, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeEliminarEvento = hasPermission(usuario, PERMISSIONS.EVENTOS_ELIMINAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeAsignarCoordinador = hasPermission(usuario, PERMISSIONS.EVENTOS_ASIGNAR_COORDINADOR, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeNotificarPago = Boolean(evento?.email || evento?.telefono);
   const puedeRegistrarPago = hasPermission(usuario, PERMISSIONS.PAGOS_REGISTRAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const saldoPorReembolsar = Math.max(0, (parseFloat(totalPagado) || 0) - (parseFloat(totalReembolsos) || 0));
 
@@ -80,6 +89,7 @@ const EventoDetalle = () => {
       cargarPagos();
       cargarProductos();
       cargarServiciosEvento();
+      cargarNotificacionesProximas();
     }
   }, [id]);
 
@@ -214,6 +224,54 @@ const EventoDetalle = () => {
       setTotalPagado(0);
       setTotalReembolsos(0);
     }
+  };
+
+  const cargarNotificacionesProximas = async () => {
+    try {
+      setCargandoNotificaciones(true);
+      const data = await notificacionesNativasService.getProximasEvento(id);
+      setNotificacionesProximas(data.notificaciones || []);
+    } catch (err) {
+      console.error('Error al cargar notificaciones:', err);
+      setNotificacionesProximas([]);
+    } finally {
+      setCargandoNotificaciones(false);
+    }
+  };
+
+  const construirPreview = (plantilla, datos) => {
+    let contenido = plantilla || '';
+    Object.entries(datos).forEach(([key, value]) => {
+      const regex = new RegExp(`\\{${key}\\}`, 'g');
+      contenido = contenido.replace(regex, value ?? '');
+    });
+    return contenido;
+  };
+
+  const abrirPreviewRecordatorio = (notif) => {
+    if (!notif) return;
+    const fechaEvento = evento?.fecha_evento ? new Date(evento.fecha_evento) : null;
+    const diasRestantes = fechaEvento
+      ? Math.max(
+          0,
+          Math.ceil((fechaEvento - new Date()) / (1000 * 60 * 60 * 24))
+        )
+      : '';
+    const datos = {
+      nombre_cliente: evento?.nombre_cliente || '',
+      nombre_evento: evento?.nombre_evento || evento?.salon || '',
+      fecha_evento: evento?.fecha_evento || '',
+      hora_inicio: evento?.hora_inicio || '',
+      dias_restantes: diasRestantes,
+      saldo_pendiente: evento?.saldo || '',
+      total: evento?.total || '',
+    };
+    setPreviewRecordatorio({
+      titulo: notif.nombre || 'Recordatorio del evento',
+      email: construirPreview(notif.plantilla_email, datos),
+      whatsapp: construirPreview(notif.plantilla_whatsapp, datos),
+    });
+    setMostrarPreview(true);
   };
 
   const cargarProductos = async () => {
@@ -575,6 +633,7 @@ const EventoDetalle = () => {
 
   return (
     <div>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       <div style={{ marginBottom: '2rem' }}>
         <button
           onClick={() => navigate('/eventos')}
@@ -767,6 +826,269 @@ const EventoDetalle = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Recordatorios programados */}
+        <div
+          style={{
+            backgroundColor: 'white',
+            padding: '1.5rem',
+            borderRadius: '0.5rem',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e5e7eb',
+          }}
+        >
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Calendar size={20} color="#6366f1" />
+            Recordatorios programados
+          </h2>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem', color: '#6b7280', fontSize: '0.85rem' }}>
+            <div>
+              Correo: <span style={{ color: '#111827' }}>{evento?.email || 'No disponible'}</span>
+            </div>
+            <div>
+              Telefono: <span style={{ color: '#111827' }}>{evento?.telefono || 'No disponible'}</span>
+            </div>
+          </div>
+          {cargandoNotificaciones ? (
+            <p style={{ color: '#6b7280' }}>Cargando recordatorios...</p>
+          ) : notificacionesProximas.length === 0 ? (
+            <p style={{ color: '#6b7280' }}>No hay recordatorios activos para este evento.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {(() => {
+                const recordatorios = notificacionesProximas.filter((n) =>
+                  String(n.tipo_notificacion || '').startsWith('recordatorio')
+                );
+                const manualRecordatorio = recordatorios.find(
+                  (n) => n.tipo_notificacion === 'recordatorio_evento'
+                );
+                const automaticos = recordatorios.filter(
+                  (n) => n.tipo_notificacion !== 'recordatorio_evento'
+                );
+                const otros = notificacionesProximas.filter(
+                  (n) => !String(n.tipo_notificacion || '').startsWith('recordatorio')
+                );
+                const totalEnviosRecordatorio = (manualRecordatorio?.total_envios || 0);
+                const ultimoEnvioRecordatorio = manualRecordatorio?.ultimo_envio || null;
+
+                const tarjetas = [];
+
+                if (recordatorios.length > 0) {
+                  tarjetas.push(
+                    <div
+                      key="recordatorio_evento"
+                      style={{
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.5rem',
+                        padding: '0.75rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        cursor: manualRecordatorio ? 'pointer' : 'default',
+                      }}
+                      onClick={() => manualRecordatorio && abrirPreviewRecordatorio(manualRecordatorio)}
+                    >
+                      <div>
+                        <div style={{ fontWeight: '600' }}>Recordatorio del evento</div>
+                        <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                          Automatico:{' '}
+                          {automaticos.length > 0
+                            ? automaticos.map((n) => `${n.dias_antes} dias antes`).join(' y ')
+                            : 'No configurado'}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                          Medio:{' '}
+                          {automaticos[0]
+                            ? [
+                                automaticos[0].enviar_email ? 'Email' : null,
+                                automaticos[0].enviar_whatsapp ? 'WhatsApp' : null,
+                              ]
+                                .filter(Boolean)
+                                .join(' + ')
+                            : 'Sin canal'}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                          {manualRecordatorio?.fecha_evento
+                            ? `Quedan ${Math.max(
+                                0,
+                                Math.ceil(
+                                  (new Date(manualRecordatorio.fecha_evento) - new Date()) /
+                                    (1000 * 60 * 60 * 24)
+                                )
+                              )} dias`
+                            : 'Recordatorio manual'}
+                          {totalEnviosRecordatorio
+                            ? ` · Enviados: ${totalEnviosRecordatorio}`
+                            : ' · Enviados: 0'}
+                          {ultimoEnvioRecordatorio
+                            ? ` · Ultimo: ${new Date(ultimoEnvioRecordatorio).toLocaleDateString()}`
+                            : ''}
+                        </div>
+                      </div>
+                      {manualRecordatorio ? (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            onClick={async (event) => {
+                              event.stopPropagation();
+                              if (!evento?.email) {
+                                showError('Este evento no tiene correo. No se puede enviar email.');
+                                return;
+                              }
+                              try {
+                                setForzandoNotificacion('email');
+                                const resp = await notificacionesNativasService.forzarNotificacion(
+                                  id,
+                                  manualRecordatorio.tipo_notificacion,
+                                  'email'
+                                );
+                                if (resp?.success) {
+                                  success('Recordatorio enviado por email');
+                                } else {
+                                  showError(resp?.error || 'No se pudo enviar el recordatorio');
+                                }
+                                await cargarNotificacionesProximas();
+                              } catch (err) {
+                                const mensaje =
+                                  err.response?.data?.error || 'No se pudo enviar el recordatorio';
+                                showError(mensaje);
+                              } finally {
+                                setForzandoNotificacion(null);
+                              }
+                            }}
+                          disabled={forzandoNotificacion === 'email' || !evento?.email}
+                            style={{
+                              padding: '0.5rem 0.9rem',
+                              borderRadius: '0.5rem',
+                              border: '1px solid #d1d5db',
+                            background:
+                              forzandoNotificacion === 'email' || !evento?.email ? '#e5e7eb' : '#f3f4f6',
+                            cursor:
+                              forzandoNotificacion === 'email' || !evento?.email ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {forzandoNotificacion === 'email' ? 'Enviando...' : 'Forzar email'}
+                          </button>
+                          <button
+                            onClick={async (event) => {
+                              event.stopPropagation();
+                              try {
+                                setForzandoNotificacion('whatsapp');
+                                const resp = await notificacionesNativasService.forzarNotificacion(
+                                  id,
+                                  manualRecordatorio.tipo_notificacion,
+                                  'whatsapp'
+                                );
+                                if (resp?.success) {
+                                  success('Recordatorio enviado por WhatsApp');
+                                } else {
+                                  showError(resp?.error || 'No se pudo enviar el recordatorio');
+                                }
+                                await cargarNotificacionesProximas();
+                              } catch (err) {
+                                const mensaje =
+                                  err.response?.data?.error || 'No se pudo enviar el recordatorio';
+                                showError(mensaje);
+                              } finally {
+                                setForzandoNotificacion(null);
+                              }
+                            }}
+                            disabled={forzandoNotificacion === 'whatsapp'}
+                            style={{
+                              padding: '0.5rem 0.9rem',
+                              borderRadius: '0.5rem',
+                              border: '1px solid #d1d5db',
+                              background: forzandoNotificacion === 'whatsapp' ? '#e5e7eb' : '#f3f4f6',
+                              cursor: forzandoNotificacion === 'whatsapp' ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {forzandoNotificacion === 'whatsapp' ? 'Enviando...' : 'Forzar WhatsApp'}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                }
+
+                otros.forEach((notif) => {
+                const fechaEvento = notif.fecha_evento ? new Date(notif.fecha_evento) : null;
+                let fechaEnvio = null;
+                if (fechaEvento) {
+                  if (notif.dias_antes === -1) {
+                    fechaEnvio = new Date(fechaEvento);
+                    fechaEnvio.setDate(fechaEnvio.getDate() + 1);
+                  } else {
+                    fechaEnvio = new Date(fechaEvento);
+                    fechaEnvio.setDate(fechaEnvio.getDate() - notif.dias_antes);
+                  }
+                }
+                const medios = [
+                  notif.enviar_email ? 'Email' : null,
+                  notif.enviar_whatsapp ? 'WhatsApp' : null,
+                ].filter(Boolean);
+                tarjetas.push(
+                  <div
+                    key={notif.tipo_notificacion}
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      padding: '0.75rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '1rem',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: '600' }}>{notif.nombre}</div>
+                      <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                        {notif.dias_antes === -1
+                          ? 'Despues del evento'
+                          : `${notif.dias_antes} dias antes del evento`}
+                        {fechaEnvio ? ` · ${fechaEnvio.toLocaleDateString()}` : ''}
+                      </div>
+                      <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                        Medio: {medios.length > 0 ? medios.join(' + ') : 'Sin canal'}
+                      </div>
+                      <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                        Enviados: {notif.total_envios || 0}
+                        {notif.ultimo_envio ? ` · Ultimo: ${new Date(notif.ultimo_envio).toLocaleDateString()}` : ''}
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        try {
+                          setForzandoNotificacion(notif.tipo_notificacion);
+                          await notificacionesNativasService.forzarNotificacion(id, notif.tipo_notificacion);
+                          success('Recordatorio enviado');
+                          await cargarNotificacionesProximas();
+                        } catch (err) {
+                          const mensaje = err.response?.data?.error || 'No se pudo enviar el recordatorio';
+                          showError(mensaje);
+                        } finally {
+                          setForzandoNotificacion(null);
+                        }
+                      }}
+                      disabled={forzandoNotificacion === notif.tipo_notificacion}
+                      style={{
+                        padding: '0.5rem 0.9rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid #d1d5db',
+                        background: forzandoNotificacion === notif.tipo_notificacion ? '#e5e7eb' : '#f3f4f6',
+                        cursor: forzandoNotificacion === notif.tipo_notificacion ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {forzandoNotificacion === notif.tipo_notificacion ? 'Enviando...' : 'Forzar envio'}
+                    </button>
+                  </div>
+                );
+                });
+
+                return tarjetas;
+              })()}
+            </div>
+          )}
         </div>
 
         {/* Información financiera */}
@@ -1397,6 +1719,20 @@ const EventoDetalle = () => {
 
             <form onSubmit={handleRegistrarPago}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div
+                  style={{
+                    background: '#f0f9ff',
+                    color: '#0369a1',
+                    border: '1px solid #bae6fd',
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem',
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  {puedeNotificarPago
+                    ? 'Al registrar este pago se enviara una notificacion automatica al cliente.'
+                    : 'Este evento no tiene email/telefono registrado, por lo que no se enviara notificacion.'}
+                </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500', color: '#374151' }}>
                     Monto *
@@ -2027,6 +2363,84 @@ const EventoDetalle = () => {
               >
                 {eliminandoEvento ? 'Eliminando...' : 'Eliminar'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mostrarPreview && previewRecordatorio && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1200,
+            padding: '1rem',
+          }}
+          onClick={() => setMostrarPreview(false)}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              width: '100%',
+              maxWidth: '860px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{previewRecordatorio.titulo}</h3>
+                <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                  Vista previa del mensaje que se enviara
+                </p>
+              </div>
+              <button
+                onClick={() => setMostrarPreview(false)}
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '1.2rem' }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <h4 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>Email</h4>
+                <div
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem',
+                    background: '#f9fafb',
+                    minHeight: '180px',
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: previewRecordatorio.email.replace(/\n/g, '<br>'),
+                  }}
+                />
+              </div>
+              <div>
+                <h4 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>WhatsApp</h4>
+                <div
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem',
+                    background: '#f9fafb',
+                    minHeight: '180px',
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
+                  {previewRecordatorio.whatsapp || 'Sin plantilla'}
+                </div>
+              </div>
             </div>
           </div>
         </div>

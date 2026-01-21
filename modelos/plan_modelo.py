@@ -126,3 +126,4 @@ class PlanModelo:
                 orden = indice + 1
             self.base_datos.ejecutar_consulta(consulta, (plan_id, nombre, orden))
         return True
+

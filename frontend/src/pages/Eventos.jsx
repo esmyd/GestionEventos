@@ -13,6 +13,7 @@ const Eventos = () => {
   const esCoordinador = hasRole(usuarioActual?.rol, [ROLES.COORDINATOR]);
   const esAdminOGerente = hasRole(usuarioActual?.rol, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeEditarEstado = hasPermission(usuarioActual, PERMISSIONS.EVENTOS_EDITAR_ESTADO, [ROLES.ADMIN, ROLES.MANAGER]);
+  const [isMobile, setIsMobile] = useState(false);
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,6 +28,15 @@ const Eventos = () => {
   useEffect(() => {
     cargarEventos();
   }, [filtroEstado, filtroAsignacion, esCoordinador, usuarioActual?.id]);
+
+  useEffect(() => {
+    const actualizarVista = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    actualizarVista();
+    window.addEventListener('resize', actualizarVista);
+    return () => window.removeEventListener('resize', actualizarVista);
+  }, []);
 
   const cargarEventos = async () => {
     try {
@@ -266,7 +276,7 @@ const Eventos = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
@@ -567,9 +577,10 @@ const Eventos = () => {
           gap: '1rem',
           marginBottom: '1.5rem',
           flexWrap: 'wrap',
+          flexDirection: isMobile ? 'column' : 'row',
         }}
       >
-        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: isMobile ? '100%' : '250px' }}>
           <Search
             size={20}
             style={{
@@ -602,7 +613,7 @@ const Eventos = () => {
             border: '1px solid #d1d5db',
             borderRadius: '0.375rem',
             fontSize: '1rem',
-            minWidth: '150px',
+            minWidth: isMobile ? '100%' : '150px',
           }}
         >
           <option value="">Todos los estados</option>
@@ -621,7 +632,7 @@ const Eventos = () => {
               border: '1px solid #d1d5db',
               borderRadius: '0.375rem',
               fontSize: '1rem',
-              minWidth: '150px',
+              minWidth: isMobile ? '100%' : '150px',
             }}
           >
             <option value="todos">Todos los eventos</option>
@@ -640,70 +651,246 @@ const Eventos = () => {
           overflow: 'hidden',
         }}
       >
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Evento
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Cliente
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Fecha
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Hora
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Salón
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Plan
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Invitados
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Estado
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  Avance
-                </th>
-                {!esCoordinador && (
-                  <>
-                    <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                      Total
-                    </th>
-                    <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                      Saldo
-                    </th>
-                  </>
-                )}
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap', minWidth: '200px' }}>
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {eventosFiltrados.length === 0 ? (
-                <tr>
-                  <td colSpan={esCoordinador ? 10 : 12} style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-                    No hay eventos disponibles
-                  </td>
+        {isMobile ? (
+          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {eventosFiltrados.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                No hay eventos disponibles
+              </div>
+            ) : (
+              eventosFiltrados.map((evento) => (
+                <div
+                  key={evento.id_evento || evento.id}
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.75rem',
+                    padding: '1rem',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#111827' }}>{evento.nombre_evento || '-'}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{evento.tipo_evento || '-'}</div>
+                    </div>
+                    <span
+                      style={{
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        backgroundColor: `${getEstadoColor(evento.estado)}20`,
+                        color: getEstadoColor(evento.estado),
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {evento.estado || '-'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Cliente</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{evento.nombre_cliente || '-'}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{evento.documento_identidad_cliente || '-'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Fecha</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formatearFecha(evento.fecha_evento)}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Hora</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>
+                        {formatearHora(evento.hora_inicio)}
+                        {evento.hora_fin ? ` - ${formatearHora(evento.hora_fin)}` : ''}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Salón</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{evento.nombre_salon || evento.salon || '-'}</div>
+                    </div>
+                  </div>
+                  {!esCoordinador && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Total</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '600' }}>{formatearMoneda(evento.total || 0)}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Saldo</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '600', color: parseFloat(evento.saldo || 0) > 0 ? '#f59e0b' : '#10b981' }}>
+                          {formatearMoneda(evento.saldo || 0)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <Link
+                      to={`/eventos/${evento.id_evento || evento.id}`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.5rem 0.75rem',
+                        backgroundColor: '#6366f1',
+                        color: 'white',
+                        borderRadius: '0.375rem',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem',
+                        fontWeight: '500',
+                      }}
+                    >
+                      <Eye size={16} strokeWidth={2.5} />
+                      Ver
+                    </Link>
+                    <details style={{ position: 'relative' }}>
+                      <summary
+                        style={{
+                          listStyle: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#10b981',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          fontSize: '0.8rem',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                        }}
+                      >
+                        <FileText size={16} strokeWidth={2.5} />
+                        Archivos
+                      </summary>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '110%',
+                          right: 0,
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '0.5rem',
+                          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.08)',
+                          minWidth: '170px',
+                          zIndex: 20,
+                          padding: '0.4rem',
+                        }}
+                      >
+                        <button
+                          onClick={() => descargarCotizacion(evento.id_evento || evento.id)}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 0.75rem',
+                            backgroundColor: 'transparent',
+                            color: '#111827',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <FileText size={14} strokeWidth={2} />
+                          Cotización
+                        </button>
+                        <button
+                          onClick={() => descargarContrato(evento.id_evento || evento.id)}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 0.75rem',
+                            backgroundColor: 'transparent',
+                            color: '#111827',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <Download size={14} strokeWidth={2} />
+                          Contrato
+                        </button>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Evento
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Cliente
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Fecha
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Hora
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Salón
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Plan
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Invitados
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Estado
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    Avance
+                  </th>
+                  {!esCoordinador && (
+                    <>
+                      <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                        Total
+                      </th>
+                      <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                        Saldo
+                      </th>
+                    </>
+                  )}
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap', minWidth: '200px' }}>
+                    Acciones
+                  </th>
                 </tr>
-              ) : (
-                eventosFiltrados.map((evento) => (
-                  <tr
-                    key={evento.id_evento || evento.id}
-                    style={{ 
-                      borderBottom: '1px solid #e5e7eb',
-                      transition: 'background-color 0.2s',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                  >
+              </thead>
+              <tbody>
+                {eventosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan={esCoordinador ? 10 : 12} style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                      No hay eventos disponibles
+                    </td>
+                  </tr>
+                ) : (
+                  eventosFiltrados.map((evento) => (
+                    <tr
+                      key={evento.id_evento || evento.id}
+                      style={{ 
+                        borderBottom: '1px solid #e5e7eb',
+                        transition: 'background-color 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                    >
                     <td style={{ padding: '1rem' }}>
                       <div style={{ fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>
                         {evento.nombre_evento || '-'}
@@ -984,6 +1171,7 @@ const Eventos = () => {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Modal para cambiar estado */}

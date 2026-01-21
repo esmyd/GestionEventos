@@ -143,7 +143,7 @@ class PagoModelo:
                 self.logger.error(f"Error al enviar notificación de pago ID {pago_id}: {str(e)}")
                 import traceback
                 self.logger.debug(f"Traceback notificación: {traceback.format_exc()}")
-            
+
             return pago_id
         self.logger.error(f"Error al ejecutar consulta de inserción de pago - Evento: {evento_id}, Monto: ${monto:.2f}")
         return None

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { categoriasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, FolderTree, Eye, Edit, Trash2, X, Save, AlertCircle } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
@@ -9,6 +10,7 @@ import { hasRole, ROLES } from '../utils/roles';
 const Categorias = () => {
   const { usuario } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
+  const isMobile = useIsMobile();
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -196,9 +198,9 @@ const Categorias = () => {
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Categorías</h1>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Categorías</h1>
           <p style={{ color: '#6b7280' }}>Gestión de categorías de productos</p>
         </div>
         {puedeCrear && (
@@ -241,7 +243,7 @@ const Categorias = () => {
       )}
 
       {/* Búsqueda */}
-      <div style={{ marginBottom: '1.5rem', position: 'relative', maxWidth: '400px' }}>
+      <div style={{ marginBottom: '1.5rem', position: 'relative', maxWidth: isMobile ? '100%' : '400px' }}>
         <Search
           size={20}
           style={{
@@ -271,7 +273,7 @@ const Categorias = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
           gap: '1.5rem',
         }}
       >

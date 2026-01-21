@@ -17,9 +17,11 @@ const MODULOS = [
   { key: MODULES.PAGOS, label: 'Pagos' },
   { key: MODULES.INVENTARIO, label: 'Inventario' },
   { key: MODULES.SALONES, label: 'Salones' },
+  { key: MODULES.NOTIFICACIONES_NATIVAS, label: 'Notificaciones' },
   { key: MODULES.REPORTES, label: 'Reportes' },
   { key: MODULES.USUARIOS, label: 'Usuarios' },
   { key: MODULES.PERMISOS, label: 'Roles y Permisos' },
+  { key: MODULES.INTEGRACIONES, label: 'Integraciones' },
 ];
 
 const ACCIONES = [

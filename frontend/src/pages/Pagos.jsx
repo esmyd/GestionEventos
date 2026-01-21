@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { pagosService, eventosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, DollarSign, Eye, Trash2, X, Save, AlertCircle, Calendar, User, FileText } from 'lucide-react';
 import { hasPermission, hasRole, PERMISSIONS, ROLES } from '../utils/roles';
@@ -9,6 +10,7 @@ import { hasPermission, hasRole, PERMISSIONS, ROLES } from '../utils/roles';
 const Pagos = () => {
   const { usuario } = useAuth();
   const { toasts, removeToast, success, error: showError, warning } = useToast();
+  const isMobile = useIsMobile();
   const [pagos, setPagos] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
@@ -475,7 +477,7 @@ const Pagos = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
@@ -515,9 +517,10 @@ const Pagos = () => {
           display: 'flex',
           gap: '1rem',
           flexWrap: 'wrap',
+          flexDirection: isMobile ? 'column' : 'row',
         }}
       >
-        <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: isMobile ? '100%' : '260px' }}>
           <Search
             size={18}
             style={{
@@ -550,7 +553,7 @@ const Pagos = () => {
             border: '1px solid #d1d5db',
             borderRadius: '0.375rem',
             fontSize: '0.95rem',
-            minWidth: '180px',
+            minWidth: isMobile ? '100%' : '180px',
           }}
         >
           <option value="todos">Todos los estados</option>
@@ -572,127 +575,246 @@ const Pagos = () => {
           marginBottom: '2rem',
         }}
       >
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Evento</th>
-                <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Cliente</th>
-                <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Fecha</th>
-                <th style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '600' }}>Total</th>
-                <th style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '600' }}>Pagado</th>
-                <th style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '600' }}>Saldo</th>
-                <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Estado</th>
-                <th style={{ padding: '0.85rem', textAlign: 'center', fontSize: '0.85rem', fontWeight: '600' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {eventosFiltrados.length === 0 ? (
-                <tr>
-                  <td colSpan="8" style={{ padding: '1.5rem', textAlign: 'center', color: '#6b7280' }}>
-                    No hay eventos con ese filtro.
-                  </td>
+        {isMobile ? (
+          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {eventosFiltrados.length === 0 ? (
+              <div style={{ padding: '1.5rem', textAlign: 'center', color: '#6b7280' }}>
+                No hay eventos con ese filtro.
+              </div>
+            ) : (
+              eventosFiltrados.map((evento) => {
+                const total = parseNumero(evento.total || 0);
+                const saldo = parseNumero(evento.saldo || 0);
+                const pagado = Math.max(0, total - saldo);
+                const eventoId = evento.id_evento || evento.id;
+                const eventoCancelado = evento.estado === 'cancelado';
+                return (
+                  <div
+                    key={eventoId}
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.75rem',
+                      padding: '1rem',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                      backgroundColor: filtroEvento && parseInt(filtroEvento, 10) === eventoId ? '#eef2ff' : 'white',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#111827' }}>{evento.nombre_evento || 'Evento'}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{evento.nombre_cliente || '-'}</div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Fecha</div>
+                        <div style={{ fontWeight: '600' }}>{formatearFecha(evento.fecha_evento)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Estado</div>
+                        <div style={{ fontWeight: '600', textTransform: 'capitalize' }}>{evento.estado || '-'}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Total</div>
+                        <div style={{ fontWeight: '600' }}>{formatearMoneda(total)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Saldo</div>
+                        <div style={{ fontWeight: '600', color: '#ef4444' }}>{formatearMoneda(saldo)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Pagado</div>
+                        <div style={{ fontWeight: '600', color: '#10b981' }}>{formatearMoneda(pagado)}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => seleccionarEvento(evento)}
+                        style={{
+                          padding: '0.4rem 0.75rem',
+                          borderRadius: '0.375rem',
+                          border: '1px solid #e5e7eb',
+                          backgroundColor: '#f3f4f6',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          fontWeight: '600',
+                        }}
+                      >
+                        Ver pagos
+                      </button>
+                      {puedeRegistrar && saldo > 0 && !eventoCancelado && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            seleccionarEvento(evento);
+                            abrirModalRegistrar(evento, 'abono');
+                          }}
+                          style={{
+                            padding: '0.4rem 0.75rem',
+                            borderRadius: '0.375rem',
+                            border: 'none',
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            fontWeight: '600',
+                          }}
+                        >
+                          Registrar pago
+                        </button>
+                      )}
+                      {puedeRegistrar && pagado > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            seleccionarEvento(evento);
+                            abrirModalRegistrar(evento, 'reembolso');
+                          }}
+                          style={{
+                            padding: '0.4rem 0.75rem',
+                            borderRadius: '0.375rem',
+                            border: 'none',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            fontWeight: '600',
+                          }}
+                        >
+                          Registrar reembolso
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Evento</th>
+                  <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Cliente</th>
+                  <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Fecha</th>
+                  <th style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '600' }}>Total</th>
+                  <th style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '600' }}>Pagado</th>
+                  <th style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '600' }}>Saldo</th>
+                  <th style={{ padding: '0.85rem', textAlign: 'left', fontSize: '0.85rem', fontWeight: '600' }}>Estado</th>
+                  <th style={{ padding: '0.85rem', textAlign: 'center', fontSize: '0.85rem', fontWeight: '600' }}>Acciones</th>
                 </tr>
-              ) : (
-                eventosFiltrados.map((evento) => {
-                  const total = parseNumero(evento.total || 0);
-                  const saldo = parseNumero(evento.saldo || 0);
-                      const pagado = Math.max(0, total - saldo);
-                  const eventoId = evento.id_evento || evento.id;
-                  const eventoCancelado = evento.estado === 'cancelado';
-                  return (
-                    <tr
-                      key={eventoId}
-                      style={{
-                        borderBottom: '1px solid #e5e7eb',
-                        backgroundColor: filtroEvento && parseInt(filtroEvento, 10) === eventoId ? '#eef2ff' : 'white',
-                      }}
-                    >
-                      <td style={{ padding: '0.85rem', fontSize: '0.9rem', fontWeight: '600' }}>
-                        {evento.nombre_evento || 'Evento'}
-                      </td>
-                      <td style={{ padding: '0.85rem', fontSize: '0.85rem' }}>
-                        {evento.nombre_cliente || '-'}
-                      </td>
-                      <td style={{ padding: '0.85rem', fontSize: '0.85rem' }}>{formatearFecha(evento.fecha_evento)}</td>
-                      <td style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem' }}>{formatearMoneda(total)}</td>
-                      <td style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', color: '#10b981' }}>
-                        {formatearMoneda(pagado)}
-                      </td>
-                      <td style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', color: '#ef4444' }}>
-                        {formatearMoneda(saldo)}
-                      </td>
-                      <td style={{ padding: '0.85rem', fontSize: '0.8rem', textTransform: 'capitalize' }}>
-                        {evento.estado || '-'}
-                      </td>
-                      <td style={{ padding: '0.85rem', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                          <button
-                            type="button"
-                            onClick={() => seleccionarEvento(evento)}
-                            style={{
-                              padding: '0.4rem 0.75rem',
-                              borderRadius: '0.375rem',
-                              border: '1px solid #e5e7eb',
-                              backgroundColor: '#f3f4f6',
-                              cursor: 'pointer',
-                              fontSize: '0.8rem',
-                              fontWeight: '600',
-                            }}
-                          >
-                            Ver pagos
-                          </button>
-                          {puedeRegistrar && saldo > 0 && !eventoCancelado && (
+              </thead>
+              <tbody>
+                {eventosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" style={{ padding: '1.5rem', textAlign: 'center', color: '#6b7280' }}>
+                      No hay eventos con ese filtro.
+                    </td>
+                  </tr>
+                ) : (
+                  eventosFiltrados.map((evento) => {
+                    const total = parseNumero(evento.total || 0);
+                    const saldo = parseNumero(evento.saldo || 0);
+                    const pagado = Math.max(0, total - saldo);
+                    const eventoId = evento.id_evento || evento.id;
+                    const eventoCancelado = evento.estado === 'cancelado';
+                    return (
+                      <tr
+                        key={eventoId}
+                        style={{
+                          borderBottom: '1px solid #e5e7eb',
+                          backgroundColor: filtroEvento && parseInt(filtroEvento, 10) === eventoId ? '#eef2ff' : 'white',
+                        }}
+                      >
+                        <td style={{ padding: '0.85rem', fontSize: '0.9rem', fontWeight: '600' }}>
+                          {evento.nombre_evento || 'Evento'}
+                        </td>
+                        <td style={{ padding: '0.85rem', fontSize: '0.85rem' }}>
+                          {evento.nombre_cliente || '-'}
+                        </td>
+                        <td style={{ padding: '0.85rem', fontSize: '0.85rem' }}>{formatearFecha(evento.fecha_evento)}</td>
+                        <td style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem' }}>{formatearMoneda(total)}</td>
+                        <td style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', color: '#10b981' }}>
+                          {formatearMoneda(pagado)}
+                        </td>
+                        <td style={{ padding: '0.85rem', textAlign: 'right', fontSize: '0.85rem', color: '#ef4444' }}>
+                          {formatearMoneda(saldo)}
+                        </td>
+                        <td style={{ padding: '0.85rem', fontSize: '0.8rem', textTransform: 'capitalize' }}>
+                          {evento.estado || '-'}
+                        </td>
+                        <td style={{ padding: '0.85rem', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                             <button
                               type="button"
-                              onClick={() => {
-                                seleccionarEvento(evento);
-                                abrirModalRegistrar(evento, 'abono');
-                              }}
+                              onClick={() => seleccionarEvento(evento)}
                               style={{
                                 padding: '0.4rem 0.75rem',
                                 borderRadius: '0.375rem',
-                                border: 'none',
-                                backgroundColor: '#10b981',
-                                color: 'white',
+                                border: '1px solid #e5e7eb',
+                                backgroundColor: '#f3f4f6',
                                 cursor: 'pointer',
                                 fontSize: '0.8rem',
                                 fontWeight: '600',
                               }}
                             >
-                              Registrar pago
+                              Ver pagos
                             </button>
-                          )}
-                          {puedeRegistrar && pagado > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                seleccionarEvento(evento);
-                                abrirModalRegistrar(evento, 'reembolso');
-                              }}
-                              style={{
-                                padding: '0.4rem 0.75rem',
-                                borderRadius: '0.375rem',
-                                border: 'none',
-                                backgroundColor: '#ef4444',
-                                color: 'white',
-                                cursor: 'pointer',
-                                fontSize: '0.8rem',
-                                fontWeight: '600',
-                              }}
-                            >
-                              Registrar reembolso
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                            {puedeRegistrar && saldo > 0 && !eventoCancelado && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  seleccionarEvento(evento);
+                                  abrirModalRegistrar(evento, 'abono');
+                                }}
+                                style={{
+                                  padding: '0.4rem 0.75rem',
+                                  borderRadius: '0.375rem',
+                                  border: 'none',
+                                  backgroundColor: '#10b981',
+                                  color: 'white',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                Registrar pago
+                              </button>
+                            )}
+                            {puedeRegistrar && pagado > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  seleccionarEvento(evento);
+                                  abrirModalRegistrar(evento, 'reembolso');
+                                }}
+                                style={{
+                                  padding: '0.4rem 0.75rem',
+                                  borderRadius: '0.375rem',
+                                  border: 'none',
+                                  backgroundColor: '#ef4444',
+                                  color: 'white',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                Registrar reembolso
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Información del evento y resumen financiero */}
@@ -848,7 +970,7 @@ const Pagos = () => {
               <option value="otro">Otro</option>
             </select>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr 1fr', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.35rem' }}>
                 Desde
@@ -922,7 +1044,7 @@ const Pagos = () => {
               />
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
+          <div style={{ display: 'flex', justifyContent: isMobile ? 'stretch' : 'flex-end', marginTop: '0.75rem' }}>
             <select
               value={ordenPagos}
               onChange={(e) => setOrdenPagos(e.target.value)}
@@ -931,7 +1053,7 @@ const Pagos = () => {
                 border: '1px solid #d1d5db',
                 borderRadius: '0.375rem',
                 fontSize: '0.9rem',
-                minWidth: '220px',
+                minWidth: isMobile ? '100%' : '220px',
               }}
             >
               <option value="fecha_desc">Ordenar: Más recientes</option>
@@ -948,7 +1070,7 @@ const Pagos = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
             gap: '1rem',
             marginBottom: '1.5rem',
           }}
@@ -1039,137 +1161,243 @@ const Pagos = () => {
               )}
             </div>
           </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Fecha
-                  </th>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Tipo
-                  </th>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Método
-                  </th>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Referencia
-                  </th>
-                  <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Monto
-                  </th>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Origen
-                  </th>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Observaciones
-                  </th>
-                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pagosFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-                      No hay pagos que coincidan con los filtros
-                    </td>
-                  </tr>
-                ) : (
-                  pagosFiltrados.map((pago) => (
-                    <tr key={pago.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                      <td style={{ padding: '1rem' }}>{formatearFecha(pago.fecha_pago)}</td>
-                      <td style={{ padding: '1rem' }}>
-                        <span
-                          style={{
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: '9999px',
-                            fontSize: '0.75rem',
-                            fontWeight: '500',
-                            backgroundColor:
-                              pago.tipo_pago === 'reembolso'
-                                ? '#ef444420'
-                                : pago.tipo_pago === 'pago_completo'
-                                ? '#10b98120'
-                                : '#3b82f620',
-                            color:
-                              pago.tipo_pago === 'reembolso'
-                                ? '#ef4444'
-                                : pago.tipo_pago === 'pago_completo'
-                                ? '#10b981'
-                                : '#3b82f6',
-                          }}
-                        >
-                          {pago.tipo_pago === 'reembolso'
-                            ? 'Reembolso'
-                            : pago.tipo_pago === 'pago_completo'
-                            ? 'Pago Completo'
-                            : 'Abono'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '1rem' }}>{pago.metodo_pago || '-'}</td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
-                        {pago.numero_referencia || '-'}
-                      </td>
-                      <td
+          {isMobile ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {pagosFiltrados.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                  No hay pagos que coincidan con los filtros
+                </div>
+              ) : (
+                pagosFiltrados.map((pago) => (
+                  <div
+                    key={pago.id}
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.75rem',
+                      padding: '1rem',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem' }}>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#111827' }}>{formatearFecha(pago.fecha_pago)}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{pago.metodo_pago || '-'}</div>
+                      </div>
+                      <div
                         style={{
-                          padding: '1rem',
-                          textAlign: 'right',
                           fontWeight: '600',
                           color: pago.tipo_pago === 'reembolso' ? '#ef4444' : '#10b981',
                         }}
                       >
                         {pago.tipo_pago === 'reembolso' ? '-' : '+'}
                         {formatearMoneda(pago.monto || 0)}
-                      </td>
-                      <td style={{ padding: '1rem' }}>
-                        <span
+                      </div>
+                    </div>
+                    <div>
+                      <span
+                        style={{
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
+                          backgroundColor:
+                            pago.tipo_pago === 'reembolso'
+                              ? '#ef444420'
+                              : pago.tipo_pago === 'pago_completo'
+                              ? '#10b98120'
+                              : '#3b82f620',
+                          color:
+                            pago.tipo_pago === 'reembolso'
+                              ? '#ef4444'
+                              : pago.tipo_pago === 'pago_completo'
+                              ? '#10b981'
+                              : '#3b82f6',
+                        }}
+                      >
+                        {pago.tipo_pago === 'reembolso'
+                          ? 'Reembolso'
+                          : pago.tipo_pago === 'pago_completo'
+                          ? 'Pago Completo'
+                          : 'Abono'}
+                      </span>
+                      <span
+                        style={{
+                          marginLeft: '0.5rem',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
+                          backgroundColor: pago.origen === 'web' ? '#3b82f620' : '#6b728020',
+                          color: pago.origen === 'web' ? '#3b82f6' : '#6b7280',
+                        }}
+                      >
+                        {pago.origen === 'web' ? 'Web' : 'Escritorio'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                      <strong>Referencia:</strong> {pago.numero_referencia || '-'}
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                      <strong>Observaciones:</strong> {pago.observaciones || '-'}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => abrirModalDetalle(pago)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <Eye size={16} />
+                        Ver
+                      </button>
+                      {puedeEliminar && (
+                        <button
+                          onClick={() => abrirModalEliminar(pago)}
                           style={{
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: '9999px',
-                            fontSize: '0.75rem',
-                            fontWeight: '500',
-                            backgroundColor: pago.origen === 'web' ? '#3b82f620' : '#6b728020',
-                            color: pago.origen === 'web' ? '#3b82f6' : '#6b7280',
+                            padding: '0.5rem 0.75rem',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            borderRadius: '0.375rem',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '0.8rem',
                           }}
                         >
-                          {pago.origen === 'web' ? 'Web' : 'Escritorio'}
-                        </span>
+                          <Trash2 size={16} />
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Fecha
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Tipo
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Método
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Referencia
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Monto
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Origen
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Observaciones
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagosFiltrados.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                        No hay pagos que coincidan con los filtros
                       </td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', maxWidth: '200px' }}>
-                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {pago.observaciones || '-'}
-                        </div>
-                      </td>
-                      <td style={{ padding: '1rem', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                          <button
-                            onClick={() => abrirModalDetalle(pago)}
+                    </tr>
+                  ) : (
+                    pagosFiltrados.map((pago) => (
+                      <tr key={pago.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                        <td style={{ padding: '1rem' }}>{formatearFecha(pago.fecha_pago)}</td>
+                        <td style={{ padding: '1rem' }}>
+                          <span
                             style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#3b82f6',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: '9999px',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              backgroundColor:
+                                pago.tipo_pago === 'reembolso'
+                                  ? '#ef444420'
+                                  : pago.tipo_pago === 'pago_completo'
+                                  ? '#10b98120'
+                                  : '#3b82f620',
+                              color:
+                                pago.tipo_pago === 'reembolso'
+                                  ? '#ef4444'
+                                  : pago.tipo_pago === 'pago_completo'
+                                  ? '#10b981'
+                                  : '#3b82f6',
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
-                            title="Ver Detalle"
                           >
-                            <Eye size={16} />
-                          </button>
-                          {puedeEliminar && (
+                            {pago.tipo_pago === 'reembolso'
+                              ? 'Reembolso'
+                              : pago.tipo_pago === 'pago_completo'
+                              ? 'Pago Completo'
+                              : 'Abono'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem' }}>{pago.metodo_pago || '-'}</td>
+                        <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                          {pago.numero_referencia || '-'}
+                        </td>
+                        <td
+                          style={{
+                            padding: '1rem',
+                            textAlign: 'right',
+                            fontWeight: '600',
+                            color: pago.tipo_pago === 'reembolso' ? '#ef4444' : '#10b981',
+                          }}
+                        >
+                          {pago.tipo_pago === 'reembolso' ? '-' : '+'}
+                          {formatearMoneda(pago.monto || 0)}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <span
+                            style={{
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: '9999px',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              backgroundColor: pago.origen === 'web' ? '#3b82f620' : '#6b728020',
+                              color: pago.origen === 'web' ? '#3b82f6' : '#6b7280',
+                            }}
+                          >
+                            {pago.origen === 'web' ? 'Web' : 'Escritorio'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', maxWidth: '200px' }}>
+                          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {pago.observaciones || '-'}
+                          </div>
+                        </td>
+                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                             <button
-                              onClick={() => abrirModalEliminar(pago)}
+                              onClick={() => abrirModalDetalle(pago)}
                               style={{
                                 padding: '0.5rem',
-                                backgroundColor: '#ef4444',
+                                backgroundColor: '#3b82f6',
                                 color: 'white',
                                 borderRadius: '0.375rem',
                                 border: 'none',
@@ -1179,21 +1407,43 @@ const Pagos = () => {
                                 justifyContent: 'center',
                                 transition: 'background-color 0.2s',
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
-                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
-                              title="Eliminar"
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+                              title="Ver Detalle"
                             >
-                              <Trash2 size={16} />
+                              <Eye size={16} />
                             </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                            {puedeEliminar && (
+                              <button
+                                onClick={() => abrirModalEliminar(pago)}
+                                style={{
+                                  padding: '0.5rem',
+                                  backgroundColor: '#ef4444',
+                                  color: 'white',
+                                  borderRadius: '0.375rem',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'background-color 0.2s',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
+                                title="Eliminar"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

@@ -22,6 +22,9 @@ import Salones from './pages/Salones';
 import Reportes from './pages/Reportes';
 import Usuarios from './pages/Usuarios';
 import Permisos from './pages/Permisos';
+import NotificacionesNativas from './pages/NotificacionesNativas';
+import NotificacionNativaEditar from './pages/NotificacionNativaEditar';
+import IntegracionesWhatsApp from './pages/IntegracionesWhatsApp';
 
 // Componente para proteger rutas
 const ProtectedRoute = ({ children }) => {
@@ -235,6 +238,33 @@ function AppRoutes() {
             </RoleProtectedRoute>
           }
         />
+
+        {/* Notificaciones nativas */}
+        <Route
+          path="notificaciones-nativas"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.NOTIFICACIONES_NATIVAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <NotificacionesNativas />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="notificaciones-nativas/:tipo"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.NOTIFICACIONES_NATIVAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <NotificacionNativaEditar />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="integraciones/whatsapp"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.INTEGRACIONES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <IntegracionesWhatsApp />
+            </RoleProtectedRoute>
+          }
+        />
+
 
         {/* Usuarios - Solo admin y gerente */}
         <Route

@@ -13,6 +13,7 @@ import {
   Warehouse,
   Building,
   BarChart3,
+  Bell,
   Home,
   UserCircle,
   Settings,
@@ -30,6 +31,7 @@ const Layout = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [catalogoOpen, setCatalogoOpen] = useState(true);
   const [operacionesOpen, setOperacionesOpen] = useState(true);
+  const [configuracionesOpen, setConfiguracionesOpen] = useState(true);
   const [usuariosOpen, setUsuariosOpen] = useState(true);
 
   // Definir permisos por rol
@@ -42,6 +44,7 @@ const Layout = () => {
       { path: '/eventos', icon: Calendar, label: 'Eventos', moduleKey: MODULES.EVENTOS, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
       { path: '/pagos', icon: CreditCard, label: 'Pagos', moduleKey: MODULES.PAGOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/salones', icon: Building, label: 'Salones', moduleKey: MODULES.SALONES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
+      { path: '/notificaciones-nativas', icon: Bell, label: 'Notificaciones', moduleKey: MODULES.NOTIFICACIONES_NATIVAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/calendario', icon: CalendarDays, label: 'Calendario', moduleKey: MODULES.CALENDARIO, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
       { path: '/planes', icon: FileText, label: 'Planes', moduleKey: MODULES.PLANES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/productos', icon: Package, label: 'Productos', moduleKey: MODULES.PRODUCTOS, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
@@ -50,6 +53,7 @@ const Layout = () => {
       { path: '/usuarios', icon: Settings, label: 'Usuarios', moduleKey: MODULES.USUARIOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/clientes', icon: Users, label: 'Clientes', moduleKey: MODULES.CLIENTES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/permisos', icon: Settings, label: 'Roles y Permisos', moduleKey: MODULES.PERMISOS, roles: [ROLES.ADMIN] },
+      { path: '/integraciones/whatsapp', icon: Settings, label: 'Integraciones', moduleKey: MODULES.INTEGRACIONES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
     ];
 
     if (!rol) return [];
@@ -62,6 +66,7 @@ const Layout = () => {
   const esCliente = hasRole(usuario?.rol, [ROLES.CLIENT]);
   const rutasCatalogo = ['/planes', '/productos', '/categorias', '/inventario'];
   const rutasOperaciones = ['/calendario', '/eventos', '/pagos', '/salones'];
+  const rutasConfiguraciones = ['/notificaciones-nativas', '/integraciones/whatsapp'];
   const rutasUsuarios = ['/usuarios', '/clientes', '/permisos'];
 
   const menuItemsFiltrados = esCliente
@@ -70,12 +75,14 @@ const Layout = () => {
 
   const catalogoItems = menuItemsFiltrados.filter((item) => rutasCatalogo.includes(item.path));
   const operacionesItems = menuItemsFiltrados.filter((item) => rutasOperaciones.includes(item.path));
+  const configuracionesItems = menuItemsFiltrados.filter((item) => rutasConfiguraciones.includes(item.path));
   const usuariosItems = menuItemsFiltrados.filter((item) => rutasUsuarios.includes(item.path));
   const rutasInferior = ['/perfil', '/reportes'];
   const menuItemsRest = menuItemsFiltrados.filter(
     (item) =>
       !rutasCatalogo.includes(item.path) &&
       !rutasOperaciones.includes(item.path) &&
+      !rutasConfiguraciones.includes(item.path) &&
       !rutasUsuarios.includes(item.path) &&
       !rutasInferior.includes(item.path)
   );
@@ -83,6 +90,7 @@ const Layout = () => {
 
   const catalogoActivo = catalogoItems.some((item) => location.pathname === item.path);
   const operacionesActivo = operacionesItems.some((item) => location.pathname === item.path);
+  const configuracionesActivo = configuracionesItems.some((item) => location.pathname.startsWith(item.path));
   const usuariosActivo = usuariosItems.some((item) => location.pathname === item.path);
 
   useEffect(() => {
@@ -96,6 +104,12 @@ const Layout = () => {
       setOperacionesOpen(true);
     }
   }, [operacionesActivo]);
+
+  useEffect(() => {
+    if (configuracionesActivo) {
+      setConfiguracionesOpen(true);
+    }
+  }, [configuracionesActivo]);
 
   useEffect(() => {
     if (usuariosActivo) {
@@ -256,6 +270,67 @@ const Layout = () => {
                       {operacionesItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '/');
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: '0.6rem 1.5rem',
+                              color: isActive ? 'white' : '#d1d5db',
+                              backgroundColor: isActive ? '#4f46e5' : 'transparent',
+                              textDecoration: 'none',
+                              transition: 'all 0.2s',
+                              gap: '0.75rem',
+                              borderLeft: sidebarOpen ? '2px solid #374151' : 'none',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            <Icon size={18} />
+                            {sidebarOpen && <span>{item.label}</span>}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {configuracionesItems.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setConfiguracionesOpen((prev) => !prev)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.75rem 1.5rem',
+                      width: '100%',
+                      background: 'none',
+                      border: 'none',
+                      color: configuracionesActivo ? 'white' : '#d1d5db',
+                      cursor: 'pointer',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <Settings size={20} />
+                    {sidebarOpen && (
+                      <>
+                        <span style={{ flex: 1, textAlign: 'left' }}>Configuraciones</span>
+                        {configuracionesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </>
+                    )}
+                  </button>
+                  {configuracionesOpen && (
+                    <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
+                      {configuracionesItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname.startsWith(item.path);
                         return (
                           <Link
                             key={item.path}

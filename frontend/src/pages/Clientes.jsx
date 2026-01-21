@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { clientesService, usuariosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, User, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
@@ -10,6 +11,7 @@ const Clientes = () => {
   const { usuario } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
   const [clientes, setClientes] = useState([]);
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busqueda, setBusqueda] = useState('');
@@ -222,9 +224,9 @@ const Clientes = () => {
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Clientes</h1>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Clientes</h1>
           <p style={{ color: '#6b7280' }}>Gestión de clientes</p>
         </div>
         {puedeCrear && (
@@ -267,7 +269,7 @@ const Clientes = () => {
       )}
 
       {/* Búsqueda */}
-      <div style={{ marginBottom: '1.5rem', position: 'relative', maxWidth: '400px' }}>
+      <div style={{ marginBottom: '1.5rem', position: 'relative', maxWidth: isMobile ? '100%' : '400px' }}>
         <Search
           size={20}
           style={{
@@ -303,140 +305,256 @@ const Clientes = () => {
           overflow: 'hidden',
         }}
       >
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Cliente
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Documento
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Email
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Teléfono
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Dirección
-                </th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientesFiltrados.length === 0 ? (
-                <tr>
-                  <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-                    {busqueda ? 'No se encontraron clientes con ese criterio' : 'No hay clientes disponibles'}
-                  </td>
+        {isMobile ? (
+          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {clientesFiltrados.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                {busqueda ? 'No se encontraron clientes con ese criterio' : 'No hay clientes disponibles'}
+              </div>
+            ) : (
+              clientesFiltrados.map((cliente) => (
+                <div
+                  key={cliente.id}
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.75rem',
+                    padding: '1rem',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div
+                      style={{
+                        width: '2.5rem',
+                        height: '2.5rem',
+                        borderRadius: '50%',
+                        backgroundColor: '#6366f120',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <User size={18} color="#6366f1" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#111827' }}>{cliente.nombre_completo || '-'}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{cliente.documento_identidad || '-'}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.85rem' }}>
+                      <strong>Email:</strong> {cliente.email || '-'}
+                    </div>
+                    <div style={{ fontSize: '0.85rem' }}>
+                      <strong>Teléfono:</strong> {cliente.telefono || '-'}
+                    </div>
+                    <div style={{ fontSize: '0.85rem' }}>
+                      <strong>Dirección:</strong> {cliente.direccion || '-'}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => abrirModalDetalle(cliente)}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        borderRadius: '0.375rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      <Eye size={16} strokeWidth={2.5} />
+                      Ver
+                    </button>
+                    {puedeEditar && (
+                      <button
+                        onClick={() => abrirModalEditar(cliente)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#10b981',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <Edit size={16} strokeWidth={2.5} />
+                        Editar
+                      </button>
+                    )}
+                    {puedeEliminar && (
+                      <button
+                        onClick={() => abrirModalEliminar(cliente)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <Trash2 size={16} strokeWidth={2.5} />
+                        Eliminar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Cliente
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Documento
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Email
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Teléfono
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Dirección
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Acciones
+                  </th>
                 </tr>
-              ) : (
-                clientesFiltrados.map((cliente) => (
-                  <tr key={cliente.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div
-                          style={{
-                            width: '2.5rem',
-                            height: '2.5rem',
-                            borderRadius: '50%',
-                            backgroundColor: '#6366f120',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <User size={20} color="#6366f1" />
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: '500' }}>{cliente.nombre_completo || '-'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>{cliente.documento_identidad || '-'}</td>
-                    <td style={{ padding: '1rem' }}>{cliente.email || '-'}</td>
-                    <td style={{ padding: '1rem' }}>{cliente.telefono || '-'}</td>
-                    <td style={{ padding: '1rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {cliente.direccion || '-'}
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button
-                          onClick={() => abrirModalDetalle(cliente)}
-                          style={{
-                            padding: '0.5rem',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            borderRadius: '0.375rem',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'background-color 0.2s',
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
-                          title="Ver Detalle"
-                        >
-                          <Eye size={18} strokeWidth={2.5} />
-                        </button>
-                        {puedeEditar && (
-                          <button
-                            onClick={() => abrirModalEditar(cliente)}
-                            style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#10b981',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
-                            title="Editar"
-                          >
-                            <Edit size={18} strokeWidth={2.5} />
-                          </button>
-                        )}
-                        {puedeEliminar && (
-                          <button
-                            onClick={() => abrirModalEliminar(cliente)}
-                            style={{
-                              padding: '0.5rem',
-                              backgroundColor: '#ef4444',
-                              color: 'white',
-                              borderRadius: '0.375rem',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
-                            title="Eliminar"
-                          >
-                            <Trash2 size={18} strokeWidth={2.5} />
-                          </button>
-                        )}
-                      </div>
+              </thead>
+              <tbody>
+                {clientesFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                      {busqueda ? 'No se encontraron clientes con ese criterio' : 'No hay clientes disponibles'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  clientesFiltrados.map((cliente) => (
+                    <tr key={cliente.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div
+                            style={{
+                              width: '2.5rem',
+                              height: '2.5rem',
+                              borderRadius: '50%',
+                              backgroundColor: '#6366f120',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <User size={20} color="#6366f1" />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: '500' }}>{cliente.nombre_completo || '-'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>{cliente.documento_identidad || '-'}</td>
+                      <td style={{ padding: '1rem' }}>{cliente.email || '-'}</td>
+                      <td style={{ padding: '1rem' }}>{cliente.telefono || '-'}</td>
+                      <td style={{ padding: '1rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {cliente.direccion || '-'}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => abrirModalDetalle(cliente)}
+                            style={{
+                              padding: '0.5rem',
+                              backgroundColor: '#3b82f6',
+                              color: 'white',
+                              borderRadius: '0.375rem',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'background-color 0.2s',
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+                            title="Ver Detalle"
+                          >
+                            <Eye size={18} strokeWidth={2.5} />
+                          </button>
+                          {puedeEditar && (
+                            <button
+                              onClick={() => abrirModalEditar(cliente)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+                              title="Editar"
+                            >
+                              <Edit size={18} strokeWidth={2.5} />
+                            </button>
+                          )}
+                          {puedeEliminar && (
+                            <button
+                              onClick={() => abrirModalEliminar(cliente)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+                              title="Eliminar"
+                            >
+                              <Trash2 size={18} strokeWidth={2.5} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Modal Crear Cliente */}

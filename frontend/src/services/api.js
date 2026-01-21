@@ -52,9 +52,10 @@ api.interceptors.response.use(
       // Marcar el error para que los componentes puedan manejarlo
       error.isAuthError = true;
       
-      // NO redirigir automáticamente - dejar que los componentes manejen el error
-      // Esto permite que se muestren mensajes de error antes de redirigir
-      // Los componentes son responsables de manejar la redirección
+      // Cerrar sesión automáticamente en token expirado o inválido
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
@@ -551,5 +552,47 @@ export const reportesService = {
     return response.data;
   },
 };
+
+export const notificacionesNativasService = {
+  getConfiguraciones: async () => {
+    const response = await api.get('/notificaciones_nativas/configuraciones');
+    return response.data;
+  },
+  getConfiguracion: async (tipo) => {
+    const response = await api.get(`/notificaciones_nativas/configuraciones/${tipo}`);
+    return response.data;
+  },
+  updateEstado: async (tipo, activo) => {
+    const response = await api.patch(`/notificaciones_nativas/configuraciones/${tipo}/status`, { activo });
+    return response.data;
+  },
+  updateConfiguracion: async (tipo, payload) => {
+    const response = await api.put(`/notificaciones_nativas/configuraciones/${tipo}`, payload);
+    return response.data;
+  },
+  getProximasEvento: async (eventoId) => {
+    const response = await api.get(`/notificaciones_nativas/evento/${eventoId}/proximas`);
+    return response.data;
+  },
+  forzarNotificacion: async (eventoId, tipo, canal = null) => {
+    const response = await api.post(`/notificaciones_nativas/evento/${eventoId}/forzar`, {
+      tipo_notificacion: tipo,
+      canal,
+    });
+    return response.data;
+  },
+};
+
+export const integracionesService = {
+  getWhatsApp: async () => {
+    const response = await api.get('/integraciones/whatsapp');
+    return response.data;
+  },
+  updateWhatsApp: async (payload) => {
+    const response = await api.put('/integraciones/whatsapp', payload);
+    return response.data;
+  },
+};
+
 
 export default api;

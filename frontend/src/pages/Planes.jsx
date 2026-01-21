@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { planesService, productosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, FileText, Eye, Edit, Trash2, X, Save, AlertCircle, Package, Minus } from 'lucide-react';
 import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
@@ -9,6 +10,7 @@ import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 const Planes = () => {
   const { usuario } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
+  const isMobile = useIsMobile();
   const [planes, setPlanes] = useState([]);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -609,9 +611,9 @@ const Planes = () => {
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Planes</h1>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Planes</h1>
           <p style={{ color: '#6b7280' }}>Gestión de planes de eventos</p>
         </div>
         {puedeCrear && (
@@ -655,7 +657,7 @@ const Planes = () => {
 
       {/* Búsqueda y filtros */}
       <div style={{ marginBottom: '1.5rem', display: 'grid', gap: '1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: '1rem' }}>
           <div style={{ position: 'relative' }}>
         <Search
           size={20}
@@ -708,7 +710,7 @@ const Planes = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr',
             gap: '1rem',
             padding: '1rem',
             backgroundColor: '#f9fafb',
@@ -775,7 +777,7 @@ const Planes = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
           gap: '1.5rem',
         }}
       >

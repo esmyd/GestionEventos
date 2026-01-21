@@ -3,6 +3,7 @@ Módulo de integración con correo electrónico
 """
 import smtplib
 import os
+from utilidades.logger import obtener_logger
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
@@ -19,6 +20,7 @@ class IntegracionEmail:
     def __init__(self):
         self.base_datos = BaseDatos()
         self.activo = False
+        self.logger = obtener_logger()
         self.smtp_server = None
         self.smtp_port = None
         self.email_from = None
@@ -53,21 +55,23 @@ class IntegracionEmail:
         # Verificar que todas las configuraciones necesarias estén presentes
         if self.smtp_server and self.email_from and self.email_password:
             self.activo = True
-            print(f"Configuración de email cargada: {self.email_from} via {self.smtp_server}:{self.smtp_port}")
+            self.logger.info(
+                f"Configuración de email cargada: {self.email_from} via {self.smtp_server}:{self.smtp_port}"
+            )
         else:
             self.activo = False
-            print("Advertencia: Configuración de email incompleta. Verifica tu archivo .env")
+            self.logger.warning("Configuración de email incompleta. Verifica tu archivo .env")
             if not self.smtp_server:
-                print("  - SMTP_SERVER no configurado")
+                self.logger.warning("SMTP_SERVER no configurado")
             if not self.email_from:
-                print("  - EMAIL_FROM no configurado")
+                self.logger.warning("EMAIL_FROM no configurado")
             if not self.email_password:
-                print("  - EMAIL_PASSWORD no configurado")
+                self.logger.warning("EMAIL_PASSWORD no configurado")
     
     def enviar_correo(self, destinatario, asunto, cuerpo, es_html=False):
         """Envía un correo electrónico"""
         if not self.activo:
-            print("Integración Email no activa. Verifica tu archivo .env")
+            self.logger.warning("Integración Email no activa. Verifica tu archivo .env")
             return False
         
         try:
@@ -91,7 +95,7 @@ class IntegracionEmail:
             
             # Conectar al servidor SMTP con timeout
             timeout = 30  # 30 segundos de timeout
-            print(f"   Conectando a {self.smtp_server}:{self.smtp_port}...")
+            self.logger.info(f"Conectando a SMTP {self.smtp_server}:{self.smtp_port}")
             
             if self.use_ssl:
                 # Usar SSL (puerto 465)
@@ -105,65 +109,55 @@ class IntegracionEmail:
             
             # Iniciar TLS si está configurado
             if self.use_tls and not self.use_ssl:
-                print("   Iniciando TLS...")
+                self.logger.info("Iniciando TLS")
                 server.starttls()
             
             # Autenticarse
-            print(f"   Autenticando como {self.email_from}...")
+            self.logger.info(f"Autenticando SMTP como {self.email_from}")
             server.login(self.email_from, self.email_password)
             
             # Enviar correo
-            print(f"   Enviando correo a {destinatario}...")
+            self.logger.info(f"Enviando correo a {destinatario}")
             server.send_message(msg)
             server.quit()
-            print(f"   Conexión cerrada correctamente")
-            
-            print(f"✓ Correo enviado exitosamente a {destinatario}: {asunto}")
+            self.logger.info("Conexion SMTP cerrada correctamente")
+            self.logger.info(f"Correo enviado exitosamente a {destinatario}: {asunto}")
             return True
             
         except smtplib.SMTPAuthenticationError as e:
-            print(f"✗ Error de autenticación SMTP: {e}")
-            print("  Verifica que EMAIL_FROM y EMAIL_PASSWORD sean correctos en tu archivo .env")
+            self.logger.error(f"Error de autenticación SMTP: {e}")
+            self.logger.error("Verifica EMAIL_FROM y EMAIL_PASSWORD en tu archivo .env")
             return False
         except smtplib.SMTPServerDisconnected as e:
-            print(f"✗ Error SMTP: El servidor cerró la conexión inesperadamente")
-            print(f"  Detalles: {e}")
-            print(f"  Posibles causas:")
-            print(f"    - El servidor SMTP requiere una configuración SSL/TLS diferente")
-            print(f"    - Verifica SMTP_USE_SSL y SMTP_USE_TLS en tu archivo .env")
-            print(f"    - Para puerto 465: SMTP_USE_SSL=True, SMTP_USE_TLS=False")
-            print(f"    - Para puerto 587: SMTP_USE_SSL=False, SMTP_USE_TLS=True")
+            self.logger.error("Error SMTP: El servidor cerró la conexión inesperadamente")
+            self.logger.error(f"Detalles: {e}")
+            self.logger.error("Verifica SMTP_USE_SSL y SMTP_USE_TLS en tu archivo .env")
             return False
         except smtplib.SMTPException as e:
-            print(f"✗ Error SMTP: {e}")
+            self.logger.error(f"Error SMTP: {e}")
             if "Connection unexpectedly closed" in str(e):
-                print(f"  El servidor cerró la conexión. Verifica:")
-                print(f"    - Configuración SSL/TLS (SMTP_USE_SSL, SMTP_USE_TLS)")
-                print(f"    - Puerto correcto (465 para SSL, 587 para TLS)")
-                print(f"    - Credenciales correctas")
+                self.logger.error("El servidor cerró la conexión. Verifica SSL/TLS, puerto y credenciales.")
             return False
         except TimeoutError as e:
-            print(f"✗ Error de timeout: La conexión al servidor SMTP tardó demasiado")
-            print(f"  Verifica que el servidor {self.smtp_server} esté accesible")
+            self.logger.error("Error de timeout: La conexión SMTP tardó demasiado")
+            self.logger.error(f"Verifica que el servidor {self.smtp_server} esté accesible")
             return False
         except OSError as e:
             if "getaddrinfo failed" in str(e) or "11001" in str(e):
-                print(f"✗ Error de conexión SMTP: No se puede resolver el servidor '{self.smtp_server}'")
-                print(f"  Verifica que SMTP_SERVER en tu archivo .env sea un hostname válido")
-                print(f"  Ejemplo: smtp.gmail.com, smtp.siglotecnologico.com, mail.tudominio.com")
+                self.logger.error(f"Error de conexión SMTP: No se puede resolver '{self.smtp_server}'")
+                self.logger.error("Verifica SMTP_SERVER en tu archivo .env")
             elif "timed out" in str(e).lower() or "timeout" in str(e).lower():
-                print(f"✗ Error de timeout: No se pudo conectar al servidor SMTP en {self.smtp_server}:{self.smtp_port}")
-                print(f"  Verifica que el servidor esté accesible y el puerto sea correcto")
+                self.logger.error(
+                    f"Error de timeout: No se pudo conectar a {self.smtp_server}:{self.smtp_port}"
+                )
             else:
-                print(f"✗ Error de red: {e}")
+                self.logger.error(f"Error de red: {e}")
             return False
         except Exception as e:
-            print(f"✗ Error al enviar correo: {e}")
+            self.logger.error(f"Error al enviar correo: {e}")
             error_str = str(e).lower()
             if "connection" in error_str and "closed" in error_str:
-                print(f"  El servidor cerró la conexión. Verifica la configuración SSL/TLS")
-            import traceback
-            traceback.print_exc()
+                self.logger.error("El servidor cerró la conexión. Verifica SSL/TLS")
             return False
     
     def enviar_notificacion_evento(self, evento_id, tipo_notificacion):

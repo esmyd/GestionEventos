@@ -15,6 +15,8 @@ from api.routes.inventario import inventario_bp
 from api.routes.salones import salones_bp
 from api.routes.reportes import reportes_bp
 from api.routes.tipos_evento import tipos_evento_bp
+from api.routes.notificaciones_nativas import notificaciones_nativas_bp
+from api.routes.integraciones import integraciones_bp
 
 
 def create_app(config_name='development'):
@@ -47,6 +49,8 @@ def create_app(config_name='development'):
     app.register_blueprint(salones_bp, url_prefix='/api/salones')
     app.register_blueprint(reportes_bp, url_prefix='/api/reportes')
     app.register_blueprint(tipos_evento_bp, url_prefix='/api/tipos_evento')
+    app.register_blueprint(notificaciones_nativas_bp, url_prefix='/api/notificaciones_nativas')
+    app.register_blueprint(integraciones_bp, url_prefix='/api/integraciones')
     
     # Ruta de salud
     @app.route('/api/health')

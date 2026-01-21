@@ -7,6 +7,7 @@ from modelos.usuario_modelo import UsuarioModelo
 from modelos.pago_modelo import PagoModelo
 from api.middleware import requiere_autenticacion, requiere_rol
 from utilidades.logger import obtener_logger
+from integraciones.sistema_notificaciones import SistemaNotificaciones
 
 eventos_bp = Blueprint('eventos', __name__)
 logger = obtener_logger()
@@ -107,6 +108,10 @@ def crear_evento():
             if data.get('plan_id'):
                 evento_modelo.crear_servicios_evento_desde_plan(evento_id, data.get('plan_id'))
             evento = evento_modelo.obtener_evento_por_id(evento_id)
+            try:
+                SistemaNotificaciones().enviar_notificacion(evento_id, 'evento_creado')
+            except Exception as e:
+                logger.error(f"Error al enviar notificación evento_creado: {str(e)}")
             return jsonify({'message': 'Evento creado exitosamente', 'evento': evento}), 201
         else:
             return jsonify({'error': 'Error al crear evento'}), 500
