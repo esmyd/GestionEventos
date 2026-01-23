@@ -52,6 +52,12 @@ class NotificacionModeloV2:
             consulta = "CALL marcar_notificacion_enviada(%s, %s, %s)"
             cursor = self.base_datos.conexion.cursor()
             cursor.execute(consulta, (notificacion_id, exito, error))
+            # Consumir posibles resultados del procedimiento
+            try:
+                while cursor.nextset():
+                    cursor.fetchall()
+            except Exception:
+                pass
             self.base_datos.conexion.commit()
             cursor.close()
             # Consumir cualquier resultado adicional del procedimiento almacenado
@@ -83,6 +89,12 @@ class NotificacionModeloV2:
             cursor.execute(consulta)
             resultado = cursor.fetchone()
             cursor.close()
+            # Consumir cualquier resultado adicional del procedimiento almacenado
+            try:
+                while self.base_datos.conexion.next_result():
+                    pass
+            except (AttributeError, Exception):
+                pass
             return resultado
         except Exception as e:
             # Procedimiento no existe o hay error, retornar None para manejar desde Python

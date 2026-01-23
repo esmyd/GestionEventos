@@ -594,5 +594,107 @@ export const integracionesService = {
   },
 };
 
+export const whatsappChatService = {
+  getConversations: async () => {
+    const response = await api.get('/whatsapp_chat/conversations');
+    return response.data;
+  },
+  getMessages: async (conversationId) => {
+    const response = await api.get(`/whatsapp_chat/conversations/${conversationId}/messages`);
+    return response.data;
+  },
+  sendMessage: async (conversationId, mensaje) => {
+    const response = await api.post(`/whatsapp_chat/conversations/${conversationId}/send`, { mensaje });
+    return response.data;
+  },
+  setMode: async (conversationId, modo) => {
+    const response = await api.patch(`/whatsapp_chat/conversations/${conversationId}/modo`, { modo });
+    return response.data;
+  },
+  resetBot: async (conversationId) => {
+    const response = await api.post(`/whatsapp_chat/conversations/${conversationId}/reset-bot`);
+    return response.data;
+  },
+  sendMedia: async (conversationId, formData) => {
+    const response = await api.post(`/whatsapp_chat/conversations/${conversationId}/send-media`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+  getMedia: async (mediaId) => {
+    const response = await api.get(`/whatsapp_chat/media/${mediaId}`, { responseType: 'blob' });
+    return response.data;
+  },
+};
+
+export const whatsappMetricasService = {
+  getResumen: async () => {
+    const response = await api.get('/whatsapp_metricas/resumen');
+    return response.data;
+  },
+  getClientes: async () => {
+    const response = await api.get('/whatsapp_metricas/clientes');
+    return response.data;
+  },
+  updateConfig: async (payload) => {
+    const response = await api.put('/whatsapp_metricas/config', payload);
+    return response.data;
+  },
+  updateControlCliente: async (clienteId, payload) => {
+    const response = await api.patch(`/whatsapp_metricas/clientes/${clienteId}/control`, payload);
+    return response.data;
+  },
+};
+
+export const configuracionesService = {
+  limpiarDatosPrueba: async () => {
+    const response = await api.post('/configuraciones/limpiar-datos-prueba');
+    return response.data;
+  },
+  getNombrePlataforma: async () => {
+    const response = await api.get('/configuraciones/nombre-plataforma');
+    return response.data;
+  },
+  updateNombrePlataforma: async (payload) => {
+    const response = await api.put('/configuraciones/nombre-plataforma', payload);
+    return response.data;
+  },
+  getGeneral: async () => {
+    const response = await api.get('/configuraciones/general');
+    return response.data;
+  },
+  getGeneralPublic: async () => {
+    const response = await api.get('/configuraciones/general-public');
+    return response.data;
+  },
+  updateGeneral: async (payload) => {
+    const response = await api.put('/configuraciones/general', payload);
+    return response.data;
+  },
+};
+
+export const whatsappTemplatesService = {
+  getAll: async () => {
+    const response = await api.get('/whatsapp_templates');
+    return response.data;
+  },
+  create: async (payload) => {
+    const response = await api.post('/whatsapp_templates', payload);
+    return response.data;
+  },
+  update: async (id, payload) => {
+    const response = await api.put(`/whatsapp_templates/${id}`, payload);
+    return response.data;
+  },
+  remove: async (id) => {
+    const response = await api.delete(`/whatsapp_templates/${id}`);
+    return response.data;
+  },
+  send: async (payload) => {
+    const response = await api.post('/whatsapp_templates/enviar', payload);
+    return response.data;
+  },
+};
+
 
 export default api;

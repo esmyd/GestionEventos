@@ -10,6 +10,10 @@ from integraciones.whatsapp import IntegracionWhatsApp
 from datetime import datetime
 from utilidades.logger import obtener_logger
 import re
+from modelos.whatsapp_metricas_modelo import WhatsAppMetricasModelo
+from modelos.configuracion_general_modelo import ConfiguracionGeneralModelo
+from modelos.whatsapp_chat_modelo import WhatsAppChatModelo
+from modelos.whatsapp_templates_modelo import WhatsAppTemplatesModelo
 
 
 class SistemaNotificaciones:
@@ -22,9 +26,17 @@ class SistemaNotificaciones:
         self.evento_modelo = EventoModelo()
         self.pago_modelo = PagoModelo()
         self.logger = obtener_logger()
+        self.metricas = WhatsAppMetricasModelo()
+        self.config_general = ConfiguracionGeneralModelo()
+        self.chat_modelo = WhatsAppChatModelo()
+        self.templates = WhatsAppTemplatesModelo()
+        self.ultimo_error = None
+        self.ultimo_error_detalle = None
     
     def enviar_notificacion(self, evento_id, tipo_notificacion, datos_adicionales=None, force=False, canal_preferido=None):
         """Envía una notificación según su configuración"""
+        self.ultimo_error = None
+        self.ultimo_error_detalle = None
         self.logger.info(
             f"Intento enviar notificación '{tipo_notificacion}' para evento {evento_id} "
             f"(force={force}, canal={canal_preferido or 'ambos'})"
@@ -57,7 +69,10 @@ class SistemaNotificaciones:
             self.logger.info(
                 f"Email activo para notificación '{tipo_notificacion}' en evento {evento.get('id_evento')}"
             )
-            email_enviado = self._enviar_email(evento, config, datos, tipo_notificacion)
+            if self.metricas.permitir_envio_email(evento.get("id_cliente")):
+                email_enviado = self._enviar_email(evento, config, datos, tipo_notificacion)
+            else:
+                self.logger.warning("Email bloqueado para este cliente, no se envio")
         elif canal_preferido in (None, 'email') and config.get('enviar_email') and not self.email.activo:
             self.logger.warning("Email inactivo, no se envio notificación por email")
         elif canal_preferido in (None, 'email'):
@@ -71,7 +86,30 @@ class SistemaNotificaciones:
             self.logger.info(
                 f"WhatsApp activo para notificación '{tipo_notificacion}' en evento {evento.get('id_evento')}"
             )
-            whatsapp_enviado = self._enviar_whatsapp(evento, config, datos)
+            permitido_metricas = self.metricas.permitir_envio_whatsapp(evento.get("telefono"))
+            permitido_cliente = self.metricas.permitir_envio_whatsapp_cliente(evento.get("cliente_id"))
+            permitido_chat, motivo_chat = self.chat_modelo.puede_enviar_whatsapp(evento.get("telefono"))
+            if permitido_metricas and permitido_cliente and permitido_chat:
+                whatsapp_enviado = self._enviar_whatsapp(evento, config, datos, tipo_notificacion)
+            else:
+                if motivo_chat in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
+                    if self._enviar_plantilla_reengagement(evento, datos):
+                        whatsapp_enviado = self._enviar_whatsapp(evento, config, datos, tipo_notificacion)
+                        if whatsapp_enviado:
+                            permitido_chat = True
+                if not permitido_metricas:
+                    self.ultimo_error = "WHATSAPP_DESACTIVADO"
+                    self.ultimo_error_detalle = "WhatsApp esta desactivado temporalmente."
+                elif not permitido_cliente:
+                    self.ultimo_error = "WHATSAPP_BLOQUEADO_CLIENTE"
+                    self.ultimo_error_detalle = "WhatsApp bloqueado para este cliente."
+                elif motivo_chat in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
+                    self.ultimo_error = "WHATSAPP_VENTANA_24H"
+                    self.ultimo_error_detalle = (
+                        "WhatsApp fuera de ventana de 24h. "
+                        "Necesitas enviar un mensaje de plantilla para abrir el chat."
+                    )
+                self.logger.warning("WhatsApp bloqueado o desactivado, no se envio")
         elif canal_preferido in (None, 'whatsapp') and config.get('enviar_whatsapp') and not self.whatsapp.activo:
             self.logger.warning("WhatsApp inactivo, no se envio notificación por WhatsApp")
         elif canal_preferido in (None, 'whatsapp'):
@@ -86,6 +124,11 @@ class SistemaNotificaciones:
             # Registrar envío al cliente (solo si tiene email/teléfono)
             destinatario_cliente = evento.get('email') or evento.get('telefono')
             if destinatario_cliente:
+                config_costos = self.metricas.obtener_config() or {}
+                precio_email = float(config_costos.get("precio_email") or 0)
+                precio_whatsapp = float(config_costos.get("precio_whatsapp") or 0)
+                costo_email = precio_email if email_enviado else None
+                costo_whatsapp = precio_whatsapp if whatsapp_enviado else None
                 self.modelo.registrar_envio(
                     evento_id,
                     tipo_notificacion,
@@ -93,7 +136,9 @@ class SistemaNotificaciones:
                     destinatario_cliente,
                     config.get('nombre', ''),
                     config.get('plantilla_email', ''),
-                    enviado=True
+                    enviado=True,
+                    costo_email=costo_email,
+                    costo_whatsapp=costo_whatsapp
                 )
             self.logger.info(
                 f"Notificación '{tipo_notificacion}' enviada para evento {evento_id} por {canal}"
@@ -146,6 +191,7 @@ class SistemaNotificaciones:
             'saldo_pendiente': float(evento.get('saldo', evento.get('saldo_pendiente', 0)) or 0),
             'saldo': float(evento.get('saldo', evento.get('saldo_pendiente', 0)) or 0),
             'dias_restantes': dias_restantes,
+            'nombre_plataforma': self._obtener_nombre_plataforma(),
         }
         
         # Agregar datos adicionales (para pagos)
@@ -165,14 +211,22 @@ class SistemaNotificaciones:
             def __missing__(self, key):
                 return f"{{{key}}}"
         try:
-            return (plantilla or "").format(**datos)
+            contenido = (plantilla or "").format(**datos)
+            nombre_plataforma = self._obtener_nombre_plataforma()
+            if nombre_plataforma and nombre_plataforma != "Lirios Eventos":
+                contenido = contenido.replace("Lirios Eventos", nombre_plataforma)
+            return contenido
         except KeyError:
             faltantes = self._obtener_placeholders_faltantes(plantilla, datos)
             if faltantes:
                 self.logger.error(
                     f"Plantilla '{tipo_notificacion}' ({canal}) con variables faltantes: {', '.join(faltantes)}"
                 )
-            return (plantilla or "").format_map(SafeDict(datos))
+            contenido = (plantilla or "").format_map(SafeDict(datos))
+            nombre_plataforma = self._obtener_nombre_plataforma()
+            if nombre_plataforma and nombre_plataforma != "Lirios Eventos":
+                contenido = contenido.replace("Lirios Eventos", nombre_plataforma)
+            return contenido
         except Exception as e:
             self.logger.error(
                 f"Error al renderizar plantilla '{tipo_notificacion}' ({canal}): {e}"
@@ -186,8 +240,9 @@ class SistemaNotificaciones:
         return "<html" in texto or "<body" in texto or "<table" in texto
 
     def _extraer_layout(self, contenido, default_header="Lirios Eventos", default_footer="Lirios Eventos · Estamos para ayudarte."):
-        header = default_header
-        footer = default_footer
+        nombre_plataforma = self._obtener_nombre_plataforma()
+        header = default_header or nombre_plataforma
+        footer = default_footer or f"{nombre_plataforma} · Estamos para ayudarte."
         if contenido:
             header_match = re.search(r"\[\[HEADER:(.*?)\]\]", contenido, re.DOTALL)
             footer_match = re.search(r"\[\[FOOTER:(.*?)\]\]", contenido, re.DOTALL)
@@ -196,6 +251,68 @@ class SistemaNotificaciones:
             if footer_match and footer_match.group(1).strip():
                 footer = footer_match.group(1).strip()
         return header, footer
+
+    def _render_parametros(self, plantilla_texto, datos):
+        if not plantilla_texto:
+            return []
+        class SafeDict(dict):
+            def __missing__(self, key):
+                return f"{{{key}}}"
+        valores = []
+        for item in str(plantilla_texto).split(","):
+            texto = item.strip()
+            if not texto:
+                continue
+            try:
+                valores.append(texto.format_map(SafeDict(datos)))
+            except Exception:
+                valores.append(texto)
+        return valores
+
+    def _enviar_plantilla_reengagement(self, evento, datos):
+        config = self.config_general.obtener_configuracion() or {}
+        template_id = config.get("whatsapp_reengagement_template_id")
+        if not template_id:
+            return False
+        plantilla = self.templates.obtener_por_id(int(template_id))
+        if not plantilla or not plantilla.get("activo"):
+            return False
+        telefono = evento.get("telefono")
+        header_params = self._render_parametros(plantilla.get("header_ejemplo"), datos)
+        body_params = self._render_parametros(plantilla.get("body_ejemplo"), datos)
+        ok, wa_id, error = self.whatsapp.enviar_template(
+            telefono,
+            plantilla.get("nombre"),
+            plantilla.get("idioma") or "es",
+            parametros=[],
+            header_parametros=header_params,
+            body_parametros=body_params
+        )
+        conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+        if not conversacion:
+            conversacion_id = self.chat_modelo.crear_conversacion(telefono, cliente_id=evento.get("id_cliente"))
+            conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+        if conversacion:
+            self.chat_modelo.actualizar_conversacion(conversacion["id"])
+            if ok:
+                self.chat_modelo.actualizar_interaccion_cliente(conversacion["id"])
+            self.chat_modelo.registrar_mensaje(
+                conversacion["id"],
+                "out",
+                f"Plantilla: {plantilla.get('nombre')}",
+                estado="sent" if ok else "fallido",
+                wa_message_id=wa_id,
+                origen="campana",
+                raw_json=error
+            )
+        return ok
+
+    def _obtener_nombre_plataforma(self):
+        try:
+            configuracion = self.config_general.obtener_configuracion() or {}
+            return configuracion.get("nombre_plataforma") or "Lirios Eventos"
+        except Exception:
+            return "Lirios Eventos"
 
     def _limpiar_layout(self, contenido):
         if not contenido:
@@ -293,6 +410,8 @@ class SistemaNotificaciones:
                         )
                         if self.email.enviar_correo(email_dest, asunto, cuerpo_html, es_html=True):
                             exito_adicionales = True
+                            config_costos = self.metricas.obtener_config() or {}
+                            precio_email = float(config_costos.get("precio_email") or 0)
                             # Registrar envío al destinatario adicional
                             self.modelo.registrar_envio(
                                 evento.get('id_evento'),
@@ -301,7 +420,8 @@ class SistemaNotificaciones:
                                 email_dest,
                                 asunto,
                                 cuerpo,
-                                enviado=True
+                                enviado=True,
+                                costo_email=precio_email
                             )
                 except Exception as e:
                     self.logger.error(
@@ -313,7 +433,7 @@ class SistemaNotificaciones:
             self.logger.error(f"Error al enviar email: {e}")
             return False
     
-    def _enviar_whatsapp(self, evento, config, datos):
+    def _enviar_whatsapp(self, evento, config, datos, tipo_notificacion):
         """Envía notificación por WhatsApp"""
         try:
             telefono = evento.get('telefono')

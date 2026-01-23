@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { eventosService, clientesService, planesService, salonesService, productosService, tiposEventoService } from '../services/api';
 import { ArrowLeft, Save, Calendar, User, MapPin, Users, Clock, RefreshCw, Plus, Trash2, X } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
 
 const EventoNuevo = () => {
   const navigate = useNavigate();
+  const { id: eventoId } = useParams();
+  const modoEdicion = Boolean(eventoId);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [cargandoEvento, setCargandoEvento] = useState(false);
+  const [eventoCargado, setEventoCargado] = useState(false);
+  const [eventoOriginal, setEventoOriginal] = useState(null);
   const [clientes, setClientes] = useState([]);
   const [planes, setPlanes] = useState([]);
   const [salones, setSalones] = useState([]);
@@ -52,6 +57,11 @@ const EventoNuevo = () => {
   useEffect(() => {
     cargarDatosIniciales();
   }, []);
+
+  useEffect(() => {
+    if (!modoEdicion || cargandoDatos || eventoCargado) return;
+    cargarEventoEdicion();
+  }, [modoEdicion, cargandoDatos, eventoCargado]);
 
   const cargarDatosIniciales = async () => {
     try {
@@ -134,6 +144,88 @@ const EventoNuevo = () => {
       }
     } finally {
       setCargandoDatos(false);
+    }
+  };
+
+  const normalizarHora = (valor) => {
+    if (!valor) return '';
+    if (typeof valor === 'string') {
+      const partes = valor.split(':');
+      if (partes.length >= 2) {
+        return `${partes[0]}:${partes[1]}`;
+      }
+      return valor;
+    }
+    return valor;
+  };
+
+  const cargarEventoEdicion = async () => {
+    try {
+      setCargandoEvento(true);
+      setError('');
+      const data = await eventosService.getById(eventoId);
+      const evento = data?.evento || data;
+      if (!evento) {
+        setError('No se encontró el evento para editar.');
+        return;
+      }
+      setEventoOriginal(evento);
+      setFormData({
+        cliente_id: evento.id_cliente || evento.cliente_id || '',
+        plan_id: evento.plan_id ? String(evento.plan_id) : '',
+        id_salon: evento.id_salon ? String(evento.id_salon) : '',
+        nombre_evento: evento.nombre_evento || '',
+        tipo_evento: evento.tipo_evento || '',
+        fecha_evento: evento.fecha_evento || getTodayDate(),
+        hora_inicio: normalizarHora(evento.hora_inicio),
+        hora_fin: normalizarHora(evento.hora_fin),
+        numero_invitados: evento.numero_invitados ? String(evento.numero_invitados) : '',
+        estado: evento.estado || 'cotizacion',
+        total: evento.total ?? '',
+        observaciones: evento.observaciones || '',
+      });
+
+      const planSeleccionado = planes.find((plan) => plan.id === parseInt(evento.plan_id));
+      if (planSeleccionado) {
+        setPrecioPlan(parseFloat(planSeleccionado.precio_base || 0));
+        setCapacidadMinimaPlan(planSeleccionado.capacidad_minima || null);
+        setCapacidadMaximaPlan(planSeleccionado.capacidad_maxima || null);
+        setDuracionMaximaPlan(planSeleccionado.duracion_horas || null);
+      } else {
+        setPrecioPlan(0);
+        setCapacidadMinimaPlan(null);
+        setCapacidadMaximaPlan(null);
+        setDuracionMaximaPlan(null);
+      }
+
+      const salonSeleccionado = salones.find((salon) => (salon.id_salon || salon.id) === parseInt(evento.id_salon));
+      if (salonSeleccionado) {
+        setCapacidadSalon(salonSeleccionado.capacidad || null);
+      } else {
+        setCapacidadSalon(null);
+      }
+
+      try {
+        const productosResp = await eventosService.getProductos(eventoId);
+        const productosEvento = productosResp?.productos || [];
+        setProductosAdicionales(
+          productosEvento.map((producto) => ({
+            producto_id: producto.producto_id,
+            nombre: producto.nombre_producto || producto.nombre || 'Producto',
+            cantidad: parseInt(producto.cantidad || 0, 10),
+            precio_unitario: parseFloat(producto.precio_unitario || 0),
+            subtotal: parseFloat(producto.subtotal || 0),
+          }))
+        );
+      } catch (err) {
+        console.error('Error al cargar productos del evento:', err);
+      }
+    } catch (err) {
+      console.error('Error al cargar evento para editar:', err);
+      setError('Error al cargar el evento para edición.');
+    } finally {
+      setCargandoEvento(false);
+      setEventoCargado(true);
     }
   };
 
@@ -446,7 +538,16 @@ const EventoNuevo = () => {
       const respuestas = await Promise.all(
         fechasBusqueda.map((fecha) => eventosService.getAll({ fecha }))
       );
-      const eventos = respuestas.flatMap((resp) => resp.eventos || []);
+      let eventos = respuestas.flatMap((resp) => resp.eventos || []);
+      if (modoEdicion && eventoId) {
+        const idActual = parseInt(eventoId, 10);
+        eventos = eventos.filter((evento) => {
+          const eventoIdActual = evento.id_evento !== undefined && evento.id_evento !== null
+            ? parseInt(evento.id_evento)
+            : (evento.id !== undefined && evento.id !== null ? parseInt(evento.id) : null);
+          return !eventoIdActual || eventoIdActual !== idActual;
+        });
+      }
 
       const hayConflicto = eventos.some((evento) => {
         // Ignorar eventos cancelados
@@ -613,6 +714,11 @@ const EventoNuevo = () => {
 
       // Calcular total: precio plan + productos adicionales
       const totalCalculado = calcularTotal();
+      const saldoCalculado = modoEdicion
+        ? (eventoOriginal?.saldo !== undefined && eventoOriginal?.saldo !== null
+            ? parseFloat(eventoOriginal.saldo)
+            : totalCalculado)
+        : totalCalculado;
 
       // Obtener nombre del salón si está seleccionado
       let nombreSalon = null;
@@ -629,11 +735,11 @@ const EventoNuevo = () => {
 
       // Obtener usuario actual para coordinador_id si es coordinador
       const usuarioStr = localStorage.getItem('usuario');
-      let coordinadorId = null;
+      let coordinadorId = modoEdicion ? (eventoOriginal?.coordinador_id || null) : null;
       if (usuarioStr) {
         try {
           const usuario = JSON.parse(usuarioStr);
-          if (hasRole(usuario?.rol, [ROLES.COORDINATOR])) {
+          if (hasRole(usuario?.rol, [ROLES.COORDINATOR]) && !modoEdicion) {
             coordinadorId = usuario.id;
           }
         } catch (e) {
@@ -643,7 +749,7 @@ const EventoNuevo = () => {
 
       // Preparar datos para enviar
       const eventoData = {
-        cliente_id: parseInt(formData.cliente_id),
+        cliente_id: formData.cliente_id ? parseInt(formData.cliente_id) : eventoOriginal?.id_cliente,
         nombre_evento: formData.nombre_evento || null,
         tipo_evento: formData.tipo_evento || null,
         fecha_evento: formData.fecha_evento || null,
@@ -652,7 +758,7 @@ const EventoNuevo = () => {
         numero_invitados: formData.numero_invitados ? parseInt(formData.numero_invitados) : null,
         estado: formData.estado || 'cotizacion',
         total: totalCalculado,
-        saldo: totalCalculado,
+        saldo: saldoCalculado,
         observaciones: formData.observaciones || null,
         coordinador_id: coordinadorId,
       };
@@ -669,17 +775,19 @@ const EventoNuevo = () => {
         }
       }
 
-      const response = await eventosService.create(eventoData);
+      const response = modoEdicion
+        ? await eventosService.update(eventoId, eventoData)
+        : await eventosService.create(eventoData);
 
       if (response.evento) {
-        const eventoId = response.evento.id_evento || response.evento.id;
+        const eventoIdRespuesta = response.evento.id_evento || response.evento.id || eventoId;
         
         // Agregar productos adicionales si hay
         if (productosAdicionales.length > 0) {
           try {
             for (const producto of productosAdicionales) {
               await eventosService.agregarProducto(
-                eventoId,
+                eventoIdRespuesta,
                 producto.producto_id,
                 producto.cantidad,
                 producto.precio_unitario
@@ -687,21 +795,21 @@ const EventoNuevo = () => {
             }
             
             // Recalcular total después de agregar productos
-            await eventosService.calcularTotal(eventoId);
+            await eventosService.calcularTotal(eventoIdRespuesta);
           } catch (err) {
             console.error('Error al agregar productos:', err);
-            setError('El evento se creó pero hubo un error al agregar algunos productos. Puedes agregarlos manualmente desde el detalle del evento.');
+            setError('El evento se actualizó pero hubo un error al agregar algunos productos. Puedes agregarlos manualmente desde el detalle del evento.');
             // No bloqueamos la creación del evento si falla agregar productos
           }
         }
         
         // Redirigir al detalle del evento creado
-        navigate(`/eventos/${eventoId}`);
+        navigate(`/eventos/${eventoIdRespuesta}`);
       } else {
-        setError('Error al crear el evento. Intenta nuevamente.');
+        setError(modoEdicion ? 'Error al actualizar el evento. Intenta nuevamente.' : 'Error al crear el evento. Intenta nuevamente.');
       }
     } catch (err) {
-      console.error('Error al crear evento:', err);
+      console.error(modoEdicion ? 'Error al actualizar evento:' : 'Error al crear evento:', err);
       
       // Manejar errores de autenticación
       if (err.response?.status === 401 || err.isAuthError) {
@@ -712,7 +820,7 @@ const EventoNuevo = () => {
           window.location.href = '/login';
         }, 3000);
       } else {
-        const errorMessage = err.response?.data?.error || err.message || 'Error al crear el evento';
+        const errorMessage = err.response?.data?.error || err.message || (modoEdicion ? 'Error al actualizar el evento' : 'Error al crear el evento');
         setError(errorMessage);
       }
     } finally {
@@ -763,6 +871,14 @@ const EventoNuevo = () => {
     );
   }
 
+  if (modoEdicion && cargandoEvento && !error) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <div>Cargando evento...</div>
+      </div>
+    );
+  }
+
   // Si hay error de autenticación crítico, mostrar mensaje especial
   if (error && (error.includes('Sesión expirada') || error.includes('expirado')) && clientes.length === 0 && planes.length === 0 && salones.length === 0) {
     return (
@@ -787,7 +903,7 @@ const EventoNuevo = () => {
             Volver
           </button>
           <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            Nuevo Evento
+            {modoEdicion ? 'Editar Evento' : 'Nuevo Evento'}
           </h1>
         </div>
         {error && (
@@ -806,7 +922,7 @@ const EventoNuevo = () => {
               ⚠️ Sesión Expirada
             </div>
             <div style={{ marginBottom: '1rem' }}>
-              Tu sesión ha expirado. Por favor, inicia sesión nuevamente para crear eventos.
+              Tu sesión ha expirado. Por favor, inicia sesión nuevamente para {modoEdicion ? 'editar' : 'crear'} eventos.
             </div>
             <button
               onClick={() => {
@@ -855,9 +971,9 @@ const EventoNuevo = () => {
           Volver
         </button>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-          Nuevo Evento
+          {modoEdicion ? 'Editar Evento' : 'Nuevo Evento'}
         </h1>
-        <p style={{ color: '#6b7280' }}>Crear un nuevo evento</p>
+        <p style={{ color: '#6b7280' }}>{modoEdicion ? 'Actualizar información del evento' : 'Crear un nuevo evento'}</p>
       </div>
 
       {error && (
@@ -1702,7 +1818,7 @@ const EventoNuevo = () => {
               }}
             >
               <Save size={16} />
-              {loading ? 'Guardando...' : 'Crear Evento'}
+              {loading ? 'Guardando...' : (modoEdicion ? 'Actualizar Evento' : 'Crear Evento')}
             </button>
           </div>
         </div>

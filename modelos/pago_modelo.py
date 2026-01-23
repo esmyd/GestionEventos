@@ -13,6 +13,17 @@ class PagoModelo:
     def __init__(self):
         self.base_datos = BaseDatos()
         self.logger = obtener_logger()
+        self._pagos_columnas_cache = None
+
+    def _pagos_tiene_columna(self, nombre):
+        if self._pagos_columnas_cache is None:
+            try:
+                columnas = self.base_datos.obtener_todos("SHOW COLUMNS FROM pagos")
+                self._pagos_columnas_cache = {col.get("Field") for col in columnas if col.get("Field")}
+            except Exception as e:
+                self.logger.warning(f"No se pudieron cargar columnas de pagos: {e}")
+                self._pagos_columnas_cache = set()
+        return nombre in self._pagos_columnas_cache
     
     def crear_pago(self, datos_pago):
         """Crea un nuevo pago o abono
@@ -81,22 +92,39 @@ class PagoModelo:
         # Usar id_evento en lugar de evento_id (nombre real de la columna)
         # Origen: 'web' para aplicación web, 'desktop' para aplicación de escritorio
         origen = datos_pago.get('origen', 'desktop')  # Por defecto 'desktop' para compatibilidad
-        consulta = """
-        INSERT INTO pagos (id_evento, monto, tipo_pago, metodo_pago, numero_referencia, 
-                          fecha_pago, observaciones, usuario_registro_id, origen)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        parametros = (
-            evento_id,
-            monto,
-            tipo_pago,
-            datos_pago['metodo_pago'],
-            datos_pago.get('numero_referencia'),
-            datos_pago['fecha_pago'],
-            datos_pago.get('observaciones'),
-            datos_pago.get('usuario_registro_id'),
-            origen
-        )
+        if self._pagos_tiene_columna("origen"):
+            consulta = """
+            INSERT INTO pagos (id_evento, monto, tipo_pago, metodo_pago, numero_referencia, 
+                              fecha_pago, observaciones, usuario_registro_id, origen)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            parametros = (
+                evento_id,
+                monto,
+                tipo_pago,
+                datos_pago['metodo_pago'],
+                datos_pago.get('numero_referencia'),
+                datos_pago['fecha_pago'],
+                datos_pago.get('observaciones'),
+                datos_pago.get('usuario_registro_id'),
+                origen
+            )
+        else:
+            consulta = """
+            INSERT INTO pagos (id_evento, monto, tipo_pago, metodo_pago, numero_referencia, 
+                              fecha_pago, observaciones, usuario_registro_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            parametros = (
+                evento_id,
+                monto,
+                tipo_pago,
+                datos_pago['metodo_pago'],
+                datos_pago.get('numero_referencia'),
+                datos_pago['fecha_pago'],
+                datos_pago.get('observaciones'),
+                datos_pago.get('usuario_registro_id'),
+            )
         if self.base_datos.ejecutar_consulta(consulta, parametros):
             # Obtener el último ID insertado (puede ser id_pago o id)
             pago_id = self.base_datos.obtener_ultimo_id()
@@ -145,7 +173,14 @@ class PagoModelo:
                 self.logger.debug(f"Traceback notificación: {traceback.format_exc()}")
 
             return pago_id
-        self.logger.error(f"Error al ejecutar consulta de inserción de pago - Evento: {evento_id}, Monto: ${monto:.2f}")
+        detalle_error = getattr(self.base_datos, "ultimo_error", None)
+        if detalle_error:
+            self.logger.error(
+                f"Error al ejecutar consulta de inserción de pago - Evento: {evento_id}, "
+                f"Monto: ${monto:.2f}, Detalle: {detalle_error}"
+            )
+        else:
+            self.logger.error(f"Error al ejecutar consulta de inserción de pago - Evento: {evento_id}, Monto: ${monto:.2f}")
         return None
     
     def _obtener_precio_total_evento(self, evento_id):

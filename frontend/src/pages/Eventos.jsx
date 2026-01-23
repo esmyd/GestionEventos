@@ -13,6 +13,7 @@ const Eventos = () => {
   const esCoordinador = hasRole(usuarioActual?.rol, [ROLES.COORDINATOR]);
   const esAdminOGerente = hasRole(usuarioActual?.rol, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeEditarEstado = hasPermission(usuarioActual, PERMISSIONS.EVENTOS_EDITAR_ESTADO, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeEditarEvento = hasRole(usuarioActual?.rol, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
   const [isMobile, setIsMobile] = useState(false);
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -745,6 +746,27 @@ const Eventos = () => {
                       <Eye size={16} strokeWidth={2.5} />
                       Ver
                     </Link>
+                    {puedeEditarEvento && (
+                      <Link
+                        to={`/eventos/editar/${evento.id_evento || evento.id}`}
+                        title="Editar"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#f59e0b',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          textDecoration: 'none',
+                          fontSize: '0.8rem',
+                          fontWeight: '500',
+                        }}
+                      >
+                        <Edit size={16} strokeWidth={2.5} />
+                        Editar
+                      </Link>
+                    )}
                     <details style={{ position: 'relative' }}>
                       <summary
                         style={{
@@ -1043,6 +1065,40 @@ const Eventos = () => {
                           <Eye size={18} strokeWidth={2.5} />
                            
                         </Link>
+                        {puedeEditarEvento && (
+                          <Link
+                            to={`/eventos/editar/${evento.id_evento || evento.id}`}
+                            title="Editar"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              padding: '0.5rem 1rem',
+                              backgroundColor: '#f59e0b',
+                              color: 'white',
+                              borderRadius: '0.375rem',
+                              textDecoration: 'none',
+                              fontSize: '0.875rem',
+                              fontWeight: '500',
+                              transition: 'all 0.2s',
+                              border: 'none',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#d97706';
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#f59e0b';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <Edit size={18} strokeWidth={2.5} />
+                             
+                          </Link>
+                        )}
                         <details style={{ position: 'relative' }}>
                           <summary
                             title="Archivos"

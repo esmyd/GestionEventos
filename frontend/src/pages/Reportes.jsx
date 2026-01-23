@@ -15,6 +15,8 @@ import {
   Target,
   Activity,
   PieChart,
+  Mail,
+  MessageCircle,
 } from 'lucide-react';
 
 const Reportes = ({
@@ -82,6 +84,13 @@ const Reportes = ({
       minimumFractionDigits: 0,
     }).format(valor);
   };
+
+  const formatearMonedaSimple = (valor) =>
+    new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 2,
+    }).format(valor);
 
   // Componente de gráfico de barras
   const GraficoBarras = ({ datos, altura = 200, color = '#6366f1' }) => {
@@ -489,6 +498,122 @@ const Reportes = ({
             <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Estado Financiero</h2>
           </div>
           <GraficoBarras datos={datosFinanciero} altura={200} />
+        </div>
+      )}
+
+      {/* Notificaciones y WhatsApp */}
+      {metricas?.notificaciones && (
+        <div
+          style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '0.5rem',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e5e7eb',
+            marginBottom: '2rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <Activity size={24} color="#6366f1" />
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Notificaciones y WhatsApp</h2>
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '1rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <IndicadorProgreso
+              titulo="Email (notificaciones)"
+              valor={metricas.notificaciones.envios?.email || 0}
+              total={metricas.notificaciones.envios?.email || 0}
+              color="#10b981"
+              icono={Mail}
+            />
+            <IndicadorProgreso
+              titulo="WhatsApp (notificaciones)"
+              valor={metricas.notificaciones.envios?.whatsapp || 0}
+              total={metricas.notificaciones.envios?.whatsapp || 0}
+              color="#3b82f6"
+              icono={MessageCircle}
+            />
+            <IndicadorProgreso
+              titulo="Costo Email"
+              valor={metricas.notificaciones.costos?.email || 0}
+              total={metricas.notificaciones.costos?.email || 0}
+              color="#f59e0b"
+              icono={DollarSign}
+              formatear={formatearMonedaSimple}
+            />
+            <IndicadorProgreso
+              titulo="Costo WhatsApp"
+              valor={metricas.notificaciones.costos?.whatsapp || 0}
+              total={metricas.notificaciones.costos?.whatsapp || 0}
+              color="#8b5cf6"
+              icono={DollarSign}
+              formatear={formatearMonedaSimple}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+            <div style={{ backgroundColor: '#f9fafb', borderRadius: '0.5rem', padding: '1rem' }}>
+              <h4 style={{ margin: 0, marginBottom: '0.75rem', fontSize: '0.95rem' }}>WhatsApp (inbound/outbound)</h4>
+              <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: '#374151' }}>
+                <div>Inbound: {metricas.notificaciones.whatsapp_chat?.inbound || 0}</div>
+                <div>Outbound: {metricas.notificaciones.whatsapp_chat?.outbound || 0}</div>
+                <div>Bot: {metricas.notificaciones.whatsapp_chat?.bot || 0}</div>
+                <div>Humano: {metricas.notificaciones.whatsapp_chat?.humano || 0}</div>
+              </div>
+            </div>
+            <div style={{ backgroundColor: '#f9fafb', borderRadius: '0.5rem', padding: '1rem' }}>
+              <h4 style={{ margin: 0, marginBottom: '0.75rem', fontSize: '0.95rem' }}>Totales WhatsApp</h4>
+              <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: '#374151' }}>
+                <div>Total outbound: {metricas.notificaciones.whatsapp_total_out || 0}</div>
+                <div>
+                  Costo total: {formatearMonedaSimple(metricas.notificaciones.whatsapp_total_cost || 0)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <h4 style={{ margin: 0, marginBottom: '0.75rem', fontSize: '0.95rem' }}>Notificaciones por tipo</h4>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '520px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f3f4f6', textAlign: 'left' }}>
+                    <th style={{ padding: '0.6rem' }}>Tipo</th>
+                    <th style={{ padding: '0.6rem' }}>Email</th>
+                    <th style={{ padding: '0.6rem' }}>WhatsApp</th>
+                    <th style={{ padding: '0.6rem' }}>Total</th>
+                    <th style={{ padding: '0.6rem' }}>Costo Email</th>
+                    <th style={{ padding: '0.6rem' }}>Costo WhatsApp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(metricas.notificaciones.por_tipo || []).map((row) => (
+                    <tr key={row.tipo_notificacion} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.6rem' }}>{row.tipo_notificacion}</td>
+                      <td style={{ padding: '0.6rem' }}>{row.email_out}</td>
+                      <td style={{ padding: '0.6rem' }}>{row.whatsapp_out}</td>
+                      <td style={{ padding: '0.6rem' }}>{row.total}</td>
+                      <td style={{ padding: '0.6rem' }}>{formatearMonedaSimple(row.costo_email || 0)}</td>
+                      <td style={{ padding: '0.6rem' }}>{formatearMonedaSimple(row.costo_whatsapp || 0)}</td>
+                    </tr>
+                  ))}
+                  {(metricas.notificaciones.por_tipo || []).length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '0.75rem', color: '#6b7280' }}>
+                        Sin datos de notificaciones enviadas.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 

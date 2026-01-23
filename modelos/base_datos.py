@@ -13,6 +13,7 @@ class BaseDatos:
     _thread_local = threading.local()
 
     def __init__(self):
+        self.ultimo_error = None
         self.conectar()
     
     def conectar(self):
@@ -51,6 +52,7 @@ class BaseDatos:
     def ejecutar_consulta(self, consulta, parametros=None):
         """Ejecuta una consulta que no retorna resultados (INSERT, UPDATE, DELETE)"""
         try:
+            self.ultimo_error = None
             # Verificar que la conexión esté activa
             conexion = self._obtener_conexion()
             if not conexion or not conexion.is_connected():
@@ -79,6 +81,7 @@ class BaseDatos:
             
             return True
         except Error as e:
+            self.ultimo_error = str(e)
             print(f"Error al ejecutar consulta: {e}")
             try:
                 conexion = self._obtener_conexion()

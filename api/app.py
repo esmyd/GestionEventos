@@ -17,6 +17,11 @@ from api.routes.reportes import reportes_bp
 from api.routes.tipos_evento import tipos_evento_bp
 from api.routes.notificaciones_nativas import notificaciones_nativas_bp
 from api.routes.integraciones import integraciones_bp
+from api.routes.whatsapp_chat import whatsapp_chat_bp
+from api.routes.whatsapp_metricas import whatsapp_metricas_bp
+from api.routes.configuraciones import configuraciones_bp
+from api.routes.whatsapp_templates import whatsapp_templates_bp
+from modelos.configuracion_general_modelo import ConfiguracionGeneralModelo
 
 
 def create_app(config_name='development'):
@@ -51,11 +56,21 @@ def create_app(config_name='development'):
     app.register_blueprint(tipos_evento_bp, url_prefix='/api/tipos_evento')
     app.register_blueprint(notificaciones_nativas_bp, url_prefix='/api/notificaciones_nativas')
     app.register_blueprint(integraciones_bp, url_prefix='/api/integraciones')
+    app.register_blueprint(whatsapp_chat_bp, url_prefix='/api/whatsapp_chat')
+    app.register_blueprint(whatsapp_metricas_bp, url_prefix='/api/whatsapp_metricas')
+    app.register_blueprint(configuraciones_bp, url_prefix='/api/configuraciones')
+    app.register_blueprint(whatsapp_templates_bp, url_prefix='/api/whatsapp_templates')
     
     # Ruta de salud
     @app.route('/api/health')
     def health_check():
-        return {'status': 'ok', 'message': 'API Lirios Eventos funcionando correctamente'}, 200
+        nombre_plataforma = "Lirios Eventos"
+        try:
+            config = ConfiguracionGeneralModelo().obtener_configuracion() or {}
+            nombre_plataforma = config.get("nombre_plataforma") or nombre_plataforma
+        except Exception:
+            pass
+        return {'status': 'ok', 'message': f'API {nombre_plataforma} funcionando correctamente'}, 200
     
     # Manejo de errores global
     @app.errorhandler(404)

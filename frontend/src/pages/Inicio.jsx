@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { planesService, salonesService, productosService, tiposEventoService, eventosService, clientesService, usuariosService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../context/AuthContext';
+import { useNombrePlataforma } from '../hooks/useNombrePlataforma';
 import ToastContainer from '../components/ToastContainer';
 import { Calculator, Calendar, Users, Building, FileText, Plus, Trash2, MapPin, Mail, Phone, Instagram, Facebook, MessageCircle, Video } from 'lucide-react';
 import { isRoleAllowed, ROLES } from '../utils/roles';
@@ -10,7 +11,14 @@ import { isRoleAllowed, ROLES } from '../utils/roles';
 const Inicio = () => {
   const { toasts, removeToast, error: showError, success } = useToast();
   const { usuario, isAuthenticated, login } = useAuth();
+  const { nombrePlataforma } = useNombrePlataforma();
   const navigate = useNavigate();
+  const iniciales = nombrePlataforma
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((palabra) => palabra[0].toUpperCase())
+    .join('');
   const usuarioId = usuario?.id || usuario?.user_id || null;
   const obtenerFechaProximoFinSemana = () => {
     const hoy = new Date();
@@ -556,9 +564,9 @@ const Inicio = () => {
                 fontWeight: '700',
               }}
             >
-              LE
+              {iniciales || 'LE'}
             </span>
-            Lirios Eventos
+            {nombrePlataforma}
           </Link>
           <nav style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
             <a href="#cotizador" style={navLinkStyle}>
@@ -1431,7 +1439,7 @@ const Inicio = () => {
           )}
 
           <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Este valor es solo una referencia. El equipo de Lirios Eventos confirmará la cotización final.
+            Este valor es solo una referencia. El equipo de {nombrePlataforma} confirmará la cotización final.
           </div>
         </div>
       </div>
@@ -1449,7 +1457,7 @@ const Inicio = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.75rem' }}>
             <div>
               <div style={{ fontWeight: '800', fontSize: '1.1rem', color: '#0f172a', marginBottom: '0.6rem' }}>
-                Lirios Eventos
+                {nombrePlataforma}
               </div>
               <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
                 Diseñamos experiencias memorables para bodas, eventos corporativos y celebraciones únicas.
@@ -1508,7 +1516,7 @@ const Inicio = () => {
             </div>
           </div>
           <div style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem', color: '#94a3b8', fontSize: '0.85rem' }}>
-            © {new Date().getFullYear()} Lirios Eventos. Todos los derechos reservados.
+            © {new Date().getFullYear()} {nombrePlataforma}. Todos los derechos reservados.
           </div>
         </footer>
         <div style={{ paddingBottom: '3rem' }} />

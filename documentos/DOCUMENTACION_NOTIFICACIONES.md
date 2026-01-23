@@ -40,6 +40,15 @@ Este script debe ejecutarse **periódicamente** para procesar las notificaciones
 - Procesa y envía notificaciones pendientes
 - Maneja errores y registra resultados
 
+## ⏰ ¿Cuándo se disparan los recordatorios?
+
+Los recordatorios (7 días, 1 día, solicitud de calificación) se envían **cuando corre el proceso programado**.
+
+- La lógica busca eventos con `DATE(fecha_evento) = HOY + dias_configurados`.
+- El envío ocurre en la **hora exacta en la que se ejecuta el job**.
+- Si el job corre cada hora, se envían en la primera ejecución después de medianoche.
+- Si quieres una hora fija (ej. 09:00), programa el job a esa hora.
+
 ## ⚙️ Configuración de Ejecución Automática
 
 ### Windows (Task Scheduler)

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNombrePlataforma } from '../hooks/useNombrePlataforma';
 import { getRoleLabel, hasModuleAccess, hasRole, MODULES, ROLES } from '../utils/roles';
 import {
   Calendar,
@@ -17,6 +18,10 @@ import {
   Home,
   UserCircle,
   Settings,
+  MessageCircle,
+  Gauge,
+  Mail,
+  Trash2,
   LogOut,
   Menu,
   X,
@@ -26,6 +31,7 @@ import {
 
 const Layout = () => {
   const { usuario, logout } = useAuth();
+  const { nombrePlataforma } = useNombrePlataforma();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -33,6 +39,12 @@ const Layout = () => {
   const [operacionesOpen, setOperacionesOpen] = useState(true);
   const [configuracionesOpen, setConfiguracionesOpen] = useState(true);
   const [usuariosOpen, setUsuariosOpen] = useState(true);
+  const iniciales = nombrePlataforma
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((palabra) => palabra[0].toUpperCase())
+    .join('');
 
   // Definir permisos por rol
   const getMenuItemsByRole = (rol, usuarioActual) => {
@@ -54,6 +66,10 @@ const Layout = () => {
       { path: '/clientes', icon: Users, label: 'Clientes', moduleKey: MODULES.CLIENTES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/permisos', icon: Settings, label: 'Roles y Permisos', moduleKey: MODULES.PERMISOS, roles: [ROLES.ADMIN] },
       { path: '/integraciones/whatsapp', icon: Settings, label: 'Integraciones', moduleKey: MODULES.INTEGRACIONES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/whatsapp-chat', icon: MessageCircle, label: 'WhatsApp Chat', moduleKey: MODULES.WHATSAPP_CHAT, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/whatsapp-panel', icon: Gauge, label: 'Panel WhatsApp', moduleKey: MODULES.WHATSAPP_METRICAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/whatsapp-plantillas', icon: Mail, label: 'Plantillas WhatsApp', moduleKey: MODULES.WHATSAPP_TEMPLATES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/limpieza-datos', icon: Trash2, label: 'Limpieza de datos', moduleKey: MODULES.CONFIG_DATOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
     ];
 
     if (!rol) return [];
@@ -65,8 +81,20 @@ const Layout = () => {
   const menuItems = usuario ? getMenuItemsByRole(usuario.rol, usuario) : [];
   const esCliente = hasRole(usuario?.rol, [ROLES.CLIENT]);
   const rutasCatalogo = ['/planes', '/productos', '/categorias', '/inventario'];
-  const rutasOperaciones = ['/calendario', '/eventos', '/pagos', '/salones'];
-  const rutasConfiguraciones = ['/notificaciones-nativas', '/integraciones/whatsapp'];
+  const rutasOperaciones = [
+    '/calendario',
+    '/eventos',
+    '/pagos',
+    '/salones',
+    '/configuraciones/whatsapp-chat',
+    '/configuraciones/whatsapp-plantillas',
+  ];
+  const rutasConfiguraciones = [
+    '/notificaciones-nativas',
+    '/integraciones/whatsapp',
+    '/configuraciones/whatsapp-panel',
+    '/configuraciones/limpieza-datos',
+  ];
   const rutasUsuarios = ['/usuarios', '/clientes', '/permisos'];
 
   const menuItemsFiltrados = esCliente
@@ -205,9 +233,9 @@ const Layout = () => {
                 fontWeight: '700',
               }}
             >
-              LE
+              {iniciales || 'LE'}
             </span>
-            Lirios Eventos
+            {nombrePlataforma}
           </Link>
             </h1>
           )}
@@ -270,67 +298,6 @@ const Layout = () => {
                       {operacionesItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '/');
-                        return (
-                          <Link
-                            key={item.path}
-                            to={item.path}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: '0.6rem 1.5rem',
-                              color: isActive ? 'white' : '#d1d5db',
-                              backgroundColor: isActive ? '#4f46e5' : 'transparent',
-                              textDecoration: 'none',
-                              transition: 'all 0.2s',
-                              gap: '0.75rem',
-                              borderLeft: sidebarOpen ? '2px solid #374151' : 'none',
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
-                          >
-                            <Icon size={18} />
-                            {sidebarOpen && <span>{item.label}</span>}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {configuracionesItems.length > 0 && (
-                <div>
-                  <button
-                    onClick={() => setConfiguracionesOpen((prev) => !prev)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '0.75rem 1.5rem',
-                      width: '100%',
-                      background: 'none',
-                      border: 'none',
-                      color: configuracionesActivo ? 'white' : '#d1d5db',
-                      cursor: 'pointer',
-                      gap: '0.75rem',
-                    }}
-                  >
-                    <Settings size={20} />
-                    {sidebarOpen && (
-                      <>
-                        <span style={{ flex: 1, textAlign: 'left' }}>Configuraciones</span>
-                        {configuracionesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      </>
-                    )}
-                  </button>
-                  {configuracionesOpen && (
-                    <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
-                      {configuracionesItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname.startsWith(item.path);
                         return (
                           <Link
                             key={item.path}
@@ -515,6 +482,67 @@ const Layout = () => {
                 </div>
               )}
 
+              {configuracionesItems.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setConfiguracionesOpen((prev) => !prev)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.75rem 1.5rem',
+                      width: '100%',
+                      background: 'none',
+                      border: 'none',
+                      color: configuracionesActivo ? 'white' : '#d1d5db',
+                      cursor: 'pointer',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <Settings size={20} />
+                    {sidebarOpen && (
+                      <>
+                        <span style={{ flex: 1, textAlign: 'left' }}>Configuraciones</span>
+                        {configuracionesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </>
+                    )}
+                  </button>
+                  {configuracionesOpen && (
+                    <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
+                      {configuracionesItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname.startsWith(item.path);
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: '0.6rem 1.5rem',
+                              color: isActive ? 'white' : '#d1d5db',
+                              backgroundColor: isActive ? '#4f46e5' : 'transparent',
+                              textDecoration: 'none',
+                              transition: 'all 0.2s',
+                              gap: '0.75rem',
+                              borderLeft: sidebarOpen ? '2px solid #374151' : 'none',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            <Icon size={18} />
+                            {sidebarOpen && <span>{item.label}</span>}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
             </>
           )}
         </nav>
@@ -642,7 +670,7 @@ const Layout = () => {
               <Menu size={22} />
             </button>
             <div style={{ marginLeft: '0.75rem', fontWeight: '600', color: '#111827' }}>
-              {menuItems.find((item) => item.path === location.pathname)?.label || 'Lirios Eventos'}
+              {menuItems.find((item) => item.path === location.pathname)?.label || nombrePlataforma}
             </div>
           </div>
         )}

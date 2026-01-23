@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { checkApiHealth } from '../utils/healthCheck';
-import { LogIn, User, Lock, Sparkles, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { LogIn, User, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { configuracionesService } from '../services/api';
 
 const Login = () => {
   const [nombreUsuario, setNombreUsuario] = useState('');
@@ -14,6 +15,18 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [loginConfig, setLoginConfig] = useState({
+    nombre_plataforma: 'Lirios Eventos',
+    login_titulo: 'Bienvenido de vuelta',
+    login_subtitulo: 'Ingresa con tu usuario y contrasena.',
+    login_boton_texto: 'Ingresar',
+    login_left_titulo: 'Tu evento, organizado sin estres',
+    login_left_texto: 'Reserva tu fecha, gestiona pagos y coordina cada detalle desde un solo lugar.',
+    login_left_items: 'Fechas y horarios en un clic\nPagos y recordatorios automatizados\nClientes informados en tiempo real\nReportes claros para tu equipo',
+    login_left_imagen: '',
+    login_acento_color: '#16a34a',
+    login_fondo_color: '#0f766e',
+  });
 
   useEffect(() => {
     // Verificar si el servidor API está disponible al cargar la página
@@ -30,6 +43,22 @@ const Login = () => {
       }
     };
     verifyApi();
+  }, []);
+
+  useEffect(() => {
+    const cargarConfig = async () => {
+      try {
+        const data = await configuracionesService.getGeneralPublic();
+        const conf = data?.configuracion || {};
+        setLoginConfig((prev) => ({
+          ...prev,
+          ...conf,
+        }));
+      } catch (err) {
+        // Mantener valores por defecto
+      }
+    };
+    cargarConfig();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -59,145 +88,99 @@ const Login = () => {
     }
   };
 
-  const usuariosPrueba = [
-    { usuario: 'admin', contrasena: 'admin123', rol: 'Administrador' },
-    { usuario: 'gerente', contrasena: 'gerente123', rol: 'Gerente General' },
-    { usuario: 'coordinador1', contrasena: 'coordinador123', rol: 'Coordinador' },
-  ];
-
-  const handleUsuarioPrueba = (usuario, contrasena) => {
-    setNombreUsuario(usuario);
-    setContrasena(contrasena);
-  };
+  const promoItems = (loginConfig.login_left_items || '')
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
 
   return (
     <div
+      className="login-layout"
       style={{
         minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        backgroundSize: '400% 400%',
-        animation: 'gradientShift 15s ease infinite',
-        padding: '1rem',
-        position: 'relative',
-        overflow: 'hidden',
+        display: 'grid',
+        gridTemplateColumns: '1.1fr 0.9fr',
+        background: '#ffffff',
       }}
     >
-      {/* Partículas animadas de fondo */}
       <div
+        className="login-left"
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          overflow: 'hidden',
-          zIndex: 0,
+          color: 'white',
+          padding: '3rem 3.5rem',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '2.5rem',
+          backgroundColor: loginConfig.login_fondo_color || '#0f766e',
+          backgroundImage: loginConfig.login_left_imagen
+            ? `linear-gradient(180deg, rgba(31, 41, 55, 0.55), rgba(31, 41, 55, 0.75)), url("${loginConfig.login_left_imagen}")`
+            : 'none',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+          fontFamily: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
         }}
       >
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              width: '4px',
-              height: '4px',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              borderRadius: '50%',
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2}s`,
-            }}
-          />
-        ))}
+        <div style={{ maxWidth: '560px', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.12em', opacity: 0.85, marginBottom: '1.5rem', textTransform: 'uppercase' }}>
+            {loginConfig.nombre_plataforma}
+          </div>
+          <div style={{ fontSize: '2.35rem', fontWeight: 600, marginBottom: '0.9rem', lineHeight: 1.25 }}>
+            {loginConfig.login_left_titulo}
+          </div>
+          <div style={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.8, fontSize: '1rem', fontWeight: 400 }}>
+            {loginConfig.login_left_texto}
+          </div>
+          {promoItems.length > 0 && (
+            <ul
+              style={{
+                marginTop: '1.4rem',
+                paddingLeft: 0,
+                listStylePosition: 'inside',
+                lineHeight: 2,
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                textAlign: 'center',
+              }}
+            >
+              {promoItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+          {loginConfig.login_left_texto}
+        </div>
       </div>
 
-      <style>{`
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.5; }
-          50% { transform: translateY(-20px) translateX(10px); opacity: 1; }
-        }
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -1000px 0; }
-          100% { background-position: 1000px 0; }
-        }
-      `}</style>
-
       <div
+        className="login-right"
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '1.5rem',
-          padding: '3rem',
-          width: '100%',
-          maxWidth: '450px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          position: 'relative',
-          zIndex: 1,
-          animation: 'slideIn 0.5s ease-out',
+          padding: '3.25rem 3.5rem',
+          background: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          fontFamily: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
         }}
       >
-        {/* Logo/Icono animado */}
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              marginBottom: '1rem',
-              boxShadow: '0 10px 25px -5px rgba(102, 126, 234, 0.4)',
-              animation: 'pulse 2s ease-in-out infinite',
-            }}
-          >
-            <Sparkles size={40} color="white" />
+        <div style={{ width: '100%', maxWidth: '420px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#111827' }}>
+            {loginConfig.login_titulo}
           </div>
-          <h1
-            style={{
-              fontSize: '2.25rem',
-              fontWeight: 'bold',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              marginBottom: '0.5rem',
-              letterSpacing: '-0.025em',
-            }}
-          >
-            Lirios Eventos
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '0.95rem', fontWeight: '500' }}>
-            Sistema de Gestión de Eventos
-          </p>
-        </div>
+          <div style={{ color: '#6b7280', marginTop: '0.35rem' }}>
+            {loginConfig.login_subtitulo}
+          </div>
+          </div>
 
-        <form onSubmit={handleSubmit}>
-          {apiAvailable === false && (
+          <form onSubmit={handleSubmit}>
+            {apiAvailable === false && (
             <div
               style={{
                 padding: '1rem',
@@ -233,27 +216,7 @@ const Login = () => {
             </div>
           )}
 
-          {apiAvailable === true && (
-            <div
-              style={{
-                padding: '0.75rem 1rem',
-                backgroundColor: '#d1fae5',
-                color: '#065f46',
-                borderRadius: '0.75rem',
-                marginBottom: '1.5rem',
-                fontSize: '0.875rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                animation: 'slideIn 0.3s ease-out',
-              }}
-            >
-              <CheckCircle2 size={18} />
-              <span>Servidor conectado</span>
-            </div>
-          )}
-
-          {error && (
+            {error && (
             <div
               style={{
                 padding: '1rem',
@@ -274,7 +237,7 @@ const Login = () => {
             </div>
           )}
 
-          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ marginBottom: '1.35rem' }}>
             <label
               htmlFor="usuario"
               style={{
@@ -299,13 +262,13 @@ const Login = () => {
                   position: 'absolute',
                   left: '1rem',
                   zIndex: 1,
-                  color: focusedField === 'usuario' ? '#6366f1' : '#9ca3af',
+                  color: focusedField === 'usuario' ? (loginConfig.login_acento_color || '#16a34a') : '#9ca3af',
                   transition: 'color 0.2s',
                 }}
               >
                 <User size={20} />
               </div>
-              <input
+                <input
                 id="usuario"
                 type="text"
                 value={nombreUsuario}
@@ -317,18 +280,18 @@ const Login = () => {
                 style={{
                   width: '100%',
                   padding: '0.875rem 0.875rem 0.875rem 3rem',
-                  border: `2px solid ${focusedField === 'usuario' ? '#6366f1' : '#e5e7eb'}`,
-                  borderRadius: '0.75rem',
+                    border: `1px solid ${focusedField === 'usuario' ? (loginConfig.login_acento_color || '#16a34a') : '#e5e7eb'}`,
+                    borderRadius: '0.65rem',
                   fontSize: '1rem',
                   transition: 'all 0.2s',
                   outline: 'none',
-                  backgroundColor: focusedField === 'usuario' ? '#f9fafb' : 'white',
+                    backgroundColor: 'white',
                 }}
               />
             </div>
           </div>
 
-          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ marginBottom: '1.75rem' }}>
             <label
               htmlFor="contrasena"
               style={{
@@ -353,7 +316,7 @@ const Login = () => {
                   position: 'absolute',
                   left: '1rem',
                   zIndex: 1,
-                  color: focusedField === 'contrasena' ? '#6366f1' : '#9ca3af',
+                  color: focusedField === 'contrasena' ? (loginConfig.login_acento_color || '#16a34a') : '#9ca3af',
                   transition: 'color 0.2s',
                 }}
               >
@@ -371,12 +334,12 @@ const Login = () => {
                 style={{
                   width: '100%',
                   padding: '0.875rem 3rem 0.875rem 3rem',
-                  border: `2px solid ${focusedField === 'contrasena' ? '#6366f1' : '#e5e7eb'}`,
-                  borderRadius: '0.75rem',
+                  border: `1px solid ${focusedField === 'contrasena' ? (loginConfig.login_acento_color || '#16a34a') : '#e5e7eb'}`,
+                  borderRadius: '0.65rem',
                   fontSize: '1rem',
                   transition: 'all 0.2s',
                   outline: 'none',
-                  backgroundColor: focusedField === 'contrasena' ? '#f9fafb' : 'white',
+                  backgroundColor: 'white',
                 }}
               />
               <button
@@ -394,7 +357,7 @@ const Login = () => {
                   alignItems: 'center',
                   transition: 'color 0.2s',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#6366f1')}
+                onMouseEnter={(e) => (e.currentTarget.style.color = loginConfig.login_acento_color || '#16a34a')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
               >
                 {showPassword ? <Lock size={18} /> : <Lock size={18} />}
@@ -402,7 +365,7 @@ const Login = () => {
             </div>
           </div>
 
-          <button
+            <button
             type="submit"
             disabled={loading || apiAvailable === false}
             style={{
@@ -410,10 +373,10 @@ const Login = () => {
               padding: '0.875rem',
               background: loading || apiAvailable === false
                 ? '#9ca3af'
-                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                : (loginConfig.login_acento_color || '#16a34a'),
               color: 'white',
               border: 'none',
-              borderRadius: '0.75rem',
+              borderRadius: '0.65rem',
               fontSize: '1rem',
               fontWeight: '600',
               cursor: loading || apiAvailable === false ? 'not-allowed' : 'pointer',
@@ -422,23 +385,22 @@ const Login = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              boxShadow:
-                loading || apiAvailable === false
-                  ? 'none'
-                  : '0 10px 25px -5px rgba(102, 126, 234, 0.4)',
+              boxShadow: loading || apiAvailable === false
+                ? 'none'
+                : '0 12px 20px rgba(15, 23, 42, 0.15)',
               position: 'relative',
               overflow: 'hidden',
             }}
             onMouseEnter={(e) => {
               if (!loading && apiAvailable !== false) {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 15px 30px -5px rgba(102, 126, 234, 0.5)';
+                e.currentTarget.style.boxShadow = '0 18px 28px rgba(15, 23, 42, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
               if (!loading && apiAvailable !== false) {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(102, 126, 234, 0.4)';
+                e.currentTarget.style.boxShadow = '0 12px 20px rgba(15, 23, 42, 0.15)';
               }
             }}
           >
@@ -455,80 +417,23 @@ const Login = () => {
             ) : (
               <>
                 <LogIn size={20} />
-                <span>Iniciar Sesión</span>
+                <span>{loginConfig.login_boton_texto || 'Ingresar'}</span>
               </>
             )}
-          </button>
-        </form>
-        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <Link
-            to="/"
-            style={{
-              color: '#6366f1',
-              textDecoration: 'none',
-              fontWeight: '600',
-              fontSize: '0.9rem',
-            }}
-          >
-            Volver al inicio
-          </Link>
-        </div>
-
-        {/* Usuarios de prueba mejorados */}
-        <div
-          style={{
-            marginTop: '2rem',
-            padding: '1.5rem',
-            background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-            borderRadius: '1rem',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-            <User size={18} color="#6366f1" />
-            <strong style={{ fontSize: '0.875rem', color: '#374151' }}>Usuarios de prueba:</strong>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {usuariosPrueba.map((usuario, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => handleUsuarioPrueba(usuario.usuario, usuario.contrasena)}
-                style={{
-                  padding: '0.75rem 1rem',
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#6366f1';
-                  e.currentTarget.style.backgroundColor = '#f9fafb';
-                  e.currentTarget.style.transform = 'translateX(4px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                  e.currentTarget.style.backgroundColor = 'white';
-                  e.currentTarget.style.transform = 'translateX(0)';
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: '600', color: '#374151' }}>
-                    {usuario.usuario} / {usuario.contrasena}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                    {usuario.rol}
-                  </div>
-                </div>
-                <LogIn size={16} color="#6366f1" />
-              </button>
-            ))}
+            </button>
+          </form>
+          <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
+            <Link
+              to="/"
+              style={{
+                color: loginConfig.login_acento_color || '#16a34a',
+                textDecoration: 'none',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+              }}
+            >
+              Volver al inicio
+            </Link>
           </div>
         </div>
       </div>
@@ -537,6 +442,25 @@ const Login = () => {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        @media (max-width: 960px) {
+          .login-layout {
+            grid-template-columns: 1fr;
+          }
+          .login-left {
+            padding: 2rem;
+            min-height: 45vh;
+          }
+          .login-right {
+            padding: 2rem 1.5rem;
+            align-items: flex-start;
+          }
+        }
+        @media (max-width: 600px) {
+          .login-left {
+            padding: 1.5rem;
+            min-height: 40vh;
+          }
         }
       `}</style>
     </div>

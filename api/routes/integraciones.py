@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from api.middleware import requiere_autenticacion, requiere_rol
 from modelos.integracion_modelo import IntegracionModelo
 from utilidades.logger import obtener_logger
+from integraciones.whatsapp_chat import WhatsAppChatService
 
 
 integraciones_bp = Blueprint("integraciones", __name__)
@@ -73,6 +74,10 @@ def whatsapp_webhook():
 
     payload = request.get_json(silent=True) or {}
     logger.info(f"WhatsApp webhook recibido: {payload}")
+    try:
+        WhatsAppChatService().procesar_webhook(payload)
+    except Exception as e:
+        logger.error(f"Error al procesar chat WhatsApp: {str(e)}")
     return "OK", 200
 
 

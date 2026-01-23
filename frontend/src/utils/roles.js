@@ -24,6 +24,10 @@ export const MODULES = {
   PERMISOS: 'permisos',
   NOTIFICACIONES_NATIVAS: 'notificaciones_nativas',
   INTEGRACIONES: 'integraciones',
+  WHATSAPP_CHAT: 'whatsapp_chat',
+  WHATSAPP_METRICAS: 'whatsapp_metricas',
+  WHATSAPP_TEMPLATES: 'whatsapp_templates',
+  CONFIG_DATOS: 'config_datos',
 };
 
 export const PERMISSIONS = {

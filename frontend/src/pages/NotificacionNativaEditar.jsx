@@ -3,11 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { notificacionesNativasService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
+import { useNombrePlataforma } from '../hooks/useNombrePlataforma';
 
 const NotificacionNativaEditar = () => {
   const { tipo } = useParams();
   const navigate = useNavigate();
   const { toasts, removeToast, success, error: showError } = useToast();
+  const { nombrePlataforma } = useNombrePlataforma();
   const [loading, setLoading] = useState(true);
   const [formTemplate, setFormTemplate] = useState({
     nombre: '',
@@ -17,10 +19,19 @@ const NotificacionNativaEditar = () => {
     plantilla_email: '',
     plantilla_whatsapp: '',
   });
-  const [layoutHeader, setLayoutHeader] = useState('Lirios Eventos');
-  const [layoutFooter, setLayoutFooter] = useState('Lirios Eventos · Estamos para ayudarte.');
+  const [layoutHeader, setLayoutHeader] = useState('');
+  const [layoutFooter, setLayoutFooter] = useState('');
   const [baseHeader, setBaseHeader] = useState('');
   const [baseFooter, setBaseFooter] = useState('');
+
+  useEffect(() => {
+    if (!baseHeader) {
+      setLayoutHeader((prev) => prev || nombrePlataforma);
+    }
+    if (!baseFooter) {
+      setLayoutFooter((prev) => prev || `${nombrePlataforma} · Estamos para ayudarte.`);
+    }
+  }, [nombrePlataforma, baseHeader, baseFooter]);
 
   const extractProfessionalTemplate = (rawTemplate) => {
     const raw = rawTemplate || '';

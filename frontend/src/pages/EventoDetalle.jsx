@@ -513,7 +513,6 @@ const EventoDetalle = () => {
 
   const obtenerCreadorEvento = () => {
     if (evento?.creado_por_nombre) return evento.creado_por_nombre;
-    if (evento?.nombre_coordinador) return evento.nombre_coordinador;
     if (evento?.nombre_cliente) return evento.nombre_cliente;
     return '-';
   };
@@ -871,6 +870,11 @@ const EventoDetalle = () => {
                 );
                 const totalEnviosRecordatorio = (manualRecordatorio?.total_envios || 0);
                 const ultimoEnvioRecordatorio = manualRecordatorio?.ultimo_envio || null;
+                const recordatorioForzar = manualRecordatorio || {
+                  tipo_notificacion: 'recordatorio_evento',
+                  enviar_email: automaticos[0]?.enviar_email ?? true,
+                  enviar_whatsapp: automaticos[0]?.enviar_whatsapp ?? true,
+                };
 
                 const tarjetas = [];
 
@@ -927,7 +931,7 @@ const EventoDetalle = () => {
                             : ''}
                         </div>
                       </div>
-                      {manualRecordatorio ? (
+                      {recordatorios.length > 0 ? (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button
                             onClick={async (event) => {
@@ -940,7 +944,7 @@ const EventoDetalle = () => {
                                 setForzandoNotificacion('email');
                                 const resp = await notificacionesNativasService.forzarNotificacion(
                                   id,
-                                  manualRecordatorio.tipo_notificacion,
+                                  recordatorioForzar.tipo_notificacion,
                                   'email'
                                 );
                                 if (resp?.success) {
@@ -973,11 +977,15 @@ const EventoDetalle = () => {
                           <button
                             onClick={async (event) => {
                               event.stopPropagation();
+                              if (!evento?.telefono) {
+                                showError('Este evento no tiene telefono. No se puede enviar WhatsApp.');
+                                return;
+                              }
                               try {
                                 setForzandoNotificacion('whatsapp');
                                 const resp = await notificacionesNativasService.forzarNotificacion(
                                   id,
-                                  manualRecordatorio.tipo_notificacion,
+                                  recordatorioForzar.tipo_notificacion,
                                   'whatsapp'
                                 );
                                 if (resp?.success) {
@@ -994,13 +1002,15 @@ const EventoDetalle = () => {
                                 setForzandoNotificacion(null);
                               }
                             }}
-                            disabled={forzandoNotificacion === 'whatsapp'}
+                            disabled={forzandoNotificacion === 'whatsapp' || !evento?.telefono}
                             style={{
                               padding: '0.5rem 0.9rem',
                               borderRadius: '0.5rem',
                               border: '1px solid #d1d5db',
-                              background: forzandoNotificacion === 'whatsapp' ? '#e5e7eb' : '#f3f4f6',
-                              cursor: forzandoNotificacion === 'whatsapp' ? 'not-allowed' : 'pointer',
+                              background:
+                                forzandoNotificacion === 'whatsapp' || !evento?.telefono ? '#e5e7eb' : '#f3f4f6',
+                              cursor:
+                                forzandoNotificacion === 'whatsapp' || !evento?.telefono ? 'not-allowed' : 'pointer',
                             }}
                           >
                             {forzandoNotificacion === 'whatsapp' ? 'Enviando...' : 'Forzar WhatsApp'}

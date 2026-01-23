@@ -25,6 +25,10 @@ import Permisos from './pages/Permisos';
 import NotificacionesNativas from './pages/NotificacionesNativas';
 import NotificacionNativaEditar from './pages/NotificacionNativaEditar';
 import IntegracionesWhatsApp from './pages/IntegracionesWhatsApp';
+import WhatsAppChat from './pages/WhatsAppChat';
+import WhatsAppMetricas from './pages/WhatsAppMetricas';
+import ConfiguracionesDatos from './pages/ConfiguracionesDatos';
+import WhatsAppPlantillas from './pages/WhatsAppPlantillas';
 
 // Componente para proteger rutas
 const ProtectedRoute = ({ children }) => {
@@ -151,6 +155,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="eventos/editar/:id"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.EVENTOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+              <EventoNuevo />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
           path="eventos/:id"
           element={
             <RoleProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
@@ -261,6 +273,38 @@ function AppRoutes() {
           element={
             <RoleProtectedRoute moduleKey={MODULES.INTEGRACIONES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
               <IntegracionesWhatsApp />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="configuraciones/whatsapp-chat"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_CHAT} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <WhatsAppChat />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="configuraciones/whatsapp-panel"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_METRICAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <WhatsAppMetricas />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="configuraciones/whatsapp-plantillas"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_TEMPLATES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <WhatsAppPlantillas />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="configuraciones/limpieza-datos"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.CONFIG_DATOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <ConfiguracionesDatos />
             </RoleProtectedRoute>
           }
         />

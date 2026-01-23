@@ -21,6 +21,11 @@ evento_modelo = EventoModelo()
 def listar_configuraciones():
     try:
         configuraciones = modelo.obtener_todas_configuraciones()
+        resumen_por_tipo = modelo.obtener_resumen_envios_por_tipo()
+        for config in configuraciones or []:
+            resumen = resumen_por_tipo.get(config.get("tipo_notificacion"), {})
+            config["total_envios_email"] = resumen.get("total_email", 0)
+            config["total_envios_whatsapp"] = resumen.get("total_whatsapp", 0)
         return jsonify({"configuraciones": configuraciones}), 200
     except Exception as e:
         logger.error(f"Error al listar configuraciones nativas: {str(e)}")
@@ -155,7 +160,8 @@ def forzar_notificacion_evento(evento_id):
         )
         if enviado:
             return jsonify({"message": "Notificacion enviada", "success": True}), 200
-        return jsonify({"error": "No se pudo enviar", "success": False}), 400
+        detalle = sistema.ultimo_error_detalle or "No se pudo enviar"
+        return jsonify({"error": detalle, "success": False}), 400
     except Exception as e:
         logger.error(f"Error al forzar notificacion: {str(e)}")
         return jsonify({"error": "Error al forzar notificacion"}), 500

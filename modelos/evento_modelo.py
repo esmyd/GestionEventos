@@ -326,18 +326,56 @@ class EventoModelo:
     
     def actualizar_evento(self, evento_id, datos_evento):
         """Actualiza los datos de un evento"""
+        evento_actual = self.obtener_evento_por_id(evento_id)
+        if not evento_actual:
+            return False
+
+        plan_id = datos_evento.get('plan_id', evento_actual.get('plan_id'))
+        if plan_id in ('', None):
+            plan_id = None
+
+        id_salon = datos_evento.get('id_salon', evento_actual.get('id_salon'))
+        if id_salon in ('', None):
+            id_salon = None
+
+        total = datos_evento.get('total', datos_evento.get('precio_total', evento_actual.get('total', 0) or 0))
+        saldo = datos_evento.get('saldo', datos_evento.get('saldo_pendiente', evento_actual.get('saldo', total) or total))
+
         consulta = """
-        UPDATE eventos 
-        SET fecha_evento = %s, estado = %s, total = %s, saldo = %s, salon = %s, tipo_evento = %s
+        UPDATE eventos
+        SET id_cliente = %s,
+            id_salon = %s,
+            plan_id = %s,
+            salon = %s,
+            nombre_evento = %s,
+            tipo_evento = %s,
+            fecha_evento = %s,
+            hora_inicio = %s,
+            hora_fin = %s,
+            numero_invitados = %s,
+            estado = %s,
+            total = %s,
+            saldo = %s,
+            observaciones = %s,
+            coordinador_id = %s
         WHERE id_evento = %s
         """
         parametros = (
-            datos_evento.get('fecha_evento'),
-            datos_evento.get('estado'),
-            datos_evento.get('precio_total', 0),
-            datos_evento.get('saldo_pendiente', datos_evento.get('precio_total', 0)),
-            datos_evento.get('nombre_evento', ''),
-            datos_evento.get('tipo_evento', 'Otro'),
+            datos_evento.get('cliente_id', evento_actual.get('id_cliente')),
+            id_salon,
+            plan_id,
+            datos_evento.get('salon', evento_actual.get('salon')),
+            datos_evento.get('nombre_evento', evento_actual.get('nombre_evento')),
+            datos_evento.get('tipo_evento', evento_actual.get('tipo_evento')),
+            datos_evento.get('fecha_evento', evento_actual.get('fecha_evento')),
+            datos_evento.get('hora_inicio', evento_actual.get('hora_inicio')),
+            datos_evento.get('hora_fin', evento_actual.get('hora_fin')),
+            datos_evento.get('numero_invitados', evento_actual.get('numero_invitados')),
+            datos_evento.get('estado', evento_actual.get('estado')),
+            total,
+            saldo,
+            datos_evento.get('observaciones', evento_actual.get('observaciones')),
+            datos_evento.get('coordinador_id', evento_actual.get('coordinador_id')),
             evento_id
         )
         return self.base_datos.ejecutar_consulta(consulta, parametros)
@@ -382,6 +420,16 @@ class EventoModelo:
         """Actualiza el saldo pendiente de un evento"""
         consulta = "UPDATE eventos SET saldo = %s WHERE id_evento = %s"
         return self.base_datos.ejecutar_consulta(consulta, (nuevo_saldo, evento_id))
+
+    def actualizar_eventos_finalizados(self):
+        """Marca eventos como completados cuando ya paso la fecha"""
+        consulta = """
+        UPDATE eventos
+        SET estado = 'completado'
+        WHERE DATE(fecha_evento) < CURDATE()
+          AND estado IN ('confirmado', 'en_proceso')
+        """
+        return self.base_datos.ejecutar_consulta(consulta)
 
     def eliminar_evento(self, evento_id):
         """Elimina un evento y sus pagos asociados"""

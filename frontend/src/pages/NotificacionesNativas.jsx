@@ -85,6 +85,7 @@ const NotificacionesNativas = () => {
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Tipo</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Medio</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Cuando se ejecuta</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem' }}>Envios</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Estado</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Accion</th>
               </tr>
@@ -96,6 +97,12 @@ const NotificacionesNativas = () => {
                   <td style={{ padding: '0.75rem' }}>{config.tipo_notificacion}</td>
                   <td style={{ padding: '0.75rem' }}>{formatMedio(config)}</td>
                   <td style={{ padding: '0.75rem' }}>{formatCuando(config)}</td>
+                  <td style={{ padding: '0.75rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      <span>Email: {config.total_envios_email ?? 0}</span>
+                      <span>WhatsApp: {config.total_envios_whatsapp ?? 0}</span>
+                    </div>
+                  </td>
                   <td style={{ padding: '0.75rem' }}>
                     {config.activo ? 'Activo' : 'Inactivo'}
                   </td>
@@ -133,7 +140,7 @@ const NotificacionesNativas = () => {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ padding: '1rem', color: 'var(--gray-500)' }}>
+                  <td colSpan={7} style={{ padding: '1rem', color: 'var(--gray-500)' }}>
                     No hay configuraciones registradas.
                   </td>
                 </tr>

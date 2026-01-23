@@ -228,12 +228,25 @@ class SistemaNotificacionesV2:
         else:
             return
         
-        # Calcular fecha programada
+        # Calcular fecha programada en base a la fecha del evento
         dias_antes = config.get('dias_antes', 0)
-        if dias_antes == -1:
-            fecha_programada = datetime.now() + timedelta(days=1)  # 1 día después del evento
+        fecha_evento = evento.get('fecha_evento')
+        fecha_evento_dt = None
+        try:
+            if isinstance(fecha_evento, str):
+                fecha_evento_dt = datetime.fromisoformat(str(fecha_evento).split("T")[0])
+            elif fecha_evento:
+                fecha_evento_dt = datetime.combine(fecha_evento, datetime.min.time())
+        except Exception:
+            fecha_evento_dt = None
+        if fecha_evento_dt:
+            if dias_antes == -1:
+                fecha_programada = fecha_evento_dt + timedelta(days=1)
+            else:
+                fecha_programada = fecha_evento_dt - timedelta(days=dias_antes)
         else:
-            fecha_programada = datetime.now() + timedelta(days=dias_antes)
+            # Fallback si la fecha no es válida
+            fecha_programada = datetime.now() + timedelta(days=dias_antes if dias_antes != -1 else 1)
         
         # Insertar
         consulta = """

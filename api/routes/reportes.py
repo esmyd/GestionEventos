@@ -8,6 +8,7 @@ from modelos.cliente_modelo import ClienteModelo
 from modelos.producto_modelo import ProductoModelo
 from modelos.plan_modelo import PlanModelo
 from modelos.salon_modelo import SalonModelo
+from modelos.base_datos import BaseDatos
 from api.middleware import requiere_autenticacion, requiere_rol
 from utilidades.logger import obtener_logger
 
@@ -20,6 +21,19 @@ cliente_modelo = ClienteModelo()
 producto_modelo = ProductoModelo()
 plan_modelo = PlanModelo()
 salon_modelo = SalonModelo()
+base_datos = BaseDatos()
+
+
+def _columna_existe(tabla, columna):
+    consulta = """
+    SELECT COUNT(*) as total
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = %s
+      AND COLUMN_NAME = %s
+    """
+    row = base_datos.obtener_uno(consulta, (tabla, columna)) or {}
+    return int(row.get("total") or 0) > 0
 
 
 @reportes_bp.route('/metricas', methods=['GET'])
@@ -68,6 +82,127 @@ def obtener_metricas():
         # Calcular promedio de invitados
         total_invitados = sum(int(e.get('numero_invitados', 0) or 0) for e in eventos)
         promedio_invitados = (total_invitados / total_eventos) if total_eventos > 0 else 0
+
+        # Métricas de notificaciones y WhatsApp (costos + segmentación)
+        config_costos = base_datos.obtener_uno(
+            "SELECT precio_whatsapp, precio_email FROM whatsapp_metricas_config ORDER BY id ASC LIMIT 1"
+        ) or {}
+        precio_whatsapp = float(config_costos.get("precio_whatsapp") or 0)
+        precio_email = float(config_costos.get("precio_email") or 0)
+
+        tiene_costo_email = _columna_existe("historial_notificaciones", "costo_email")
+        tiene_costo_whatsapp = _columna_existe("historial_notificaciones", "costo_whatsapp")
+        notif_totales = base_datos.obtener_uno(
+            """
+            SELECT
+              SUM(CASE WHEN canal='email' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as email_out,
+              SUM(CASE WHEN canal='whatsapp' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as whatsapp_out,
+              SUM(COALESCE(costo_email, 0)) as costo_email_total,
+              SUM(COALESCE(costo_whatsapp, 0)) as costo_whatsapp_total
+            FROM historial_notificaciones
+            WHERE enviado = TRUE
+            """
+            if (tiene_costo_email or tiene_costo_whatsapp)
+            else
+            """
+            SELECT
+              SUM(CASE WHEN canal='email' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as email_out,
+              SUM(CASE WHEN canal='whatsapp' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as whatsapp_out
+            FROM historial_notificaciones
+            WHERE enviado = TRUE
+            """
+        ) or {}
+        notif_email = int(notif_totales.get("email_out") or 0)
+        notif_whatsapp = int(notif_totales.get("whatsapp_out") or 0)
+
+        notif_por_tipo = base_datos.obtener_todos(
+            """
+            SELECT tipo_notificacion,
+              SUM(CASE WHEN canal='email' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as email_out,
+              SUM(CASE WHEN canal='whatsapp' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as whatsapp_out,
+              SUM(COALESCE(costo_email, 0)) as costo_email_total,
+              SUM(COALESCE(costo_whatsapp, 0)) as costo_whatsapp_total
+            FROM historial_notificaciones
+            WHERE enviado = TRUE
+            GROUP BY tipo_notificacion
+            ORDER BY tipo_notificacion
+            """
+            if (tiene_costo_email or tiene_costo_whatsapp)
+            else
+            """
+            SELECT tipo_notificacion,
+              SUM(CASE WHEN canal='email' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as email_out,
+              SUM(CASE WHEN canal='whatsapp' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as whatsapp_out
+            FROM historial_notificaciones
+            WHERE enviado = TRUE
+            GROUP BY tipo_notificacion
+            ORDER BY tipo_notificacion
+            """
+        ) or []
+        por_tipo = []
+        for fila in notif_por_tipo:
+            email_out = int(fila.get("email_out") or 0)
+            whatsapp_out = int(fila.get("whatsapp_out") or 0)
+            por_tipo.append(
+                {
+                    "tipo_notificacion": fila.get("tipo_notificacion"),
+                    "email_out": email_out,
+                    "whatsapp_out": whatsapp_out,
+                    "total": email_out + whatsapp_out,
+                    "costo_email": float(
+                        fila.get("costo_email_total")
+                        if (tiene_costo_email and fila.get("costo_email_total") is not None)
+                        else email_out * precio_email
+                    ),
+                    "costo_whatsapp": float(
+                        fila.get("costo_whatsapp_total")
+                        if (tiene_costo_whatsapp and fila.get("costo_whatsapp_total") is not None)
+                        else whatsapp_out * precio_whatsapp
+                    ),
+                }
+            )
+
+        tiene_costo_chat = _columna_existe("whatsapp_mensajes", "costo_total")
+        chat_totales = base_datos.obtener_uno(
+            """
+            SELECT
+              SUM(CASE WHEN direccion='in' THEN 1 ELSE 0 END) as whatsapp_in,
+              SUM(CASE WHEN direccion='out' THEN 1 ELSE 0 END) as whatsapp_out,
+              SUM(CASE WHEN direccion='out' AND origen='bot' THEN 1 ELSE 0 END) as whatsapp_bot,
+              SUM(CASE WHEN direccion='out' AND origen='humano' THEN 1 ELSE 0 END) as whatsapp_humano,
+              SUM(COALESCE(costo_total, 0)) as costo_total
+            FROM whatsapp_mensajes
+            """
+            if tiene_costo_chat
+            else
+            """
+            SELECT
+              SUM(CASE WHEN direccion='in' THEN 1 ELSE 0 END) as whatsapp_in,
+              SUM(CASE WHEN direccion='out' THEN 1 ELSE 0 END) as whatsapp_out,
+              SUM(CASE WHEN direccion='out' AND origen='bot' THEN 1 ELSE 0 END) as whatsapp_bot,
+              SUM(CASE WHEN direccion='out' AND origen='humano' THEN 1 ELSE 0 END) as whatsapp_humano
+            FROM whatsapp_mensajes
+            """
+        ) or {}
+        whatsapp_in = int(chat_totales.get("whatsapp_in") or 0)
+        whatsapp_out = int(chat_totales.get("whatsapp_out") or 0)
+        whatsapp_bot = int(chat_totales.get("whatsapp_bot") or 0)
+        whatsapp_humano = int(chat_totales.get("whatsapp_humano") or 0)
+
+        costo_notif_email = float(
+            notif_totales.get("costo_email_total")
+            if (tiene_costo_email and notif_totales.get("costo_email_total") is not None)
+            else notif_email * precio_email
+        )
+        costo_notif_whatsapp = float(
+            notif_totales.get("costo_whatsapp_total")
+            if (tiene_costo_whatsapp and notif_totales.get("costo_whatsapp_total") is not None)
+            else notif_whatsapp * precio_whatsapp
+        )
+        costo_notif_total = float(costo_notif_email + costo_notif_whatsapp)
+        costo_whatsapp_total = float(
+            (chat_totales.get("costo_total") if tiene_costo_chat else 0) + costo_notif_whatsapp
+        )
         
         metricas = {
             'eventos': {
@@ -106,6 +241,28 @@ def obtener_metricas():
             },
             'estadisticas': {
                 'promedio_invitados': float(promedio_invitados)
+            },
+            'notificaciones': {
+                'precio_email': float(precio_email),
+                'precio_whatsapp': float(precio_whatsapp),
+                'envios': {
+                    'email': notif_email,
+                    'whatsapp': notif_whatsapp
+                },
+                'costos': {
+                    'email': costo_notif_email,
+                    'whatsapp': costo_notif_whatsapp,
+                    'total': costo_notif_total
+                },
+                'por_tipo': por_tipo,
+                'whatsapp_chat': {
+                    'inbound': whatsapp_in,
+                    'outbound': whatsapp_out,
+                    'bot': whatsapp_bot,
+                    'humano': whatsapp_humano
+                },
+                'whatsapp_total_out': notif_whatsapp + whatsapp_out,
+                'whatsapp_total_cost': costo_whatsapp_total
             }
         }
         

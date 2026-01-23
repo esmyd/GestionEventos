@@ -22,6 +22,10 @@ const MODULOS = [
   { key: MODULES.USUARIOS, label: 'Usuarios' },
   { key: MODULES.PERMISOS, label: 'Roles y Permisos' },
   { key: MODULES.INTEGRACIONES, label: 'Integraciones' },
+  { key: MODULES.WHATSAPP_CHAT, label: 'WhatsApp Chat' },
+  { key: MODULES.WHATSAPP_METRICAS, label: 'Panel WhatsApp/Email' },
+  { key: MODULES.WHATSAPP_TEMPLATES, label: 'Plantillas WhatsApp' },
+  { key: MODULES.CONFIG_DATOS, label: 'Limpieza de datos' },
 ];
 
 const ACCIONES = [

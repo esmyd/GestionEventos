@@ -13,6 +13,10 @@ class NotificacionModelo:
     
     def obtener_configuracion(self, tipo_notificacion):
         """Obtiene la configuración de una notificación por tipo"""
+        if tipo_notificacion == "recordatorio_evento":
+            self._asegurar_recordatorio_evento()
+        if tipo_notificacion == "evento_creado":
+            self._asegurar_evento_creado_whatsapp()
         consulta = """
         SELECT * FROM configuracion_notificaciones 
         WHERE tipo_notificacion = %s AND activo = TRUE
@@ -21,11 +25,77 @@ class NotificacionModelo:
     
     def obtener_todas_configuraciones(self):
         """Obtiene todas las configuraciones de notificaciones"""
+        self._asegurar_recordatorio_evento()
+        self._asegurar_evento_creado_whatsapp()
         consulta = """
         SELECT * FROM configuracion_notificaciones 
         ORDER BY dias_antes DESC, nombre
         """
         return self.base_datos.obtener_todos(consulta)
+
+    def _asegurar_recordatorio_evento(self):
+        consulta = """
+        SELECT 1
+        FROM configuracion_notificaciones
+        WHERE tipo_notificacion = 'recordatorio_evento'
+        LIMIT 1
+        """
+        existe = self.base_datos.obtener_uno(consulta)
+        if existe:
+            return
+        plantilla_email = (
+            "<p>Hola {nombre_cliente},</p>"
+            "<p>Este es un recordatorio de tu evento \"{nombre_evento}\" programado para {fecha_evento} a las {hora_inicio}.</p>"
+            "<p>Quedan {dias_restantes} dias. Si necesitas coordinacion adicional, estamos atentos.</p>"
+            "<p>Gracias por confiar en Lirios Eventos.</p>"
+        )
+        plantilla_whatsapp = (
+            "Lirios Eventos: recordatorio del evento \"{nombre_evento}\" el {fecha_evento} "
+            "a las {hora_inicio}. Quedan {dias_restantes} dias."
+        )
+        insertar = """
+        INSERT INTO configuracion_notificaciones (
+            tipo_notificacion, nombre, descripcion, activo, enviar_email, enviar_whatsapp,
+            dias_antes, plantilla_email, plantilla_whatsapp
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        self.base_datos.ejecutar_consulta(
+            insertar,
+            (
+                "recordatorio_evento",
+                "Recordatorio del evento",
+                "Recordatorio manual del evento (sin dias fijos)",
+                True,
+                True,
+                True,
+                0,
+                plantilla_email,
+                plantilla_whatsapp,
+            ),
+        )
+
+    def _asegurar_evento_creado_whatsapp(self):
+        consulta = """
+        SELECT enviar_whatsapp, plantilla_whatsapp, descripcion
+        FROM configuracion_notificaciones
+        WHERE tipo_notificacion = 'evento_creado'
+        LIMIT 1
+        """
+        fila = self.base_datos.obtener_uno(consulta) or {}
+        if not fila:
+            return
+        enviar_whatsapp = fila.get("enviar_whatsapp")
+        plantilla_whatsapp = fila.get("plantilla_whatsapp") or ""
+        descripcion = (fila.get("descripcion") or "").strip().lower()
+        # Solo activar WhatsApp si sigue con la configuración base (sin personalizar)
+        if (
+            enviar_whatsapp in (0, False)
+            and plantilla_whatsapp
+            and "se envía cuando se crea un nuevo evento" in descripcion
+        ):
+            self.base_datos.ejecutar_consulta(
+                "UPDATE configuracion_notificaciones SET enviar_whatsapp = TRUE WHERE tipo_notificacion = 'evento_creado'"
+            )
     
     def actualizar_configuracion(self, tipo_notificacion, datos):
         """Actualiza la configuración de una notificación"""
@@ -49,12 +119,25 @@ class NotificacionModelo:
         )
         return self.base_datos.ejecutar_consulta(consulta, parametros)
     
-    def registrar_envio(self, evento_id, tipo_notificacion, canal, destinatario, asunto, mensaje, enviado=True, error=None):
+    def registrar_envio(
+        self,
+        evento_id,
+        tipo_notificacion,
+        canal,
+        destinatario,
+        asunto,
+        mensaje,
+        enviado=True,
+        error=None,
+        costo_email=None,
+        costo_whatsapp=None,
+    ):
         """Registra un envío de notificación en el historial"""
+        self._asegurar_columnas_costos()
         consulta = """
         INSERT INTO historial_notificaciones 
-        (id_evento, tipo_notificacion, canal, destinatario, asunto, mensaje, enviado, fecha_envio, error)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        (id_evento, tipo_notificacion, canal, destinatario, asunto, mensaje, enviado, fecha_envio, error, costo_email, costo_whatsapp)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         fecha_envio = datetime.now() if enviado else None
         parametros = (
@@ -66,11 +149,35 @@ class NotificacionModelo:
             mensaje,
             enviado,
             fecha_envio,
-            error
+            error,
+            costo_email,
+            costo_whatsapp,
         )
         if self.base_datos.ejecutar_consulta(consulta, parametros):
             return self.base_datos.obtener_ultimo_id()
         return None
+
+    def _asegurar_columnas_costos(self):
+        try:
+            consulta = """
+            SELECT COLUMN_NAME
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'historial_notificaciones'
+              AND COLUMN_NAME IN ('costo_email', 'costo_whatsapp')
+            """
+            existentes = self.base_datos.obtener_todos(consulta) or []
+            columnas = {row.get("COLUMN_NAME") for row in existentes}
+            if "costo_email" not in columnas:
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE historial_notificaciones ADD COLUMN costo_email DECIMAL(10,4) NULL"
+                )
+            if "costo_whatsapp" not in columnas:
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE historial_notificaciones ADD COLUMN costo_whatsapp DECIMAL(10,4) NULL"
+                )
+        except Exception:
+            pass
     
     def obtener_historial_evento(self, evento_id):
         """Obtiene el historial de notificaciones de un evento"""
@@ -100,6 +207,25 @@ class NotificacionModelo:
         return self.base_datos.obtener_uno(consulta, (evento_id, tipo_notificacion)) or {
             'total': 0,
             'ultimo_envio': None
+        }
+
+    def obtener_resumen_envios_por_tipo(self):
+        """Obtiene el total de envios por canal y tipo"""
+        consulta = """
+        SELECT tipo_notificacion,
+            SUM(CASE WHEN canal = 'email' THEN 1 WHEN canal = 'ambos' THEN 1 ELSE 0 END) as total_email,
+            SUM(CASE WHEN canal = 'whatsapp' THEN 1 WHEN canal = 'ambos' THEN 1 ELSE 0 END) as total_whatsapp
+        FROM historial_notificaciones
+        WHERE enviado = TRUE
+        GROUP BY tipo_notificacion
+        """
+        filas = self.base_datos.obtener_todos(consulta) or []
+        return {
+            fila.get('tipo_notificacion'): {
+                'total_email': int(fila.get('total_email') or 0),
+                'total_whatsapp': int(fila.get('total_whatsapp') or 0)
+            }
+            for fila in filas
         }
     
     def obtener_destinatarios_adicionales(self, tipo_notificacion):

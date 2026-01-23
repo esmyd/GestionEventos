@@ -73,19 +73,32 @@ def crear_pago():
         pago_id = pago_modelo.crear_pago(data)
         if pago_id:
             pago = pago_modelo.obtener_pago_por_id(pago_id)
-            total_pagado = pago_modelo.obtener_total_pagado_evento(data['evento_id'])
-            
-            # Cambiar estado del evento a "en_proceso" si está en "cotizacion" o "confirmado"
-            from modelos.evento_modelo import EventoModelo
-            evento_modelo = EventoModelo()
-            evento = evento_modelo.obtener_evento_por_id(data['evento_id'])
-            if evento:
-                estado_actual = evento.get('estado')
-                # Solo cambiar a "en_proceso" si está en cotización o confirmado
-                if estado_actual in ['cotizacion', 'confirmado']:
-                    evento_modelo.actualizar_estado(data['evento_id'], 'en_proceso')
-                    logger.info(f"Estado del evento {data['evento_id']} cambiado a 'en_proceso' después de registrar pago")
-            
+            total_pagado = None
+            try:
+                total_pagado = pago_modelo.obtener_total_pagado_evento(data['evento_id'])
+                pago_modelo.actualizar_saldo_evento(data['evento_id'])
+            except Exception as e:
+                logger.warning(f"No se pudo actualizar saldo/totales del evento {data['evento_id']}: {e}")
+
+            # Cambios de estado y notificaciones no deben romper la respuesta
+            try:
+                from modelos.evento_modelo import EventoModelo
+                evento_modelo = EventoModelo()
+                evento = evento_modelo.obtener_evento_por_id(data['evento_id'])
+                if evento:
+                    estado_actual = evento.get('estado')
+                    # Solo cambiar a "en_proceso" si está en cotización o confirmado
+                    if estado_actual in ['cotizacion', 'confirmado']:
+                        evento_modelo.actualizar_estado(data['evento_id'], 'en_proceso')
+                        logger.info(f"Estado del evento {data['evento_id']} cambiado a 'en_proceso' después de registrar pago")
+                    evento_actualizado = evento_modelo.obtener_evento_por_id(data['evento_id'])
+                    saldo_pendiente = float((evento_actualizado or evento).get('saldo') or 0)
+                    if saldo_pendiente <= 0 and estado_actual not in ['completado', 'cancelado']:
+                        evento_modelo.actualizar_estado(data['evento_id'], 'confirmado')
+                        logger.info(f"Estado del evento {data['evento_id']} cambiado a 'confirmado' por pago completo")
+            except Exception as e:
+                logger.warning(f"Error al actualizar estado del evento {data['evento_id']} tras pago: {e}")
+
             return jsonify({
                 'message': 'Pago registrado exitosamente',
                 'pago': pago,
