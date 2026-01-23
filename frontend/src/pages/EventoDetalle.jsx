@@ -1630,6 +1630,12 @@ const EventoDetalle = () => {
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Método
                   </th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Referencia
+                  </th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Observación
+                  </th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
                     Monto
                   </th>
@@ -1644,6 +1650,8 @@ const EventoDetalle = () => {
                     <td style={{ padding: '0.75rem' }}>{formatearFecha(pago.fecha_pago)}</td>
                     <td style={{ padding: '0.75rem' }}>{pago.tipo_pago || '-'}</td>
                     <td style={{ padding: '0.75rem' }}>{pago.metodo_pago || '-'}</td>
+                    <td style={{ padding: '0.75rem' }}>{pago.numero_referencia || '-'}</td>
+                    <td style={{ padding: '0.75rem' }}>{pago.observaciones || '-'}</td>
                     <td
                       style={{
                         padding: '0.75rem',
@@ -1662,11 +1670,25 @@ const EventoDetalle = () => {
                           borderRadius: '9999px',
                           fontSize: '0.75rem',
                           fontWeight: '500',
-                          backgroundColor: pago.origen === 'web' ? '#dbeafe' : '#f3f4f6',
-                          color: pago.origen === 'web' ? '#1e40af' : '#374151',
+                          backgroundColor:
+                            pago.origen === 'web'
+                              ? '#dbeafe'
+                              : pago.origen === 'whatsapp'
+                                ? '#dcfce7'
+                                : '#f3f4f6',
+                          color:
+                            pago.origen === 'web'
+                              ? '#1e40af'
+                              : pago.origen === 'whatsapp'
+                                ? '#166534'
+                                : '#374151',
                         }}
                       >
-                        {pago.origen === 'web' ? 'Web' : 'Escritorio'}
+                        {pago.origen === 'web'
+                          ? 'Web'
+                          : pago.origen === 'whatsapp'
+                            ? 'WhatsApp'
+                            : 'Escritorio'}
                       </span>
                     </td>
                   </tr>

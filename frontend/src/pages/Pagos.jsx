@@ -1230,11 +1230,25 @@ const Pagos = () => {
                           borderRadius: '9999px',
                           fontSize: '0.75rem',
                           fontWeight: '500',
-                          backgroundColor: pago.origen === 'web' ? '#3b82f620' : '#6b728020',
-                          color: pago.origen === 'web' ? '#3b82f6' : '#6b7280',
+                          backgroundColor:
+                            pago.origen === 'web'
+                              ? '#3b82f620'
+                              : pago.origen === 'whatsapp'
+                                ? '#22c55e20'
+                                : '#6b728020',
+                          color:
+                            pago.origen === 'web'
+                              ? '#3b82f6'
+                              : pago.origen === 'whatsapp'
+                                ? '#16a34a'
+                                : '#6b7280',
                         }}
                       >
-                        {pago.origen === 'web' ? 'Web' : 'Escritorio'}
+                        {pago.origen === 'web'
+                          ? 'Web'
+                          : pago.origen === 'whatsapp'
+                            ? 'WhatsApp'
+                            : 'Escritorio'}
                       </span>
                     </div>
                     <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
@@ -1379,11 +1393,25 @@ const Pagos = () => {
                               borderRadius: '9999px',
                               fontSize: '0.75rem',
                               fontWeight: '500',
-                              backgroundColor: pago.origen === 'web' ? '#3b82f620' : '#6b728020',
-                              color: pago.origen === 'web' ? '#3b82f6' : '#6b7280',
+                              backgroundColor:
+                                pago.origen === 'web'
+                                  ? '#3b82f620'
+                                  : pago.origen === 'whatsapp'
+                                    ? '#22c55e20'
+                                    : '#6b728020',
+                              color:
+                                pago.origen === 'web'
+                                  ? '#3b82f6'
+                                  : pago.origen === 'whatsapp'
+                                    ? '#16a34a'
+                                    : '#6b7280',
                             }}
                           >
-                            {pago.origen === 'web' ? 'Web' : 'Escritorio'}
+                            {pago.origen === 'web'
+                              ? 'Web'
+                              : pago.origen === 'whatsapp'
+                                ? 'WhatsApp'
+                                : 'Escritorio'}
                           </span>
                         </td>
                         <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', maxWidth: '200px' }}>
@@ -1831,16 +1859,14 @@ const Pagos = () => {
                   </p>
                 </div>
 
-                {pagoSeleccionado.numero_referencia && (
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-                      Número de Referencia
-                    </label>
-                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
-                      {pagoSeleccionado.numero_referencia}
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    Número de Referencia
+                  </label>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
+                    {pagoSeleccionado.numero_referencia || '-'}
+                  </p>
+                </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
@@ -1852,24 +1878,36 @@ const Pagos = () => {
                       borderRadius: '9999px',
                       fontSize: '0.75rem',
                       fontWeight: '500',
-                      backgroundColor: pagoSeleccionado.origen === 'web' ? '#3b82f620' : '#6b728020',
-                      color: pagoSeleccionado.origen === 'web' ? '#3b82f6' : '#6b7280',
+                      backgroundColor:
+                        pagoSeleccionado.origen === 'web'
+                          ? '#3b82f620'
+                          : pagoSeleccionado.origen === 'whatsapp'
+                            ? '#22c55e20'
+                            : '#6b728020',
+                      color:
+                        pagoSeleccionado.origen === 'web'
+                          ? '#3b82f6'
+                          : pagoSeleccionado.origen === 'whatsapp'
+                            ? '#16a34a'
+                            : '#6b7280',
                     }}
                   >
-                    {pagoSeleccionado.origen === 'web' ? 'Web' : 'Escritorio'}
+                    {pagoSeleccionado.origen === 'web'
+                      ? 'Web'
+                      : pagoSeleccionado.origen === 'whatsapp'
+                        ? 'WhatsApp'
+                        : 'Escritorio'}
                   </span>
                 </div>
 
-                {pagoSeleccionado.observaciones && (
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-                      Observaciones
-                    </label>
-                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
-                      {pagoSeleccionado.observaciones}
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    Observaciones
+                  </label>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
+                    {pagoSeleccionado.observaciones || '-'}
+                  </p>
+                </div>
               </div>
             </div>
 
