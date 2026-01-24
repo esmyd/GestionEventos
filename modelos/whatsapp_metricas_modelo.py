@@ -9,8 +9,9 @@ class WhatsAppMetricasModelo:
         self.base_datos = BaseDatos()
 
     def obtener_config(self):
+        self._asegurar_columnas_limites()
         consulta = "SELECT * FROM whatsapp_metricas_config ORDER BY id ASC LIMIT 1"
-        return self.base_datos.obtener_uno(consulta) or {"precio_whatsapp": 0, "precio_email": 0}
+        return self.base_datos.obtener_uno(consulta) or {"precio_whatsapp": 0, "precio_email": 0, "maximo_whatsapp": None, "maximo_email": None}
 
     def _columna_existe(self, tabla, columna):
         consulta = """
@@ -40,23 +41,72 @@ class WhatsAppMetricasModelo:
         except Exception:
             pass
 
-    def actualizar_config(self, precio_whatsapp, precio_email, whatsapp_desactivado=0):
+    def _asegurar_columnas_limites(self):
+        try:
+            # Verificar y agregar maximo_whatsapp
+            consulta = """
+            SELECT COUNT(*) as total
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'whatsapp_metricas_config'
+              AND COLUMN_NAME = 'maximo_whatsapp'
+            """
+            existe = self.base_datos.obtener_uno(consulta) or {}
+            if int(existe.get("total") or 0) == 0:
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE whatsapp_metricas_config ADD COLUMN maximo_whatsapp INT DEFAULT NULL"
+                )
+            
+            # Verificar y agregar maximo_email
+            consulta = """
+            SELECT COUNT(*) as total
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'whatsapp_metricas_config'
+              AND COLUMN_NAME = 'maximo_email'
+            """
+            existe = self.base_datos.obtener_uno(consulta) or {}
+            if int(existe.get("total") or 0) == 0:
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE whatsapp_metricas_config ADD COLUMN maximo_email INT DEFAULT NULL"
+                )
+        except Exception:
+            pass
+
+    def actualizar_config(self, precio_whatsapp, precio_email, whatsapp_desactivado=0, maximo_whatsapp=None, maximo_email=None):
         self._asegurar_columna_whatsapp_desactivado()
+        self._asegurar_columnas_limites()
         existente = self.obtener_config()
         if existente and existente.get("id"):
             consulta = """
             UPDATE whatsapp_metricas_config
-            SET precio_whatsapp = %s, precio_email = %s, whatsapp_desactivado = %s
+            SET precio_whatsapp = %s, precio_email = %s, whatsapp_desactivado = %s, 
+                maximo_whatsapp = %s, maximo_email = %s
             WHERE id = %s
             """
             return self.base_datos.ejecutar_consulta(
-                consulta, (precio_whatsapp, precio_email, int(bool(whatsapp_desactivado)), existente.get("id"))
+                consulta, (
+                    precio_whatsapp, 
+                    precio_email, 
+                    int(bool(whatsapp_desactivado)), 
+                    maximo_whatsapp if maximo_whatsapp is not None else None,
+                    maximo_email if maximo_email is not None else None,
+                    existente.get("id")
+                )
             )
         consulta = """
-        INSERT INTO whatsapp_metricas_config (precio_whatsapp, precio_email, whatsapp_desactivado)
-        VALUES (%s, %s, %s)
+        INSERT INTO whatsapp_metricas_config (precio_whatsapp, precio_email, whatsapp_desactivado, maximo_whatsapp, maximo_email)
+        VALUES (%s, %s, %s, %s, %s)
         """
-        return self.base_datos.ejecutar_consulta(consulta, (precio_whatsapp, precio_email, int(bool(whatsapp_desactivado))))
+        return self.base_datos.ejecutar_consulta(
+            consulta, (
+                precio_whatsapp, 
+                precio_email, 
+                int(bool(whatsapp_desactivado)),
+                maximo_whatsapp if maximo_whatsapp is not None else None,
+                maximo_email if maximo_email is not None else None
+            )
+        )
 
     def obtener_control_cliente(self, cliente_id):
         consulta = """
@@ -128,31 +178,58 @@ class WhatsAppMetricasModelo:
         return not bool(control.get("bloquear_email"))
 
     def obtener_metricas_globales(self):
+        # Contar TODOS los mensajes de WhatsApp desde whatsapp_mensajes (incluyendo sistema)
+        # NO contar desde historial_notificaciones para evitar duplicación
+        tiene_costo_chat = self._columna_existe("whatsapp_mensajes", "costo_total")
+        tiene_costo_email = self._columna_existe("historial_notificaciones", "costo_email")
+        
         consulta = """
         SELECT
           SUM(CASE WHEN direccion='out' THEN 1 ELSE 0 END) as whatsapp_out,
           SUM(CASE WHEN direccion='in' THEN 1 ELSE 0 END) as whatsapp_in,
           SUM(CASE WHEN direccion='out' AND origen='bot' THEN 1 ELSE 0 END) as whatsapp_bot,
           SUM(CASE WHEN direccion='out' AND origen='humano' THEN 1 ELSE 0 END) as whatsapp_humano,
-          SUM(CASE WHEN direccion='out' AND origen IS NULL THEN 1 ELSE 0 END) as whatsapp_out_sin_origen
+          SUM(CASE WHEN direccion='out' AND origen='sistema' THEN 1 ELSE 0 END) as whatsapp_sistema,
+          SUM(CASE WHEN direccion='out' AND origen='campana' THEN 1 ELSE 0 END) as whatsapp_campana
+          {costo_whatsapp}
         FROM whatsapp_mensajes
-        """
+        """.format(
+            costo_whatsapp=", SUM(COALESCE(costo_total, 0)) as costo_whatsapp_total" if tiene_costo_chat else ""
+        )
         whatsapp = self.base_datos.obtener_uno(consulta) or {}
+        
+        # Email solo desde historial_notificaciones (no hay duplicación aquí)
         consulta_email = """
         SELECT
-          SUM(CASE WHEN canal='email' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as email_out,
-          SUM(CASE WHEN canal='whatsapp' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as whatsapp_sistema
+          SUM(CASE WHEN canal='email' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as email_out
+          {costo_email}
         FROM historial_notificaciones
         WHERE enviado = TRUE
-        """
+        """.format(
+            costo_email=", SUM(COALESCE(costo_email, 0)) as costo_email_total" if tiene_costo_email else ""
+        )
         email = self.base_datos.obtener_uno(consulta_email) or {}
+        
+        whatsapp_out = int(whatsapp.get("whatsapp_out") or 0)
+        whatsapp_sistema = int(whatsapp.get("whatsapp_sistema") or 0)
+        whatsapp_campana = int(whatsapp.get("whatsapp_campana") or 0)
+        whatsapp_notificaciones = whatsapp_sistema + whatsapp_campana  # Sistema + campañas
+        
+        # Obtener costos reales almacenados
+        costo_whatsapp_total = float(whatsapp.get("costo_whatsapp_total") or 0) if tiene_costo_chat else 0.0
+        costo_email_total = float(email.get("costo_email_total") or 0) if tiene_costo_email else 0.0
+        
         return {
-            "whatsapp_out": int(whatsapp.get("whatsapp_out") or 0),
-            "whatsapp_in": int(whatsapp.get("whatsapp_in") or 0),
+            "whatsapp_out": whatsapp_out,  # Total salientes (todos desde whatsapp_mensajes)
+            "whatsapp_in": int(whatsapp.get("whatsapp_in") or 0),  # Mensajes entrantes del cliente
+            "whatsapp_chat_out": whatsapp_out - whatsapp_notificaciones,  # Chat (bot + humano, sin sistema)
+            "whatsapp_notificaciones": whatsapp_notificaciones,  # Notificaciones automáticas (sistema + campañas)
             "whatsapp_bot": int(whatsapp.get("whatsapp_bot") or 0),
             "whatsapp_humano": int(whatsapp.get("whatsapp_humano") or 0),
-            "whatsapp_sistema": int(email.get("whatsapp_sistema") or 0),
+            "whatsapp_sistema": whatsapp_notificaciones,  # Mantener compatibilidad
             "email_out": int(email.get("email_out") or 0),
+            "costo_whatsapp_total": costo_whatsapp_total,  # Costo total desde whatsapp_mensajes
+            "costo_email_total": costo_email_total,  # Costo total desde historial_notificaciones
         }
 
     def obtener_metricas_clientes(self):
@@ -169,7 +246,8 @@ class WhatsAppMetricasModelo:
                SUM(CASE WHEN wm.direccion='out' THEN 1 ELSE 0 END) as whatsapp_out,
                SUM(CASE WHEN wm.direccion='in' THEN 1 ELSE 0 END) as whatsapp_in,
                SUM(CASE WHEN wm.direccion='out' AND wm.origen='bot' THEN 1 ELSE 0 END) as whatsapp_bot,
-               SUM(CASE WHEN wm.direccion='out' AND wm.origen='humano' THEN 1 ELSE 0 END) as whatsapp_humano
+               SUM(CASE WHEN wm.direccion='out' AND wm.origen='humano' THEN 1 ELSE 0 END) as whatsapp_humano,
+               SUM(CASE WHEN wm.direccion='out' AND (wm.origen='sistema' OR wm.origen='campana') THEN 1 ELSE 0 END) as whatsapp_sistema
                {costo_chat}
         FROM clientes c
         JOIN usuarios u ON c.usuario_id = u.id

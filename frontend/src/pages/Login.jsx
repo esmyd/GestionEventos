@@ -422,6 +422,80 @@ const Login = () => {
             )}
             </button>
           </form>
+
+          {/* Usuarios de prueba */}
+          <div style={{ 
+            marginTop: '2rem', 
+            padding: '1.25rem',
+            backgroundColor: '#f9fafb',
+            borderRadius: '0.75rem',
+            border: '1px solid #e5e7eb'
+          }}>
+            <div style={{ 
+              fontSize: '0.875rem', 
+              fontWeight: '600', 
+              color: '#374151',
+              marginBottom: '0.75rem'
+            }}>
+              👤 Usuarios de Prueba
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.5rem',
+              fontSize: '0.8rem'
+            }}>
+              {[
+                { usuario: 'admin', contrasena: 'admin123', rol: 'Administrador', color: '#dc2626' },
+                { usuario: 'gerente', contrasena: 'gerente123', rol: 'Gerente General', color: '#2563eb' },
+                { usuario: 'coordinador1', contrasena: 'coordinador123', rol: 'Coordinador', color: '#16a34a' },
+                { usuario: 'coordinador2', contrasena: 'coordinador123', rol: 'Coordinador', color: '#16a34a' },
+              ].map((testUser) => (
+                <button
+                  key={testUser.usuario}
+                  type="button"
+                  onClick={() => {
+                    setNombreUsuario(testUser.usuario);
+                    setContrasena(testUser.contrasena);
+                    setError('');
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    backgroundColor: 'white',
+                    border: `1px solid ${testUser.color}`,
+                    borderRadius: '0.5rem',
+                    color: testUser.color,
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: '500',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = testUser.color;
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateX(4px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white';
+                    e.currentTarget.style.color = testUser.color;
+                    e.currentTarget.style.transform = 'translateX(0)';
+                  }}
+                >
+                  <span>
+                    <strong>{testUser.usuario}</strong> ({testUser.rol})
+                  </span>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                    {testUser.contrasena}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
             <Link
               to="/"

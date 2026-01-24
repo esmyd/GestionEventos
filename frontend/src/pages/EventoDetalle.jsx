@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { eventosService, pagosService, planesService, productosService, usuariosService, notificacionesNativasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2, Eye, Check, Ban } from 'lucide-react';
 import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
@@ -29,6 +29,9 @@ const EventoDetalle = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
+  const [mostrarModalPagoDetalle, setMostrarModalPagoDetalle] = useState(false);
+  const [pagoDetalle, setPagoDetalle] = useState(null);
+  const [confirmacionPago, setConfirmacionPago] = useState(null);
   const [mostrarModalProducto, setMostrarModalProducto] = useState(false);
   const [mostrarModalEliminarEvento, setMostrarModalEliminarEvento] = useState(false);
   const [eliminandoEvento, setEliminandoEvento] = useState(false);
@@ -47,6 +50,11 @@ const EventoDetalle = () => {
   const [observacionEliminar, setObservacionEliminar] = useState('');
   const [errorEliminarProducto, setErrorEliminarProducto] = useState('');
   const [eliminandoProducto, setEliminandoProducto] = useState(false);
+  const [mostrarModalServicioPersonalizado, setMostrarModalServicioPersonalizado] = useState(false);
+  const [formServicioPersonalizado, setFormServicioPersonalizado] = useState({ nombre: '' });
+  const [errorServicioPersonalizado, setErrorServicioPersonalizado] = useState('');
+  const [creandoServicioPersonalizado, setCreandoServicioPersonalizado] = useState(false);
+  const [eliminandoServicioPersonalizado, setEliminandoServicioPersonalizado] = useState(null);
   const [formPago, setFormPago] = useState({
     monto: '',
     tipo_pago: 'abono',
@@ -65,11 +73,15 @@ const EventoDetalle = () => {
   const puedeActualizarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_ACTUALIZAR_SERVICIOS, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeDescartarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_DESCARTAR_SERVICIO, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeGenerarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_GENERAR_SERVICIOS, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeCrearServicioPersonalizado = hasPermission(usuario, PERMISSIONS.EVENTOS_GENERAR_SERVICIOS, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeEliminarProducto = hasPermission(usuario, PERMISSIONS.EVENTOS_ELIMINAR_PRODUCTO, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeEliminarEvento = hasPermission(usuario, PERMISSIONS.EVENTOS_ELIMINAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeAsignarCoordinador = hasPermission(usuario, PERMISSIONS.EVENTOS_ASIGNAR_COORDINADOR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeNotificarPago = Boolean(evento?.email || evento?.telefono);
-  const puedeRegistrarPago = hasPermission(usuario, PERMISSIONS.PAGOS_REGISTRAR, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeRegistrarPago = hasPermission(usuario, PERMISSIONS.PAGOS_REGISTRAR, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeReembolsar = hasPermission(usuario, PERMISSIONS.PAGOS_REEMBOLSAR, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeAprobarPago = hasPermission(usuario, PERMISSIONS.PAGOS_APROBAR, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeAnularPago = hasPermission(usuario, PERMISSIONS.PAGOS_ANULAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const saldoPorReembolsar = Math.max(0, (parseFloat(totalPagado) || 0) - (parseFloat(totalReembolsos) || 0));
 
   const progresoServicios = useMemo(() => {
@@ -193,7 +205,11 @@ const EventoDetalle = () => {
   const cargarPagos = async () => {
     try {
       const data = await pagosService.getByEvento(id);
-      setPagos(data.pagos || []);
+      // Ordenar por ID descendente
+      const pagosOrdenados = (data.pagos || []).sort((a, b) => {
+        return (b.id || 0) - (a.id || 0);
+      });
+      setPagos(pagosOrdenados);
       // Usar el total_pagado de la API si está disponible
       if (data.total_pagado !== undefined && data.total_pagado !== null) {
         setTotalPagado(parseFloat(data.total_pagado) || 0);
@@ -353,15 +369,59 @@ const EventoDetalle = () => {
         setError('El plan seleccionado no tiene servicios configurados. Por favor, configura los servicios del plan primero.');
       } else {
         setError('');
-        // Opcional: mostrar mensaje de éxito
-        console.log(`Servicios generados exitosamente: ${servicios.length} servicio(s)`);
+        success(`Servicios generados exitosamente: ${servicios.length} servicio(s)`);
       }
     } catch (err) {
       console.error('Error al generar servicios:', err);
       const errorMessage = err.response?.data?.error || 'Error al generar servicios';
       setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setGenerandoServicios(false);
+    }
+  };
+
+  const handleCrearServicioPersonalizado = async () => {
+    if (!formServicioPersonalizado.nombre || !formServicioPersonalizado.nombre.trim()) {
+      setErrorServicioPersonalizado('El nombre del servicio es requerido');
+      return;
+    }
+    try {
+      setCreandoServicioPersonalizado(true);
+      setErrorServicioPersonalizado('');
+      const data = await eventosService.crearServicioPersonalizado(
+        evento.id_evento || evento.id,
+        formServicioPersonalizado.nombre.trim()
+      );
+      setServiciosEvento(data.servicios || []);
+      setMostrarModalServicioPersonalizado(false);
+      setFormServicioPersonalizado({ nombre: '' });
+      success('Servicio personalizado creado exitosamente');
+    } catch (err) {
+      console.error('Error al crear servicio personalizado:', err);
+      const errorMessage = err.response?.data?.error || 'Error al crear servicio';
+      setErrorServicioPersonalizado(errorMessage);
+      showError(errorMessage);
+    } finally {
+      setCreandoServicioPersonalizado(false);
+    }
+  };
+
+  const handleEliminarServicioPersonalizado = async (servicioId) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar este servicio personalizado?')) {
+      return;
+    }
+    try {
+      setEliminandoServicioPersonalizado(servicioId);
+      const data = await eventosService.eliminarServicio(evento.id_evento || evento.id, servicioId);
+      setServiciosEvento(data.servicios || []);
+      success('Servicio eliminado exitosamente');
+    } catch (err) {
+      console.error('Error al eliminar servicio:', err);
+      const errorMessage = err.response?.data?.error || 'Error al eliminar servicio';
+      showError(errorMessage);
+    } finally {
+      setEliminandoServicioPersonalizado(null);
     }
   };
 
@@ -509,6 +569,75 @@ const EventoDetalle = () => {
     } catch {
       return fecha;
     }
+  };
+
+  const formatearFechaHora = (fecha) => {
+    if (!fecha) return '-';
+    try {
+      const fechaObj = parseFechaLocal(fecha);
+      return fechaObj.toLocaleString('es-CO', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return fecha;
+    }
+  };
+
+  const obtenerLabelEstadoPago = (estado) => {
+    switch (estado) {
+      case 'aprobado':
+        return 'Aprobado';
+      case 'rechazado':
+        return 'Rechazado';
+      case 'en_revision':
+      default:
+        return 'En revisión';
+    }
+  };
+
+  const obtenerEstiloEstadoPago = (estado) => {
+    switch (estado) {
+      case 'aprobado':
+        return { backgroundColor: '#16a34a20', color: '#16a34a' };
+      case 'rechazado':
+        return { backgroundColor: '#ef444420', color: '#ef4444' };
+      default:
+        return { backgroundColor: '#f59e0b20', color: '#d97706' };
+    }
+  };
+
+  const abrirDetallePago = (pago) => {
+    setPagoDetalle(pago);
+    setMostrarModalPagoDetalle(true);
+  };
+
+  const cambiarEstadoPago = async (pago, nuevoEstado) => {
+    if (!pago) return;
+    try {
+      await pagosService.updateEstado(pago.id, nuevoEstado);
+      await cargarPagos();
+      await cargarEvento();
+      success('Estado del pago actualizado');
+    } catch (err) {
+      const mensaje = err.response?.data?.error || 'No se pudo actualizar el estado del pago';
+      showError(mensaje);
+    }
+  };
+
+  const solicitarConfirmacionEstadoPago = (pago, nuevoEstado) => {
+    if (!pago) return;
+    setConfirmacionPago({ pago, nuevoEstado });
+  };
+
+  const confirmarCambioEstadoPago = async () => {
+    if (!confirmacionPago) return;
+    const { pago, nuevoEstado } = confirmacionPago;
+    setConfirmacionPago(null);
+    await cambiarEstadoPago(pago, nuevoEstado);
   };
 
   const obtenerCreadorEvento = () => {
@@ -1269,25 +1398,46 @@ const EventoDetalle = () => {
               <Package size={20} color="#6366f1" />
               Servicios del evento
             </h2>
-            {puedeGenerarServicios && evento?.plan_id && (
-              <button
-                type="button"
-                onClick={handleGenerarServicios}
-                disabled={eventoCancelado || generandoServicios}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  backgroundColor: eventoCancelado ? '#9ca3af' : '#6366f1',
-                  color: 'white',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: eventoCancelado || generandoServicios ? 'not-allowed' : 'pointer',
-                  fontWeight: '500',
-                  fontSize: '0.8rem',
-                }}
-              >
-                {generandoServicios ? 'Generando...' : 'Generar servicios'}
-              </button>
-            )}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {puedeCrearServicioPersonalizado && !eventoCancelado && (
+                <button
+                  type="button"
+                  onClick={() => setMostrarModalServicioPersonalizado(true)}
+                  disabled={eventoCancelado}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    backgroundColor: eventoCancelado ? '#9ca3af' : '#10b981',
+                    color: 'white',
+                    borderRadius: '0.375rem',
+                    border: 'none',
+                    cursor: eventoCancelado ? 'not-allowed' : 'pointer',
+                    fontWeight: '500',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  + Agregar servicio
+                </button>
+              )}
+              {puedeGenerarServicios && evento?.plan_id && (
+                <button
+                  type="button"
+                  onClick={handleGenerarServicios}
+                  disabled={eventoCancelado || generandoServicios}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    backgroundColor: eventoCancelado ? '#9ca3af' : '#6366f1',
+                    color: 'white',
+                    borderRadius: '0.375rem',
+                    border: 'none',
+                    cursor: eventoCancelado || generandoServicios ? 'not-allowed' : 'pointer',
+                    fontWeight: '500',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  {generandoServicios ? 'Generando...' : 'Generar servicios'}
+                </button>
+              )}
+            </div>
           </div>
           <div style={{ marginBottom: '1rem' }}>
             <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.35rem' }}>
@@ -1337,26 +1487,54 @@ const EventoDetalle = () => {
                   />
                   <span style={{ fontSize: '0.9rem', color: servicio.completado ? '#10b981' : '#374151', flex: 1 }}>
                     {servicio.nombre}
+                    {servicio.plan_servicio_id === null && (
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: '#6366f1', fontStyle: 'italic' }}>
+                        (Personalizado)
+                      </span>
+                    )}
                   </span>
-                  {puedeDescartarServicios && !eventoCancelado && (
-                    <button
-                      type="button"
-                      onClick={() => handleDescartarServicio(servicio.id, true)}
-                      disabled={actualizandoServicioId === servicio.id}
-                      style={{
-                        padding: '0.25rem 0.5rem',
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        borderRadius: '0.25rem',
-                        border: 'none',
-                        cursor: actualizandoServicioId === servicio.id ? 'not-allowed' : 'pointer',
-                        fontSize: '0.75rem',
-                      }}
-                      title="Descartar servicio"
-                    >
-                      Descartar
-                    </button>
-                  )}
+                  <div style={{ display: 'flex', gap: '0.25rem' }}>
+                    {/* Botón eliminar solo para servicios personalizados */}
+                    {servicio.plan_servicio_id === null && puedeCrearServicioPersonalizado && !eventoCancelado && (
+                      <button
+                        type="button"
+                        onClick={() => handleEliminarServicioPersonalizado(servicio.id)}
+                        disabled={eliminandoServicioPersonalizado === servicio.id}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: eliminandoServicioPersonalizado === servicio.id ? '#9ca3af' : '#ef4444',
+                          color: 'white',
+                          borderRadius: '0.25rem',
+                          border: 'none',
+                          cursor: eliminandoServicioPersonalizado === servicio.id ? 'not-allowed' : 'pointer',
+                          fontSize: '0.75rem',
+                        }}
+                        title="Eliminar servicio personalizado"
+                      >
+                        {eliminandoServicioPersonalizado === servicio.id ? 'Eliminando...' : 'Eliminar'}
+                      </button>
+                    )}
+                    {/* Botón descartar solo para servicios del plan */}
+                    {servicio.plan_servicio_id !== null && puedeDescartarServicios && !eventoCancelado && (
+                      <button
+                        type="button"
+                        onClick={() => handleDescartarServicio(servicio.id, true)}
+                        disabled={actualizandoServicioId === servicio.id}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          borderRadius: '0.25rem',
+                          border: 'none',
+                          cursor: actualizandoServicioId === servicio.id ? 'not-allowed' : 'pointer',
+                          fontSize: '0.75rem',
+                        }}
+                        title="Descartar servicio"
+                      >
+                        Descartar
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
               {/* Mostrar servicios descartados con opción de reactivar */}
@@ -1581,34 +1759,36 @@ const EventoDetalle = () => {
                 <DollarSign size={16} />
                 Registrar Pago
               </button>
-              <button
-                onClick={() => {
-                  if (saldoPorReembolsar <= 0) {
-                    setError('No hay saldo disponible para reembolsar.');
-                    return;
-                  }
-                  setFormPago((prev) => ({ ...prev, tipo_pago: 'reembolso', monto: saldoPorReembolsar || '' }));
-                  setMostrarModalPago(true);
-                }}
-                disabled={saldoPorReembolsar <= 0}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.625rem 1.25rem',
-                  backgroundColor: saldoPorReembolsar <= 0 ? '#fca5a5' : '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  cursor: saldoPorReembolsar <= 0 ? 'not-allowed' : 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  transition: 'background-color 0.2s',
-                }}
-              >
-                <DollarSign size={16} />
-                Registrar reembolso
-              </button>
+              {puedeReembolsar && (
+                <button
+                  onClick={() => {
+                    if (saldoPorReembolsar <= 0) {
+                      setError('No hay saldo disponible para reembolsar.');
+                      return;
+                    }
+                    setFormPago((prev) => ({ ...prev, tipo_pago: 'reembolso', monto: saldoPorReembolsar || '' }));
+                    setMostrarModalPago(true);
+                  }}
+                  disabled={saldoPorReembolsar <= 0}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.625rem 1.25rem',
+                    backgroundColor: saldoPorReembolsar <= 0 ? '#fca5a5' : '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    cursor: saldoPorReembolsar <= 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    transition: 'background-color 0.2s',
+                  }}
+                >
+                  <DollarSign size={16} />
+                  Registrar reembolso
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1622,6 +1802,9 @@ const EventoDetalle = () => {
               <thead>
                 <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    ID
+                  </th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Fecha
                   </th>
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
@@ -1629,6 +1812,9 @@ const EventoDetalle = () => {
                   </th>
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Método
+                  </th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Estado
                   </th>
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Referencia
@@ -1642,14 +1828,31 @@ const EventoDetalle = () => {
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Origen
                   </th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {pagos.map((pago) => (
                   <tr key={pago.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '0.75rem' }}>{formatearFecha(pago.fecha_pago)}</td>
+                    <td style={{ padding: '0.75rem', fontSize: '0.85rem', color: '#6b7280', fontWeight: '600' }}>#{pago.id}</td>
+                    <td style={{ padding: '0.75rem', fontSize: '0.85rem' }}>{formatearFechaHora(pago.fecha_pago)}</td>
                     <td style={{ padding: '0.75rem' }}>{pago.tipo_pago || '-'}</td>
                     <td style={{ padding: '0.75rem' }}>{pago.metodo_pago || '-'}</td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <span
+                        style={{
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
+                          ...obtenerEstiloEstadoPago(pago.estado_pago),
+                        }}
+                      >
+                        {obtenerLabelEstadoPago(pago.estado_pago)}
+                      </span>
+                    </td>
                     <td style={{ padding: '0.75rem' }}>{pago.numero_referencia || '-'}</td>
                     <td style={{ padding: '0.75rem' }}>{pago.observaciones || '-'}</td>
                     <td
@@ -1690,6 +1893,97 @@ const EventoDetalle = () => {
                             ? 'WhatsApp'
                             : 'Escritorio'}
                       </span>
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                        <button
+                          onClick={() => abrirDetallePago(pago)}
+                          style={{
+                            padding: '0.35rem 0.5rem',
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            borderRadius: '0.375rem',
+                            border: 'none',
+                            cursor: 'pointer',
+                          }}
+                          title="Ver detalle"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        {puedeReembolsar && (
+                          <button
+                            onClick={() => {
+                              if (pago.tipo_pago === 'reembolso' || pago.estado_pago !== 'aprobado') return;
+                              if (saldoPorReembolsar <= 0) {
+                                setError('No hay saldo disponible para reembolsar.');
+                                return;
+                              }
+                              setFormPago((prev) => ({
+                                ...prev,
+                                tipo_pago: 'reembolso',
+                                monto: Math.min(parseFloat(pago.monto || 0), saldoPorReembolsar),
+                                metodo_pago: prev.metodo_pago || 'efectivo',
+                                fecha_pago: new Date().toISOString().split('T')[0],
+                              }));
+                              setMostrarModalPago(true);
+                            }}
+                            disabled={pago.tipo_pago === 'reembolso' || pago.estado_pago !== 'aprobado' || saldoPorReembolsar <= 0}
+                            style={{
+                              padding: '0.35rem 0.5rem',
+                              backgroundColor:
+                                pago.tipo_pago === 'reembolso' || pago.estado_pago !== 'aprobado' || saldoPorReembolsar <= 0
+                                  ? '#fca5a5'
+                                  : '#ef4444',
+                              color: 'white',
+                              borderRadius: '0.375rem',
+                              border: 'none',
+                              cursor:
+                                pago.tipo_pago === 'reembolso' || pago.estado_pago !== 'aprobado' || saldoPorReembolsar <= 0
+                                  ? 'not-allowed'
+                                  : 'pointer',
+                            }}
+                            title="Registrar reembolso"
+                          >
+                            <DollarSign size={16} />
+                          </button>
+                        )}
+                        {pago.estado_pago === 'en_revision' && (
+                          <>
+                            <button
+                              onClick={() => solicitarConfirmacionEstadoPago(pago, 'aprobado')}
+                              disabled={!puedeAprobarPago}
+                              style={{
+                                padding: '0.35rem 0.5rem',
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: puedeAprobarPago ? 'pointer' : 'not-allowed',
+                                opacity: puedeAprobarPago ? 1 : 0.6,
+                              }}
+                              title="Aprobar pago"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => solicitarConfirmacionEstadoPago(pago, 'rechazado')}
+                              disabled={!puedeAnularPago}
+                              style={{
+                                padding: '0.35rem 0.5rem',
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: puedeAnularPago ? 'pointer' : 'not-allowed',
+                                opacity: puedeAnularPago ? 1 : 0.6,
+                              }}
+                              title="Anular pago"
+                            >
+                              <Ban size={16} />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1938,6 +2232,140 @@ const EventoDetalle = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal detalle pago */}
+      {mostrarModalPagoDetalle && pagoDetalle && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '1rem',
+          }}
+          onClick={() => setMostrarModalPagoDetalle(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.5rem',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '520px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Detalle del pago</h2>
+              <button
+                onClick={() => setMostrarModalPagoDetalle(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                <X size={20} color="#6b7280" />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.95rem' }}>
+              <div><strong>ID:</strong> {pagoDetalle.id}</div>
+              <div><strong>Fecha:</strong> {formatearFecha(pagoDetalle.fecha_pago)}</div>
+              <div><strong>Tipo:</strong> {pagoDetalle.tipo_pago || '-'}</div>
+              <div><strong>Método:</strong> {pagoDetalle.metodo_pago || '-'}</div>
+              <div><strong>Estado:</strong> {obtenerLabelEstadoPago(pagoDetalle.estado_pago)}</div>
+              <div><strong>Referencia:</strong> {pagoDetalle.numero_referencia || '-'}</div>
+              <div><strong>Observación:</strong> {pagoDetalle.observaciones || '-'}</div>
+              <div><strong>Monto:</strong> {formatearMoneda(pagoDetalle.monto || 0)}</div>
+              <div><strong>Origen:</strong> {pagoDetalle.origen || '-'}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmación aprobar/anular pago */}
+      {confirmacionPago && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1200,
+            padding: '1rem',
+          }}
+          onClick={() => setConfirmacionPago(null)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.5rem',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '520px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>
+              {confirmacionPago.nuevoEstado === 'aprobado' ? 'Aprobar pago' : 'Anular pago'}
+            </h2>
+            <div style={{ color: '#374151', marginBottom: '0.5rem' }}>
+              Vas a {confirmacionPago.nuevoEstado === 'aprobado' ? 'aprobar' : 'anular'} el pago de{' '}
+              {formatearMoneda(confirmacionPago.pago.monto || 0)}.
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+              Método: {confirmacionPago.pago.metodo_pago || '-'} · Fecha: {formatearFecha(confirmacionPago.pago.fecha_pago)}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setConfirmacionPago(null)}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarCambioEstadoPago}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  backgroundColor: confirmacionPago.nuevoEstado === 'aprobado' ? '#10b981' : '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                Confirmar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2394,6 +2822,137 @@ const EventoDetalle = () => {
                 }}
               >
                 {eliminandoEvento ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalServicioPersonalizado && puedeCrearServicioPersonalizado && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem',
+          }}
+          onClick={() => {
+            setMostrarModalServicioPersonalizado(false);
+            setFormServicioPersonalizado({ nombre: '' });
+            setErrorServicioPersonalizado('');
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.5rem',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '520px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Agregar servicio personalizado</h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setMostrarModalServicioPersonalizado(false);
+                  setFormServicioPersonalizado({ nombre: '' });
+                  setErrorServicioPersonalizado('');
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#6b7280',
+                  padding: 0,
+                  width: '2rem',
+                  height: '2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                Nombre del servicio
+              </label>
+              <input
+                type="text"
+                value={formServicioPersonalizado.nombre}
+                onChange={(e) => {
+                  setFormServicioPersonalizado({ nombre: e.target.value });
+                  setErrorServicioPersonalizado('');
+                }}
+                placeholder="Ej: Confirmar decoración, Revisar iluminación, etc."
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.875rem',
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCrearServicioPersonalizado();
+                  }
+                }}
+              />
+              {errorServicioPersonalizado && (
+                <div style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  {errorServicioPersonalizado}
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setMostrarModalServicioPersonalizado(false);
+                  setFormServicioPersonalizado({ nombre: '' });
+                  setErrorServicioPersonalizado('');
+                }}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleCrearServicioPersonalizado}
+                disabled={creandoServicioPersonalizado || !formServicioPersonalizado.nombre.trim()}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  backgroundColor: creandoServicioPersonalizado || !formServicioPersonalizado.nombre.trim() ? '#9ca3af' : '#10b981',
+                  color: 'white',
+                  cursor: creandoServicioPersonalizado || !formServicioPersonalizado.nombre.trim() ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {creandoServicioPersonalizado ? 'Creando...' : 'Crear servicio'}
               </button>
             </div>
           </div>

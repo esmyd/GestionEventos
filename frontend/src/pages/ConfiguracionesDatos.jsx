@@ -3,6 +3,7 @@ import { configuracionesService, whatsappTemplatesService } from '../services/ap
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
 import { useNombrePlataforma } from '../hooks/useNombrePlataforma';
+import IntegracionesWhatsApp from './IntegracionesWhatsApp';
 
 const ConfiguracionesDatos = () => {
   const { toasts, removeToast, success, error: showError } = useToast();
@@ -279,6 +280,10 @@ const ConfiguracionesDatos = () => {
         </div>
       </div>
 
+      <div style={{ maxWidth: '920px', background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e5e7eb', marginBottom: '1.5rem' }}>
+        <IntegracionesWhatsApp embedded />
+      </div>
+
       <div style={{ maxWidth: '720px', background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e5e7eb' }}>
         <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '1rem', marginBottom: '1rem' }}>
           <div style={{ fontWeight: 700, color: '#991b1b', marginBottom: '0.25rem' }}>Acción irreversible</div>
@@ -314,6 +319,7 @@ const ConfiguracionesDatos = () => {
           </button>
         </div>
       </div>
+
     </div>
   );
 };

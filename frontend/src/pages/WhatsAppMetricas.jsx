@@ -6,7 +6,13 @@ import ToastContainer from '../components/ToastContainer';
 const WhatsAppMetricas = () => {
   const { toasts, removeToast, error: showError, success } = useToast();
   const [resumen, setResumen] = useState(null);
-  const [config, setConfig] = useState({ precio_whatsapp: 0, precio_email: 0, whatsapp_desactivado: false });
+  const [config, setConfig] = useState({ 
+    precio_whatsapp: 0, 
+    precio_email: 0, 
+    whatsapp_desactivado: false,
+    maximo_whatsapp: null,
+    maximo_email: null
+  });
   const [clientes, setClientes] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [guardando, setGuardando] = useState(false);
@@ -18,7 +24,13 @@ const WhatsAppMetricas = () => {
         whatsappMetricasService.getClientes(),
       ]);
       setResumen(resumenResp.resumen || {});
-      setConfig(resumenResp.config || { precio_whatsapp: 0, precio_email: 0, whatsapp_desactivado: false });
+      setConfig(resumenResp.config || { 
+        precio_whatsapp: 0, 
+        precio_email: 0, 
+        whatsapp_desactivado: false,
+        maximo_whatsapp: null,
+        maximo_email: null
+      });
       setClientes(clientesResp.clientes || []);
     } catch (err) {
       const mensaje = err.response?.data?.error || 'Error al cargar métricas';
@@ -44,8 +56,10 @@ const WhatsAppMetricas = () => {
         precio_whatsapp: parseDecimal(config.precio_whatsapp),
         precio_email: parseDecimal(config.precio_email),
         whatsapp_desactivado: Boolean(config.whatsapp_desactivado),
+        maximo_whatsapp: config.maximo_whatsapp ? parseInt(config.maximo_whatsapp) : null,
+        maximo_email: config.maximo_email ? parseInt(config.maximo_email) : null,
       });
-      success('Precios actualizados');
+      success('Configuración actualizada');
       await cargar();
     } catch (err) {
       const mensaje = err.response?.data?.error || 'No se pudo actualizar';
@@ -63,6 +77,8 @@ const WhatsAppMetricas = () => {
         precio_whatsapp: parseDecimal(config.precio_whatsapp),
         precio_email: parseDecimal(config.precio_email),
         whatsapp_desactivado: nuevoEstado,
+        maximo_whatsapp: config.maximo_whatsapp ? parseInt(config.maximo_whatsapp) : null,
+        maximo_email: config.maximo_email ? parseInt(config.maximo_email) : null,
       });
       setConfig((prev) => ({ ...prev, whatsapp_desactivado: nuevoEstado }));
       success(nuevoEstado ? 'WhatsApp desactivado' : 'WhatsApp activado');
@@ -96,17 +112,26 @@ const WhatsAppMetricas = () => {
   }, [busqueda, clientes]);
 
   const totales = useMemo(() => {
-    const totalWhatsapp = clientes.reduce((acc, c) => acc + (c.whatsapp_out || 0) + (c.whatsapp_sistema || 0), 0);
-    const totalEmail = clientes.reduce((acc, c) => acc + (c.email_out || 0), 0);
-    const totalCostoWhatsapp = clientes.reduce((acc, c) => acc + (c.costo_whatsapp || 0), 0);
-    const totalCostoEmail = clientes.reduce((acc, c) => acc + (c.costo_email || 0), 0);
+    // Calcular totales desde el resumen global (más preciso)
+    const totalWhatsappOut = resumen?.whatsapp_out || 0;
+    const totalWhatsappIn = resumen?.whatsapp_in || 0;
+    const totalEmail = resumen?.email_out || 0;
+    
+    // Usar costos totales desde el resumen (igual que reportes)
+    // Esto asegura que ambos módulos muestren los mismos valores
+    const totalCostoWhatsapp = resumen?.costo_whatsapp_total || 0;
+    const totalCostoEmail = resumen?.costo_email_total || 0;
+    
     return {
-      totalWhatsapp,
+      totalWhatsappOut,
+      totalWhatsappIn,
+      totalWhatsapp: totalWhatsappOut + totalWhatsappIn,
       totalEmail,
       totalCostoWhatsapp,
       totalCostoEmail,
+      totalCosto: totalCostoWhatsapp + totalCostoEmail,
     };
-  }, [clientes]);
+  }, [resumen]);
 
   return (
     <div style={{ padding: '1.5rem 2rem' }}>
@@ -120,36 +145,53 @@ const WhatsAppMetricas = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
         <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb' }}>
-          <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>WhatsApp Out</div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{resumen?.whatsapp_out || 0}</div>
-          <div style={{ color: '#9ca3af', fontSize: '0.8rem' }}>
-            Bot: {resumen?.whatsapp_bot || 0} · Humano: {resumen?.whatsapp_humano || 0}
+          <div style={{ color: '#6b7280', fontSize: '0.85rem', marginBottom: '0.25rem' }}>WhatsApp Salientes</div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#3b82f6' }}>{resumen?.whatsapp_out || 0}</div>
+          <div style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+            <div>Chat: {(resumen?.whatsapp_bot || 0) + (resumen?.whatsapp_humano || 0)}</div>
+            <div style={{ marginTop: '0.25rem' }}>
+              Bot: {resumen?.whatsapp_bot || 0} · Humano: {resumen?.whatsapp_humano || 0}
+            </div>
+            <div style={{ marginTop: '0.25rem', color: '#6366f1' }}>
+              Notificaciones: {resumen?.whatsapp_notificaciones || resumen?.whatsapp_sistema || 0}
+            </div>
           </div>
         </div>
         <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb' }}>
-          <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>WhatsApp In</div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{resumen?.whatsapp_in || 0}</div>
-          <div style={{ color: '#9ca3af', fontSize: '0.8rem' }}>
-            Sistema (notificaciones): {resumen?.whatsapp_sistema || 0}
+          <div style={{ color: '#6b7280', fontSize: '0.85rem', marginBottom: '0.25rem' }}>WhatsApp Entrantes</div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#10b981' }}>{resumen?.whatsapp_in || 0}</div>
+          <div style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+            Mensajes recibidos del cliente
           </div>
         </div>
         <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb' }}>
-          <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>Email enviados</div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{resumen?.email_out || 0}</div>
+          <div style={{ color: '#6b7280', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Email Enviados</div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#8b5cf6' }}>{resumen?.email_out || 0}</div>
+          <div style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+            Notificaciones por correo
+          </div>
         </div>
         <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb' }}>
-          <div style={{ color: '#6b7280', fontSize: '0.85rem' }}>Totales actuales</div>
-          <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>WhatsApp: {totales.totalWhatsapp}</div>
-          <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Email: {totales.totalEmail}</div>
-          <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-            Costo: ${totales.totalCostoWhatsapp.toFixed(2)} · ${totales.totalCostoEmail.toFixed(2)}
+          <div style={{ color: '#6b7280', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Resumen Total</div>
+          <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+            WhatsApp: {(resumen?.whatsapp_out || 0) + (resumen?.whatsapp_in || 0)}
+          </div>
+          <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+            Email: {resumen?.email_out || 0}
+          </div>
+          <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #e5e7eb' }}>
+            <div>Costo WhatsApp: ${totales.totalCostoWhatsapp.toFixed(2)}</div>
+            <div style={{ marginTop: '0.25rem' }}>Costo Email: ${totales.totalCostoEmail.toFixed(2)}</div>
+            <div style={{ marginTop: '0.5rem', fontWeight: 700, color: '#374151' }}>
+              Total: ${(totales.totalCostoWhatsapp + totales.totalCostoEmail).toFixed(2)}
+            </div>
           </div>
         </div>
       </div>
 
       <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb', marginBottom: '1rem' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>Precios base</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '0.75rem', alignItems: 'center' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>Configuración</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '0.75rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: '#374151' }}>Precio WhatsApp</label>
             <input
@@ -170,6 +212,30 @@ const WhatsAppMetricas = () => {
               style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
             />
           </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: '#374151' }}>Máximo WhatsApp</label>
+            <input
+              value={config.maximo_whatsapp || ''}
+              onChange={(e) => setConfig((prev) => ({ ...prev, maximo_whatsapp: e.target.value || null }))}
+              type="number"
+              min="1"
+              placeholder="Ilimitado"
+              style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: '#374151' }}>Máximo Email</label>
+            <input
+              value={config.maximo_email || ''}
+              onChange={(e) => setConfig((prev) => ({ ...prev, maximo_email: e.target.value || null }))}
+              type="number"
+              min="1"
+              placeholder="Ilimitado"
+              style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
+            />
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
           <button
             type="button"
             onClick={toggleWhatsapp}

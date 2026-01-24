@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { pagosService, eventosService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
@@ -28,14 +29,14 @@ const Pagos = () => {
   const [filtroFechaHasta, setFiltroFechaHasta] = useState('');
   const [filtroMontoMin, setFiltroMontoMin] = useState('');
   const [filtroMontoMax, setFiltroMontoMax] = useState('');
-  const [ordenPagos, setOrdenPagos] = useState('fecha_desc');
+  const [ordenPagos, setOrdenPagos] = useState('id_desc');
 
   // Estados para modales
   const [mostrarModalRegistrar, setMostrarModalRegistrar] = useState(false);
   const [mostrarModalDetalle, setMostrarModalDetalle] = useState(false);
-  const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
   const [mostrarConfirmReembolso, setMostrarConfirmReembolso] = useState(false);
   const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
+  const [actualizandoEstado, setActualizandoEstado] = useState(false);
 
   // Estados para formulario
   const [formData, setFormData] = useState({
@@ -56,6 +57,11 @@ const Pagos = () => {
     PERMISSIONS.PAGOS_REGISTRAR,
     [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]
   );
+  const puedeReembolsar = hasPermission(
+    usuario,
+    PERMISSIONS.PAGOS_REEMBOLSAR,
+    [ROLES.ADMIN, ROLES.MANAGER]
+  );
   const puedeAgregarAdicionales = hasPermission(
     usuario,
     PERMISSIONS.EVENTOS_AGREGAR_PRODUCTO,
@@ -64,6 +70,16 @@ const Pagos = () => {
   const puedeEliminar = hasPermission(
     usuario,
     PERMISSIONS.PAGOS_ELIMINAR,
+    [ROLES.ADMIN, ROLES.MANAGER]
+  );
+  const puedeAprobar = hasPermission(
+    usuario,
+    PERMISSIONS.PAGOS_APROBAR,
+    [ROLES.ADMIN, ROLES.MANAGER]
+  );
+  const puedeAnular = hasPermission(
+    usuario,
+    PERMISSIONS.PAGOS_ANULAR,
     [ROLES.ADMIN, ROLES.MANAGER]
   );
 
@@ -187,6 +203,30 @@ const Pagos = () => {
   };
 
   const normalizarTexto = (valor) => (valor || '').toString().toLowerCase();
+  const totalPagadoNeto = Math.max(0, totalPagado - totalReembolsosEvento);
+
+  const obtenerLabelEstadoPago = (estado) => {
+    switch (estado) {
+      case 'aprobado':
+        return 'Aprobado';
+      case 'rechazado':
+        return 'Rechazado';
+      case 'en_revision':
+      default:
+        return 'En revisión';
+    }
+  };
+
+  const obtenerEstiloEstadoPago = (estado) => {
+    switch (estado) {
+      case 'aprobado':
+        return { backgroundColor: '#16a34a20', color: '#16a34a' };
+      case 'rechazado':
+        return { backgroundColor: '#ef444420', color: '#ef4444' };
+      default:
+        return { backgroundColor: '#f59e0b20', color: '#d97706' };
+    }
+  };
 
   const pagosFiltrados = pagos
     .filter((pago) => {
@@ -216,16 +256,27 @@ const Pagos = () => {
       return true;
     })
     .sort((a, b) => {
+      let comparacion = 0;
       switch (ordenPagos) {
         case 'monto_asc':
-          return parseNumero(a.monto || 0) - parseNumero(b.monto || 0);
+          comparacion = parseNumero(a.monto || 0) - parseNumero(b.monto || 0);
+          break;
         case 'monto_desc':
-          return parseNumero(b.monto || 0) - parseNumero(a.monto || 0);
+          comparacion = parseNumero(b.monto || 0) - parseNumero(a.monto || 0);
+          break;
         case 'fecha_asc':
-          return parseFechaLocal(a.fecha_pago).getTime() - parseFechaLocal(b.fecha_pago).getTime();
+          comparacion = parseFechaLocal(a.fecha_pago).getTime() - parseFechaLocal(b.fecha_pago).getTime();
+          break;
+        case 'fecha_desc':
+          comparacion = parseFechaLocal(b.fecha_pago).getTime() - parseFechaLocal(a.fecha_pago).getTime();
+          break;
+        case 'id_desc':
         default:
-          return parseFechaLocal(b.fecha_pago).getTime() - parseFechaLocal(a.fecha_pago).getTime();
+          comparacion = parseNumero(b.id || 0) - parseNumero(a.id || 0);
+          break;
       }
+      if (comparacion !== 0) return comparacion;
+      return parseNumero(b.id || 0) - parseNumero(a.id || 0);
     });
 
   const metricasPagos = pagosFiltrados.reduce(
@@ -312,13 +363,26 @@ const Pagos = () => {
     setPagoSeleccionado(null);
   };
 
-  const abrirModalEliminar = (pago) => {
-    setPagoSeleccionado(pago);
-    setMostrarModalEliminar(true);
+  const cambiarEstadoPago = async (pago, nuevoEstado) => {
+    if (!pago) return;
+    try {
+      setActualizandoEstado(true);
+      await pagosService.updateEstado(pago.id, nuevoEstado);
+      await cargarPagos();
+      const actualizado = await pagosService.getById(pago.id);
+      if (actualizado?.pago) {
+        setPagoSeleccionado(actualizado.pago);
+      }
+      success('Estado del pago actualizado');
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'No se pudo actualizar el estado';
+      showError(errorMessage);
+    } finally {
+      setActualizandoEstado(false);
+    }
   };
 
   const cerrarModalEliminar = () => {
-    setMostrarModalEliminar(false);
     setPagoSeleccionado(null);
   };
 
@@ -375,26 +439,11 @@ const Pagos = () => {
     await registrarPago(false);
   };
 
-  const handleEliminarPago = async () => {
-    try {
-      setGuardando(true);
-      await pagosService.delete(pagoSeleccionado.id);
-      await cargarPagos();
-      cerrarModalEliminar();
-      success('Pago eliminado exitosamente');
-    } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Error al eliminar el pago';
-      showError(errorMessage);
-      console.error(err);
-    } finally {
-      setGuardando(false);
-    }
-  };
 
   const calcularSaldoPendiente = () => {
     if (!eventoSeleccionado) return 0;
     const totalEvento = parseFloat(eventoSeleccionado.total || 0);
-    return Math.max(0, totalEvento - totalPagado);
+    return Math.max(0, totalEvento - totalPagadoNeto);
   };
   const tieneSaldoPendiente = calcularSaldoPendiente() > 0;
   const eventoCancelado = eventoSeleccionado?.estado === 'cancelado';
@@ -629,9 +678,8 @@ const Pagos = () => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => seleccionarEvento(evento)}
+                      <Link
+                        to={`/pagos/evento/${evento.id_evento || evento.id}`}
                         style={{
                           padding: '0.4rem 0.75rem',
                           borderRadius: '0.375rem',
@@ -640,10 +688,13 @@ const Pagos = () => {
                           cursor: 'pointer',
                           fontSize: '0.8rem',
                           fontWeight: '600',
+                          textDecoration: 'none',
+                          color: '#374151',
+                          display: 'inline-block',
                         }}
                       >
                         Ver pagos
-                      </button>
+                      </Link>
                       {puedeRegistrar && saldo > 0 && !eventoCancelado && (
                         <button
                           type="button"
@@ -665,7 +716,7 @@ const Pagos = () => {
                           Registrar pago
                         </button>
                       )}
-                      {puedeRegistrar && pagado > 0 && (
+                      {puedeReembolsar && pagado > 0 && (
                         <button
                           type="button"
                           onClick={() => {
@@ -748,9 +799,8 @@ const Pagos = () => {
                         </td>
                         <td style={{ padding: '0.85rem', textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <button
-                              type="button"
-                              onClick={() => seleccionarEvento(evento)}
+                            <Link
+                              to={`/pagos/evento/${evento.id_evento || evento.id}`}
                               style={{
                                 padding: '0.4rem 0.75rem',
                                 borderRadius: '0.375rem',
@@ -759,10 +809,13 @@ const Pagos = () => {
                                 cursor: 'pointer',
                                 fontSize: '0.8rem',
                                 fontWeight: '600',
+                                textDecoration: 'none',
+                                color: '#374151',
+                                display: 'inline-block',
                               }}
                             >
                               Ver pagos
-                            </button>
+                            </Link>
                             {puedeRegistrar && saldo > 0 && !eventoCancelado && (
                               <button
                                 type="button"
@@ -784,7 +837,7 @@ const Pagos = () => {
                                 Registrar pago
                               </button>
                             )}
-                            {puedeRegistrar && pagado > 0 && (
+                            {puedeReembolsar && pagado > 0 && (
                               <button
                                 type="button"
                                 onClick={() => {
@@ -881,7 +934,7 @@ const Pagos = () => {
                 <label style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: '500' }}>Total Pagado</label>
               </div>
               <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 'bold', color: '#10b981' }}>
-                {formatearMoneda(totalPagado)}
+                {formatearMoneda(totalPagadoNeto)}
               </p>
             </div>
             <div>
@@ -1140,7 +1193,7 @@ const Pagos = () => {
                   Registrar pago
                 </button>
               )}
-              {puedeRegistrar && (
+              {puedeReembolsar && (
                 <button
                   type="button"
                   onClick={() => abrirModalRegistrar(eventoSeleccionado, 'reembolso')}
@@ -1183,7 +1236,8 @@ const Pagos = () => {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem' }}>
                       <div>
-                        <div style={{ fontWeight: '600', color: '#111827' }}>{formatearFecha(pago.fecha_pago)}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>ID #{pago.id}</div>
+                        <div style={{ fontWeight: '600', color: '#111827' }}>{formatearFechaHora(pago.fecha_pago)}</div>
                         <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{pago.metodo_pago || '-'}</div>
                       </div>
                       <div
@@ -1222,6 +1276,18 @@ const Pagos = () => {
                           : pago.tipo_pago === 'pago_completo'
                           ? 'Pago Completo'
                           : 'Abono'}
+                      </span>
+                      <span
+                        style={{
+                          marginLeft: '0.5rem',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
+                          ...obtenerEstiloEstadoPago(pago.estado_pago),
+                        }}
+                      >
+                        {obtenerLabelEstadoPago(pago.estado_pago)}
                       </span>
                       <span
                         style={{
@@ -1276,26 +1342,6 @@ const Pagos = () => {
                         <Eye size={16} />
                         Ver
                       </button>
-                      {puedeEliminar && (
-                        <button
-                          onClick={() => abrirModalEliminar(pago)}
-                          style={{
-                            padding: '0.5rem 0.75rem',
-                            backgroundColor: '#ef4444',
-                            color: 'white',
-                            borderRadius: '0.375rem',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            fontSize: '0.8rem',
-                          }}
-                        >
-                          <Trash2 size={16} />
-                          Eliminar
-                        </button>
-                      )}
                     </div>
                   </div>
                 ))
@@ -1307,6 +1353,9 @@ const Pagos = () => {
                 <thead>
                   <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                     <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      ID
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                       Fecha
                     </th>
                     <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
@@ -1314,6 +1363,9 @@ const Pagos = () => {
                     </th>
                     <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                       Método
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Estado
                     </th>
                     <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                       Referencia
@@ -1335,14 +1387,15 @@ const Pagos = () => {
                 <tbody>
                   {pagosFiltrados.length === 0 ? (
                     <tr>
-                      <td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                      <td colSpan="10" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
                         No hay pagos que coincidan con los filtros
                       </td>
                     </tr>
                   ) : (
                     pagosFiltrados.map((pago) => (
                       <tr key={pago.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                        <td style={{ padding: '1rem' }}>{formatearFecha(pago.fecha_pago)}</td>
+                        <td style={{ padding: '1rem', fontSize: '0.85rem', color: '#6b7280', fontWeight: '600' }}>#{pago.id}</td>
+                        <td style={{ padding: '1rem', fontSize: '0.85rem' }}>{formatearFechaHora(pago.fecha_pago)}</td>
                         <td style={{ padding: '1rem' }}>
                           <span
                             style={{
@@ -1372,6 +1425,19 @@ const Pagos = () => {
                           </span>
                         </td>
                         <td style={{ padding: '1rem' }}>{pago.metodo_pago || '-'}</td>
+                        <td style={{ padding: '1rem' }}>
+                          <span
+                            style={{
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: '9999px',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              ...obtenerEstiloEstadoPago(pago.estado_pago),
+                            }}
+                          >
+                            {obtenerLabelEstadoPago(pago.estado_pago)}
+                          </span>
+                        </td>
                         <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
                           {pago.numero_referencia || '-'}
                         </td>
@@ -1441,28 +1507,6 @@ const Pagos = () => {
                             >
                               <Eye size={16} />
                             </button>
-                            {puedeEliminar && (
-                              <button
-                                onClick={() => abrirModalEliminar(pago)}
-                                style={{
-                                  padding: '0.5rem',
-                                  backgroundColor: '#ef4444',
-                                  color: 'white',
-                                  borderRadius: '0.375rem',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  transition: 'background-color 0.2s',
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
-                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
-                                title="Eliminar"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            )}
                           </div>
                         </td>
                       </tr>
@@ -1861,6 +1905,23 @@ const Pagos = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    Estado del Pago
+                  </label>
+                  <span
+                    style={{
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                      ...obtenerEstiloEstadoPago(pagoSeleccionado.estado_pago),
+                    }}
+                  >
+                    {obtenerLabelEstadoPago(pagoSeleccionado.estado_pago)}
+                  </span>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
                     Número de Referencia
                   </label>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
@@ -1912,6 +1973,43 @@ const Pagos = () => {
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              {pagoSeleccionado.estado_pago === 'en_revision' && (puedeAprobar || puedeAnular) && (
+                <>
+                  <button
+                    onClick={() => cambiarEstadoPago(pagoSeleccionado, 'rechazado')}
+                    disabled={actualizandoEstado || !puedeAnular}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      borderRadius: '0.375rem',
+                      border: 'none',
+                      cursor: actualizandoEstado || !puedeAnular ? 'not-allowed' : 'pointer',
+                      fontWeight: '500',
+                      opacity: actualizandoEstado || !puedeAnular ? 0.7 : 1,
+                    }}
+                  >
+                    Rechazar
+                  </button>
+                  <button
+                    onClick={() => cambiarEstadoPago(pagoSeleccionado, 'aprobado')}
+                    disabled={actualizandoEstado}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      borderRadius: '0.375rem',
+                      border: 'none',
+                      cursor: actualizandoEstado || !puedeAprobar ? 'not-allowed' : 'pointer',
+                      fontWeight: '500',
+                      opacity: actualizandoEstado || !puedeAprobar ? 0.7 : 1,
+                    }}
+                    disabled={actualizandoEstado || !puedeAprobar}
+                  >
+                    Aprobar
+                  </button>
+                </>
+              )}
               <button
                 onClick={cerrarModalDetalle}
                 style={{
@@ -1931,103 +2029,6 @@ const Pagos = () => {
         </div>
       )}
 
-      {/* Modal Eliminar Pago */}
-      {mostrarModalEliminar && pagoSeleccionado && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-          onClick={cerrarModalEliminar}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '0.5rem',
-              padding: '2rem',
-              width: '90%',
-              maxWidth: '500px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div
-                style={{
-                  width: '3rem',
-                  height: '3rem',
-                  borderRadius: '50%',
-                  backgroundColor: '#fee2e2',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <AlertCircle size={24} color="#dc2626" />
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Eliminar Pago</h2>
-                <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0' }}>
-                  ¿Está seguro de eliminar este pago?
-                </p>
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: '#f9fafb', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1.5rem' }}>
-              <p style={{ margin: 0, fontWeight: '500' }}>
-                {formatearMoneda(pagoSeleccionado.monto || 0)}
-              </p>
-              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280' }}>
-                {formatearFecha(pagoSeleccionado.fecha_pago)}
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button
-                onClick={cerrarModalEliminar}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#e5e7eb',
-                  color: '#374151',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleEliminarPago}
-                disabled={guardando}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: guardando ? '#9ca3af' : '#ef4444',
-                  color: 'white',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: guardando ? 'not-allowed' : 'pointer',
-                  fontWeight: '500',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
-              >
-                <Trash2 size={18} />
-                {guardando ? 'Eliminando...' : 'Eliminar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Confirmación de reembolso */}
       {mostrarConfirmReembolso && (

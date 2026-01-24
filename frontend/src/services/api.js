@@ -351,6 +351,16 @@ export const eventosService = {
     return response.data;
   },
 
+  crearServicioPersonalizado: async (eventoId, nombre, orden) => {
+    const response = await api.post(`/eventos/${eventoId}/servicios`, { nombre, orden });
+    return response.data;
+  },
+
+  eliminarServicio: async (eventoId, servicioId) => {
+    const response = await api.delete(`/eventos/${eventoId}/servicios/${servicioId}`);
+    return response.data;
+  },
+
   calcularTotal: async (eventoId) => {
     const response = await api.post(`/eventos/${eventoId}/calcular-total`);
     return response.data;
@@ -457,8 +467,29 @@ export const pagosService = {
     return response.data;
   },
 
+  updateEstado: async (id, estado_pago) => {
+    const response = await api.patch(`/pagos/${id}/estado`, { estado_pago });
+    return response.data;
+  },
+
   getTotalEvento: async (eventoId) => {
     const response = await api.get(`/pagos/evento/${eventoId}/total`);
+    return response.data;
+  },
+};
+
+export const cargaMasivaService = {
+  downloadTemplate: async (tipo) => {
+    const response = await api.get(`/carga_masiva/template/${tipo}`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  upload: async (tipo, archivo) => {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    const response = await api.post(`/carga_masiva/${tipo}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 };

@@ -22,6 +22,7 @@ import {
   Gauge,
   Mail,
   Trash2,
+  Upload,
   LogOut,
   Menu,
   X,
@@ -65,11 +66,11 @@ const Layout = () => {
       { path: '/usuarios', icon: Settings, label: 'Usuarios', moduleKey: MODULES.USUARIOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/clientes', icon: Users, label: 'Clientes', moduleKey: MODULES.CLIENTES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/permisos', icon: Settings, label: 'Roles y Permisos', moduleKey: MODULES.PERMISOS, roles: [ROLES.ADMIN] },
-      { path: '/integraciones/whatsapp', icon: Settings, label: 'Integraciones', moduleKey: MODULES.INTEGRACIONES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/whatsapp-chat', icon: MessageCircle, label: 'WhatsApp Chat', moduleKey: MODULES.WHATSAPP_CHAT, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/whatsapp-panel', icon: Gauge, label: 'Panel WhatsApp', moduleKey: MODULES.WHATSAPP_METRICAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/whatsapp-plantillas', icon: Mail, label: 'Plantillas WhatsApp', moduleKey: MODULES.WHATSAPP_TEMPLATES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
-      { path: '/configuraciones/limpieza-datos', icon: Trash2, label: 'Limpieza de datos', moduleKey: MODULES.CONFIG_DATOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/carga-masiva', icon: Upload, label: 'Carga masiva', moduleKey: MODULES.CARGA_MASIVA, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/limpieza-datos', icon: Settings, label: 'Config. Sistema', moduleKey: MODULES.CONFIG_DATOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
     ];
 
     if (!rol) return [];
@@ -80,7 +81,7 @@ const Layout = () => {
 
   const menuItems = usuario ? getMenuItemsByRole(usuario.rol, usuario) : [];
   const esCliente = hasRole(usuario?.rol, [ROLES.CLIENT]);
-  const rutasCatalogo = ['/planes', '/productos', '/categorias', '/inventario'];
+  const rutasCatalogo = ['/planes', '/productos', '/categorias', '/inventario','/configuraciones/carga-masiva'];
   const rutasOperaciones = [
     '/calendario',
     '/eventos',
@@ -91,8 +92,8 @@ const Layout = () => {
   ];
   const rutasConfiguraciones = [
     '/notificaciones-nativas',
-    '/integraciones/whatsapp',
     '/configuraciones/whatsapp-panel',
+    
     '/configuraciones/limpieza-datos',
   ];
   const rutasUsuarios = ['/usuarios', '/clientes', '/permisos'];

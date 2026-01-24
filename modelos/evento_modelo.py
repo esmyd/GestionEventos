@@ -3,6 +3,8 @@ Modelo para gestión de eventos
 """
 from datetime import timedelta
 from modelos.base_datos import BaseDatos
+from modelos.inventario_modelo import InventarioModelo
+from utilidades.logger import obtener_logger
 
 
 class EventoModelo:
@@ -10,6 +12,8 @@ class EventoModelo:
     
     def __init__(self):
         self.base_datos = BaseDatos()
+        self.inventario = InventarioModelo()
+        self.logger = obtener_logger()
     
     def crear_evento(self, datos_evento):
         """Crea un nuevo evento"""
@@ -37,6 +41,20 @@ class EventoModelo:
         )
         if self.base_datos.ejecutar_consulta(consulta, parametros):
             evento_id = self.base_datos.obtener_ultimo_id()
+            
+            # Gestionar inventario según el estado del evento
+            estado = datos_evento.get('estado', 'cotizacion')
+            plan_id = datos_evento.get('plan_id')
+            
+            if estado in ('confirmado', 'en_proceso') and plan_id:
+                # Reservar stock del plan para eventos confirmados
+                try:
+                    ok, error = self.inventario.reservar_stock_plan(plan_id, evento_id)
+                    if not ok:
+                        self.logger.warning(f"Error al reservar stock del plan {plan_id} para evento {evento_id}: {error}")
+                except Exception as e:
+                    self.logger.error(f"Error al gestionar inventario al crear evento: {e}")
+            
             return evento_id
         return None
     
@@ -118,8 +136,8 @@ class EventoModelo:
         if filtro_fecha:
             consulta += " AND e.fecha_evento = %s"
             parametros.append(filtro_fecha)
-        # Ordenar por fecha de evento descendente
-        consulta += " ORDER BY e.fecha_evento DESC"
+        # Ordenar por ID descendente (más reciente primero)
+        consulta += " ORDER BY e.id_evento DESC"
         
         # Ejecutar consulta con parámetros opcionales
         if parametros:
@@ -197,7 +215,7 @@ class EventoModelo:
         LEFT JOIN usuarios u ON c.usuario_id = u.id
         LEFT JOIN usuarios u_coor ON e.coordinador_id = u_coor.id
         WHERE e.id_cliente = %s
-        ORDER BY e.fecha_evento DESC
+        ORDER BY e.id_evento DESC
         """
         resultados = self.base_datos.obtener_todos(consulta, (cliente_id,))
         
@@ -266,7 +284,7 @@ class EventoModelo:
         LEFT JOIN usuarios u_coor ON e.coordinador_id = u_coor.id
         LEFT JOIN salones s ON e.id_salon = s.id_salon
         WHERE e.coordinador_id = %s
-        ORDER BY e.fecha_evento DESC
+        ORDER BY e.id_evento DESC
         """
         resultados = self.base_datos.obtener_todos(consulta, (coordinador_id,))
         
@@ -378,7 +396,33 @@ class EventoModelo:
             datos_evento.get('coordinador_id', evento_actual.get('coordinador_id')),
             evento_id
         )
-        return self.base_datos.ejecutar_consulta(consulta, parametros)
+        resultado = self.base_datos.ejecutar_consulta(consulta, parametros)
+        
+        # Gestionar inventario si cambió el estado o el plan
+        if resultado:
+            estado_anterior = evento_actual.get('estado')
+            estado_nuevo = datos_evento.get('estado', estado_anterior)
+            plan_anterior = evento_actual.get('plan_id')
+            plan_nuevo = plan_id
+            
+            try:
+                # Si cambió el estado, gestionar inventario
+                if estado_anterior != estado_nuevo:
+                    self._gestionar_inventario_por_estado(evento_id, estado_anterior, estado_nuevo, plan_anterior, plan_nuevo)
+                # Si cambió el plan pero el estado sigue siendo confirmado
+                elif plan_anterior != plan_nuevo and estado_nuevo in ('confirmado', 'en_proceso'):
+                    # Liberar stock del plan anterior
+                    if plan_anterior:
+                        self.inventario.liberar_stock_plan(plan_anterior, evento_id)
+                    # Reservar stock del nuevo plan
+                    if plan_nuevo:
+                        ok, error = self.inventario.reservar_stock_plan(plan_nuevo, evento_id)
+                        if not ok:
+                            self.logger.warning(f"Error al reservar stock del nuevo plan {plan_nuevo}: {error}")
+            except Exception as e:
+                self.logger.error(f"Error al gestionar inventario al actualizar evento: {e}")
+        
+        return resultado
 
     def actualizar_coordinador_evento(self, evento_id, coordinador_id):
         """Actualiza el coordinador asignado a un evento"""
@@ -394,13 +438,20 @@ class EventoModelo:
         # Obtener estado actual antes de actualizar
         evento_actual = self.obtener_evento_por_id(evento_id)
         estado_anterior = evento_actual.get('estado') if evento_actual else None
+        plan_id = evento_actual.get('plan_id') if evento_actual else None
         
         # Actualizar estado
         consulta = "UPDATE eventos SET estado = %s WHERE id_evento = %s"
         resultado = self.base_datos.ejecutar_consulta(consulta, (nuevo_estado, evento_id))
         
-        # Enviar notificación si el estado cambió
+        # Gestionar inventario si el estado cambió
         if resultado and estado_anterior and estado_anterior != nuevo_estado:
+            try:
+                self._gestionar_inventario_por_estado(evento_id, estado_anterior, nuevo_estado, plan_id, plan_id)
+            except Exception as e:
+                self.logger.error(f"Error al gestionar inventario al cambiar estado: {e}")
+            
+            # Enviar notificación
             try:
                 evento = self.obtener_evento_por_id(evento_id)
                 if evento:
@@ -412,9 +463,46 @@ class EventoModelo:
                         estado_nuevo=nuevo_estado
                     )
             except Exception as e:
-                print(f"Error al enviar notificación de cambio de estado: {e}")
+                self.logger.error(f"Error al enviar notificación de cambio de estado: {e}")
         
         return resultado
+    
+    def _gestionar_inventario_por_estado(self, evento_id, estado_anterior, estado_nuevo, plan_anterior, plan_nuevo):
+        """Gestiona el inventario según el cambio de estado del evento"""
+        # Estados que requieren reserva de stock
+        estados_reservados = ('confirmado', 'en_proceso')
+        # Estados que liberan stock
+        estados_liberados = ('cancelado', 'cotizacion')
+        
+        # Si pasa de un estado que no reserva a uno que sí reserva
+        if estado_anterior not in estados_reservados and estado_nuevo in estados_reservados:
+            # Reservar stock del plan
+            if plan_nuevo:
+                ok, error = self.inventario.reservar_stock_plan(plan_nuevo, evento_id)
+                if not ok:
+                    self.logger.warning(f"Error al reservar stock del plan {plan_nuevo}: {error}")
+            
+            # Reservar stock de productos adicionales
+            productos = self.obtener_productos_evento(evento_id)
+            for producto in productos or []:
+                producto_id = producto.get('producto_id')
+                cantidad = int(producto.get('cantidad') or 1)
+                ok, error = self.inventario.reservar_stock(producto_id, evento_id, cantidad)
+                if not ok:
+                    self.logger.warning(f"Error al reservar stock del producto {producto_id}: {error}")
+        
+        # Si pasa de un estado que reserva a uno que libera
+        elif estado_anterior in estados_reservados and estado_nuevo in estados_liberados:
+            # Liberar stock del plan
+            if plan_anterior:
+                self.inventario.liberar_stock_plan(plan_anterior, evento_id)
+            
+            # Liberar stock de productos adicionales
+            productos = self.obtener_productos_evento(evento_id)
+            for producto in productos or []:
+                producto_id = producto.get('producto_id')
+                cantidad = int(producto.get('cantidad') or 1)
+                self.inventario.liberar_stock(producto_id, evento_id, cantidad)
     
     def actualizar_saldo_pendiente(self, evento_id, nuevo_saldo):
         """Actualiza el saldo pendiente de un evento"""
@@ -432,7 +520,29 @@ class EventoModelo:
         return self.base_datos.ejecutar_consulta(consulta)
 
     def eliminar_evento(self, evento_id):
-        """Elimina un evento y sus pagos asociados"""
+        """Elimina un evento y sus pagos asociados, liberando inventario"""
+        # Obtener información del evento antes de eliminar
+        evento = self.obtener_evento_por_id(evento_id)
+        if evento:
+            estado = evento.get('estado')
+            plan_id = evento.get('plan_id')
+            
+            # Si el evento estaba confirmado, liberar stock
+            if estado in ('confirmado', 'en_proceso'):
+                try:
+                    # Liberar stock del plan
+                    if plan_id:
+                        self.inventario.liberar_stock_plan(plan_id, evento_id)
+                    
+                    # Liberar stock de productos adicionales
+                    productos = self.obtener_productos_evento(evento_id)
+                    for producto in productos or []:
+                        producto_id = producto.get('producto_id')
+                        cantidad = int(producto.get('cantidad') or 1)
+                        self.inventario.liberar_stock(producto_id, evento_id, cantidad)
+                except Exception as e:
+                    self.logger.error(f"Error al liberar inventario al eliminar evento: {e}")
+        
         # Eliminar pagos primero por la restricción de clave foránea
         eliminar_pagos = "DELETE FROM pagos WHERE id_evento = %s"
         self.base_datos.ejecutar_consulta(eliminar_pagos, (evento_id,))
@@ -441,7 +551,26 @@ class EventoModelo:
         return self.base_datos.ejecutar_consulta(consulta, (evento_id,))
     
     def agregar_producto_evento(self, evento_id, producto_id, cantidad, precio_unitario):
-        """Agrega un producto a un evento"""
+        """Agrega un producto a un evento y reserva stock si el evento está confirmado"""
+        # Verificar estado del evento
+        evento = self.obtener_evento_por_id(evento_id)
+        if not evento:
+            return False
+        
+        estado = evento.get('estado')
+        
+        # Si el evento está confirmado, validar y reservar stock
+        if estado in ('confirmado', 'en_proceso'):
+            ok, error = self.inventario.validar_stock_suficiente(producto_id, cantidad)
+            if not ok:
+                self.logger.warning(f"No se puede agregar producto {producto_id}: {error}")
+                return False
+            
+            ok, error = self.inventario.reservar_stock(producto_id, evento_id, cantidad)
+            if not ok:
+                self.logger.warning(f"Error al reservar stock del producto {producto_id}: {error}")
+                return False
+        
         subtotal = cantidad * precio_unitario
         consulta = """
         INSERT INTO evento_productos (id_evento, producto_id, cantidad, precio_unitario, subtotal)
@@ -450,7 +579,27 @@ class EventoModelo:
         return self.base_datos.ejecutar_consulta(consulta, (evento_id, producto_id, cantidad, precio_unitario, subtotal))
     
     def eliminar_producto_evento(self, evento_id, producto_id):
-        """Elimina un producto de un evento"""
+        """Elimina un producto de un evento y libera stock si el evento está confirmado"""
+        # Obtener cantidad antes de eliminar
+        consulta_cantidad = """
+        SELECT cantidad FROM evento_productos
+        WHERE id_evento = %s AND producto_id = %s
+        """
+        producto_data = self.base_datos.obtener_uno(consulta_cantidad, (evento_id, producto_id))
+        cantidad = int(producto_data.get('cantidad') or 1) if producto_data else 1
+        
+        # Verificar estado del evento
+        evento = self.obtener_evento_por_id(evento_id)
+        if evento:
+            estado = evento.get('estado')
+            
+            # Si el evento está confirmado, liberar stock
+            if estado in ('confirmado', 'en_proceso'):
+                try:
+                    self.inventario.liberar_stock(producto_id, evento_id, cantidad)
+                except Exception as e:
+                    self.logger.error(f"Error al liberar stock al eliminar producto: {e}")
+        
         consulta = "DELETE FROM evento_productos WHERE id_evento = %s AND producto_id = %s"
         return self.base_datos.ejecutar_consulta(consulta, (evento_id, producto_id))
     
@@ -503,14 +652,60 @@ class EventoModelo:
         """
         return self.base_datos.obtener_todos(consulta, (evento_id,))
 
-    def actualizar_servicio_evento(self, servicio_id, completado):
+    def actualizar_servicio_evento(self, servicio_id, completado=None, descartado=None):
         """Actualiza el estado de un servicio del evento"""
+        campos = []
+        parametros = []
+        if completado is not None:
+            campos.append("completado = %s")
+            parametros.append(1 if completado else 0)
+        if descartado is not None:
+            campos.append("descartado = %s")
+            parametros.append(1 if descartado else 0)
+        if campos:
+            campos.append("fecha_actualizacion = NOW()")
+            parametros.append(servicio_id)
+            consulta = f"""
+            UPDATE evento_servicios
+            SET {", ".join(campos)}
+            WHERE id = %s
+            """
+            return self.base_datos.ejecutar_consulta(consulta, tuple(parametros))
+        return False
+
+    def crear_servicio_personalizado(self, evento_id, nombre, orden=None):
+        """Crea un servicio personalizado para un evento (sin plan_servicio_id)"""
+        # Obtener el siguiente orden si no se proporciona
+        if orden is None:
+            consulta_max = """
+            SELECT COALESCE(MAX(orden), 0) as max_orden
+            FROM evento_servicios
+            WHERE evento_id = %s
+            """
+            max_orden = self.base_datos.obtener_uno(consulta_max, (evento_id,)) or {}
+            orden = (max_orden.get('max_orden') or 0) + 1
+        
+        consulta = """
+        INSERT INTO evento_servicios (evento_id, plan_servicio_id, nombre, orden, completado, descartado)
+        VALUES (%s, NULL, %s, %s, 0, 0)
+        """
+        if self.base_datos.ejecutar_consulta(consulta, (evento_id, nombre, orden)):
+            return self.base_datos.obtener_ultimo_id()
+        return None
+
+    def eliminar_servicio_evento(self, servicio_id):
+        """Elimina un servicio del evento"""
+        consulta = "DELETE FROM evento_servicios WHERE id = %s"
+        return self.base_datos.ejecutar_consulta(consulta, (servicio_id,))
+
+    def actualizar_orden_servicio(self, servicio_id, nuevo_orden):
+        """Actualiza el orden de un servicio"""
         consulta = """
         UPDATE evento_servicios
-        SET completado = %s, fecha_actualizacion = NOW()
+        SET orden = %s, fecha_actualizacion = NOW()
         WHERE id = %s
         """
-        return self.base_datos.ejecutar_consulta(consulta, (1 if completado else 0, servicio_id))
+        return self.base_datos.ejecutar_consulta(consulta, (nuevo_orden, servicio_id))
 
     def crear_servicios_evento_desde_plan(self, evento_id, plan_id):
         """Crea servicios de evento basados en el plan"""

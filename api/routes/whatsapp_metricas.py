@@ -37,19 +37,28 @@ def clientes():
         for row in clientes or []:
             extra = email_map.get(row.get("cliente_id"), {})
             row["email_out"] = int(extra.get("email_out") or 0)
-            row["whatsapp_sistema"] = int(extra.get("whatsapp_sistema") or 0)
+            # whatsapp_sistema ya viene calculado desde whatsapp_mensajes (origen='sistema' o 'campana')
+            # NO usar whatsapp_sistema desde historial_notificaciones para evitar duplicación
+            row["whatsapp_sistema"] = int(row.get("whatsapp_sistema") or 0)
+            
             precio_whatsapp = row.get("precio_whatsapp")
             precio_email = row.get("precio_email")
             if precio_whatsapp is None:
                 precio_whatsapp = config.get("precio_whatsapp") or 0
             if precio_email is None:
                 precio_email = config.get("precio_email") or 0
-            costo_whatsapp_total = row.get("costo_whatsapp_total")
+            
+            # Costo total de WhatsApp desde whatsapp_mensajes (ya incluye chat + sistema)
+            costo_whatsapp_total = row.get("costo_whatsapp_total") or 0
+            
+            # Si no hay costo almacenado, calcular basado en cantidad
+            if costo_whatsapp_total == 0:
+                costo_whatsapp_total = float(precio_whatsapp) * float(whatsapp_out_total)
+            
             costo_email_total = extra.get("costo_email_total")
-            if costo_whatsapp_total is None:
-                costo_whatsapp_total = float(precio_whatsapp) * float(row.get("whatsapp_out") or 0)
             if costo_email_total is None:
                 costo_email_total = float(precio_email) * float(row.get("email_out") or 0)
+            
             row["costo_whatsapp"] = float(costo_whatsapp_total or 0)
             row["costo_email"] = float(costo_email_total or 0)
             row["precio_whatsapp"] = float(precio_whatsapp)
@@ -79,7 +88,30 @@ def actualizar_config():
         precio_whatsapp = parse_decimal(data.get("precio_whatsapp"))
         precio_email = parse_decimal(data.get("precio_email"))
         whatsapp_desactivado = bool(data.get("whatsapp_desactivado"))
-        actualizado = modelo.actualizar_config(precio_whatsapp, precio_email, whatsapp_desactivado=whatsapp_desactivado)
+        maximo_whatsapp = data.get("maximo_whatsapp")
+        maximo_email = data.get("maximo_email")
+        # Convertir a int si vienen como string, o None si están vacíos
+        if maximo_whatsapp is not None and maximo_whatsapp != "":
+            try:
+                maximo_whatsapp = int(maximo_whatsapp) if maximo_whatsapp else None
+            except (ValueError, TypeError):
+                maximo_whatsapp = None
+        else:
+            maximo_whatsapp = None
+        if maximo_email is not None and maximo_email != "":
+            try:
+                maximo_email = int(maximo_email) if maximo_email else None
+            except (ValueError, TypeError):
+                maximo_email = None
+        else:
+            maximo_email = None
+        actualizado = modelo.actualizar_config(
+            precio_whatsapp, 
+            precio_email, 
+            whatsapp_desactivado=whatsapp_desactivado,
+            maximo_whatsapp=maximo_whatsapp,
+            maximo_email=maximo_email
+        )
         if actualizado:
             return jsonify({"message": "Configuracion actualizada"}), 200
         return jsonify({"error": "No se pudo actualizar"}), 500

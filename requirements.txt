@@ -5,4 +5,5 @@ Flask-CORS==4.0.0
 pypdf==6.5.0
 PyJWT==2.8.0
 reportlab==4.0.7
+openpyxl==3.1.5
 #VERCION PYTHON 3.12.10

@@ -10,6 +10,7 @@ from integraciones.whatsapp import IntegracionWhatsApp
 from datetime import datetime
 from utilidades.logger import obtener_logger
 import re
+import json
 from modelos.whatsapp_metricas_modelo import WhatsAppMetricasModelo
 from modelos.configuracion_general_modelo import ConfiguracionGeneralModelo
 from modelos.whatsapp_chat_modelo import WhatsAppChatModelo
@@ -88,27 +89,42 @@ class SistemaNotificaciones:
             )
             permitido_metricas = self.metricas.permitir_envio_whatsapp(evento.get("telefono"))
             permitido_cliente = self.metricas.permitir_envio_whatsapp_cliente(evento.get("cliente_id"))
-            permitido_chat, motivo_chat = self.chat_modelo.puede_enviar_whatsapp(evento.get("telefono"))
-            if permitido_metricas and permitido_cliente and permitido_chat:
-                whatsapp_enviado = self._enviar_whatsapp(evento, config, datos, tipo_notificacion)
-            else:
-                if motivo_chat in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
+            if permitido_metricas and permitido_cliente:
+                # Intentar enviar el mensaje original primero (sin registrar aún)
+                whatsapp_enviado, wa_message_id, error = self._enviar_whatsapp(evento, config, datos, tipo_notificacion, registrar_inmediatamente=False)
+                
+                # Si falla por error de ventana 24h, enviar plantilla de re-engagement y luego reintentar
+                if not whatsapp_enviado and self._es_error_ventana(error):
+                    self.logger.info(f"Error de ventana 24h detectado para evento {evento.get('id_evento')}, enviando plantilla de re-engagement")
                     if self._enviar_plantilla_reengagement(evento, datos):
-                        whatsapp_enviado = self._enviar_whatsapp(evento, config, datos, tipo_notificacion)
+                        self.logger.info(f"Plantilla de re-engagement enviada, reintentando mensaje original")
+                        # Reintentar el mensaje original después del re-engagement (ahora sí registrar)
+                        whatsapp_enviado, wa_message_id, error_reintento = self._enviar_whatsapp(evento, config, datos, tipo_notificacion, registrar_inmediatamente=True)
                         if whatsapp_enviado:
-                            permitido_chat = True
+                            self.logger.info(f"Mensaje original enviado exitosamente después del re-engagement")
+                        else:
+                            self.logger.warning(f"Mensaje original falló después del re-engagement: {error_reintento}")
+                    else:
+                        self.logger.warning("No se pudo enviar plantilla de re-engagement")
+                        # Si no se pudo enviar la plantilla, registrar el mensaje fallido
+                        plantilla = config.get('plantilla_whatsapp', '')
+                        mensaje = self._render_template(plantilla, datos, tipo_notificacion, "whatsapp")
+                        self._registrar_mensaje_whatsapp(evento, mensaje, False, wa_message_id, error, tipo_notificacion)
+                else:
+                    # Si no hay error de ventana o el mensaje se envió exitosamente, registrar normalmente
+                    if whatsapp_enviado or error:
+                        # Obtener el mensaje formateado para registrarlo
+                        plantilla = config.get('plantilla_whatsapp', '')
+                        mensaje = self._render_template(plantilla, datos, tipo_notificacion, "whatsapp")
+                        # Registrar el mensaje con los valores del intento
+                        self._registrar_mensaje_whatsapp(evento, mensaje, whatsapp_enviado, wa_message_id, error, tipo_notificacion)
+            else:
                 if not permitido_metricas:
                     self.ultimo_error = "WHATSAPP_DESACTIVADO"
                     self.ultimo_error_detalle = "WhatsApp esta desactivado temporalmente."
                 elif not permitido_cliente:
                     self.ultimo_error = "WHATSAPP_BLOQUEADO_CLIENTE"
                     self.ultimo_error_detalle = "WhatsApp bloqueado para este cliente."
-                elif motivo_chat in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
-                    self.ultimo_error = "WHATSAPP_VENTANA_24H"
-                    self.ultimo_error_detalle = (
-                        "WhatsApp fuera de ventana de 24h. "
-                        "Necesitas enviar un mensaje de plantilla para abrir el chat."
-                    )
                 self.logger.warning("WhatsApp bloqueado o desactivado, no se envio")
         elif canal_preferido in (None, 'whatsapp') and config.get('enviar_whatsapp') and not self.whatsapp.activo:
             self.logger.warning("WhatsApp inactivo, no se envio notificación por WhatsApp")
@@ -294,8 +310,6 @@ class SistemaNotificaciones:
             conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
         if conversacion:
             self.chat_modelo.actualizar_conversacion(conversacion["id"])
-            if ok:
-                self.chat_modelo.actualizar_interaccion_cliente(conversacion["id"])
             self.chat_modelo.registrar_mensaje(
                 conversacion["id"],
                 "out",
@@ -433,21 +447,85 @@ class SistemaNotificaciones:
             self.logger.error(f"Error al enviar email: {e}")
             return False
     
-    def _enviar_whatsapp(self, evento, config, datos, tipo_notificacion):
-        """Envía notificación por WhatsApp"""
+    def _enviar_whatsapp(self, evento, config, datos, tipo_notificacion, registrar_inmediatamente=True):
+        """
+        Envía notificación por WhatsApp y retorna (exito, wa_message_id, error)
+        registrar_inmediatamente: Si False, no registra el mensaje (útil para re-engagement)
+        """
         try:
             telefono = evento.get('telefono')
             if not telefono:
                 self.logger.warning(f"No hay teléfono para el evento {evento.get('id_evento')}")
-                return False
+                return False, None, None
             
             # Formatear plantilla
             plantilla = config.get('plantilla_whatsapp', '')
             mensaje = self._render_template(plantilla, datos, tipo_notificacion, "whatsapp")
             
-            return self.whatsapp.enviar_mensaje(telefono, mensaje)
+            # Enviar mensaje
+            ok, wa_message_id, error = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje)
+            
+            # Registrar en whatsapp_mensajes para trazabilidad (solo si se solicita)
+            if registrar_inmediatamente:
+                self._registrar_mensaje_whatsapp(evento, mensaje, ok, wa_message_id, error, tipo_notificacion)
+            
+            return ok, wa_message_id, error
         except Exception as e:
             self.logger.error(f"Error al enviar WhatsApp: {e}")
+            return False, None, str(e)
+    
+    def _registrar_mensaje_whatsapp(self, evento, mensaje, ok, wa_message_id, error, tipo_notificacion="sistema"):
+        """Registra un mensaje de WhatsApp en whatsapp_mensajes sin enviarlo"""
+        try:
+            telefono = evento.get('telefono')
+            if not telefono:
+                return
+            
+            # Obtener o crear conversación
+            conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+            if not conversacion:
+                conversacion_id = self.chat_modelo.crear_conversacion(
+                    telefono, 
+                    cliente_id=evento.get("id_cliente")
+                )
+                conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+            
+            if conversacion:
+                # Actualizar última interacción
+                self.chat_modelo.actualizar_conversacion(conversacion["id"])
+                
+                # Calcular costo
+                config_costos = self.metricas.obtener_config() or {}
+                precio_whatsapp = float(config_costos.get("precio_whatsapp") or 0)
+                costo_total = precio_whatsapp if ok else 0.0
+                
+                # Registrar mensaje en whatsapp_mensajes
+                self.chat_modelo.registrar_mensaje(
+                    conversacion["id"],
+                    "out",
+                    mensaje[:500] if isinstance(mensaje, str) else str(mensaje)[:500],
+                    estado="sent" if ok else "fallido",
+                    wa_message_id=wa_message_id,
+                    origen="sistema",
+                    raw_json=error,
+                    costo_unitario=precio_whatsapp if ok else None,
+                    costo_total=costo_total if ok else None
+                )
+                self.logger.info(
+                    f"Mensaje de notificación '{tipo_notificacion}' registrado en whatsapp_mensajes "
+                    f"(conversacion_id={conversacion['id']}, ok={ok})"
+                )
+        except Exception as e_registro:
+            self.logger.warning(f"Error al registrar mensaje en whatsapp_mensajes: {e_registro}")
+
+    def _es_error_ventana(self, error):
+        if not error:
+            return False
+        try:
+            data = json.loads(error) if isinstance(error, str) else error
+            codigo = (data or {}).get("error", {}).get("code")
+            return int(codigo) == 131047
+        except Exception:
             return False
     
     def notificar_abono(self, evento_id, pago_id):

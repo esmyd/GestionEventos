@@ -91,6 +91,24 @@ class IntegracionWhatsApp:
             self.logger.error(f"Error al enviar WhatsApp: {e}")
             return False
 
+    def enviar_mensaje_con_error(self, telefono, mensaje):
+        """Envía un mensaje por WhatsApp y retorna (exito, wa_message_id, error)"""
+        # Recargar configuración por si se actualizó en el panel
+        self.cargar_configuracion()
+        if not self.activo:
+            self.logger.warning("Integración WhatsApp no activa")
+            return False, None, "Integración WhatsApp no activa"
+        if not telefono:
+            self.logger.warning("No hay telefono para enviar WhatsApp")
+            return False, None, "Telefono faltante"
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": str(telefono).replace("+", "").replace(" ", ""),
+            "type": "text",
+            "text": {"body": mensaje},
+        }
+        return self._enviar_payload_con_error(payload)
+
     def _enviar_payload(self, payload):
         try:
             url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}/messages"

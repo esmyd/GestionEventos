@@ -3,128 +3,130 @@ Rutas para gestión de inventario
 """
 from flask import Blueprint, request, jsonify
 from modelos.inventario_modelo import InventarioModelo
+from modelos.producto_modelo import ProductoModelo
 from api.middleware import requiere_autenticacion, requiere_rol
 from utilidades.logger import obtener_logger
 
 inventario_bp = Blueprint('inventario', __name__)
 logger = obtener_logger()
 inventario_modelo = InventarioModelo()
+producto_modelo = ProductoModelo()
 
 
 @inventario_bp.route('', methods=['GET'])
 @requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
 def obtener_inventario():
-    """Obtiene registros de inventario (filtrados por evento o producto)"""
+    """Obtiene movimientos de inventario para un evento o productos con stock bajo"""
     try:
-        evento_id = request.args.get('evento_id')
-        producto_id = request.args.get('producto_id')
+        evento_id = request.args.get('evento_id', type=int)
         
         if evento_id:
-            inventario = inventario_modelo.obtener_inventario_por_evento(int(evento_id))
-        elif producto_id:
-            inventario = inventario_modelo.obtener_inventario_por_producto(int(producto_id))
+            # Obtener movimientos de inventario para un evento específico
+            movimientos = inventario_modelo.obtener_movimientos_evento(evento_id)
+            return jsonify({'inventario': movimientos, 'movimientos': movimientos}), 200
         else:
-            return jsonify({'error': 'evento_id o producto_id es requerido'}), 400
-        
-        return jsonify({'inventario': inventario}), 200
+            # Si no se especifica evento_id, retornar productos con stock bajo
+            productos = inventario_modelo.obtener_productos_stock_bajo()
+            return jsonify({'productos': productos}), 200
     except Exception as e:
         logger.error(f"Error al obtener inventario: {str(e)}")
         return jsonify({'error': 'Error al obtener inventario'}), 500
 
 
-@inventario_bp.route('', methods=['POST'])
+@inventario_bp.route('/stock-bajo', methods=['GET'])
 @requiere_autenticacion
 @requiere_rol('administrador', 'gerente_general', 'coordinador')
-def crear_registro_inventario():
-    """Crea un nuevo registro de inventario"""
+def obtener_productos_stock_bajo():
+    """Obtiene productos con stock bajo o agotado"""
+    try:
+        productos = inventario_modelo.obtener_productos_stock_bajo()
+        return jsonify({'productos': productos}), 200
+    except Exception as e:
+        logger.error(f"Error al obtener productos con stock bajo: {str(e)}")
+        return jsonify({'error': 'Error al obtener productos con stock bajo'}), 500
+
+
+@inventario_bp.route('/validar-stock', methods=['POST'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def validar_stock():
+    """Valida si hay stock suficiente para un producto"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Datos requeridos'}), 400
         
-        campos_requeridos = ['producto_id', 'cantidad_solicitada']
-        for campo in campos_requeridos:
-            if campo not in data:
-                return jsonify({'error': f'Campo requerido: {campo}'}), 400
+        producto_id = data.get('producto_id')
+        cantidad = data.get('cantidad', 1)
         
-        inventario_id = inventario_modelo.crear_registro_inventario(data)
-        if inventario_id:
-            return jsonify({'message': 'Registro de inventario creado exitosamente', 'id': inventario_id}), 201
+        if not producto_id:
+            return jsonify({'error': 'producto_id es requerido'}), 400
+        
+        ok, error = inventario_modelo.validar_stock_suficiente(producto_id, cantidad)
+        
+        if ok:
+            return jsonify({'valido': True}), 200
         else:
-            return jsonify({'error': 'Error al crear registro de inventario'}), 500
+            return jsonify({'valido': False, 'error': error}), 200
     except Exception as e:
-        logger.error(f"Error al crear registro de inventario: {str(e)}")
-        return jsonify({'error': f'Error al crear registro de inventario: {str(e)}'}), 500
+        logger.error(f"Error al validar stock: {str(e)}")
+        return jsonify({'error': 'Error al validar stock'}), 500
 
 
-@inventario_bp.route('/<int:inventario_id>/estado', methods=['PUT'])
+@inventario_bp.route('/validar-stock-plan', methods=['POST'])
 @requiere_autenticacion
 @requiere_rol('administrador', 'gerente_general', 'coordinador')
-def actualizar_estado_inventario(inventario_id):
-    """Actualiza el estado de un registro de inventario"""
-    try:
-        data = request.get_json()
-        if not data or 'estado' not in data:
-            return jsonify({'error': 'estado es requerido'}), 400
-        
-        nuevo_estado = data['estado']
-        cantidad_utilizada = data.get('cantidad_utilizada')
-        
-        resultado = inventario_modelo.actualizar_estado_inventario(
-            inventario_id,
-            nuevo_estado,
-            cantidad_utilizada
-        )
-        if resultado:
-            return jsonify({'message': 'Estado actualizado exitosamente'}), 200
-        else:
-            return jsonify({'error': 'Error al actualizar estado'}), 500
-    except Exception as e:
-        logger.error(f"Error al actualizar estado: {str(e)}")
-        return jsonify({'error': 'Error al actualizar estado'}), 500
-
-
-@inventario_bp.route('/<int:inventario_id>/devolucion', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
-def registrar_devolucion(inventario_id):
-    """Registra la devolución de un producto"""
-    try:
-        data = request.get_json()
-        if not data or 'fecha_devolucion' not in data:
-            return jsonify({'error': 'fecha_devolucion es requerida'}), 400
-        
-        fecha_devolucion = data['fecha_devolucion']
-        resultado = inventario_modelo.registrar_devolucion(inventario_id, fecha_devolucion)
-        if resultado:
-            return jsonify({'message': 'Devolución registrada exitosamente'}), 200
-        else:
-            return jsonify({'error': 'Error al registrar devolución'}), 500
-    except Exception as e:
-        logger.error(f"Error al registrar devolución: {str(e)}")
-        return jsonify({'error': 'Error al registrar devolución'}), 500
-
-
-@inventario_bp.route('/verificar-disponibilidad', methods=['POST'])
-@requiere_autenticacion
-def verificar_disponibilidad():
-    """Verifica la disponibilidad de un producto para una fecha"""
+def validar_stock_plan():
+    """Valida si hay stock suficiente para todos los productos de un plan"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Datos requeridos'}), 400
         
-        campos_requeridos = ['producto_id', 'cantidad', 'fecha_evento']
-        for campo in campos_requeridos:
-            if campo not in data:
-                return jsonify({'error': f'Campo requerido: {campo}'}), 400
+        plan_id = data.get('plan_id')
+        cantidad_eventos = data.get('cantidad_eventos', 1)
         
-        disponible = inventario_modelo.verificar_disponibilidad(
-            data['producto_id'],
-            data['cantidad'],
-            data['fecha_evento']
-        )
-        return jsonify({'disponible': disponible}), 200
+        if not plan_id:
+            return jsonify({'error': 'plan_id es requerido'}), 400
+        
+        ok, productos_insuficientes = inventario_modelo.validar_stock_plan(plan_id, cantidad_eventos)
+        
+        if ok:
+            return jsonify({'valido': True}), 200
+        else:
+            return jsonify({
+                'valido': False,
+                'productos_insuficientes': productos_insuficientes
+            }), 200
     except Exception as e:
-        logger.error(f"Error al verificar disponibilidad: {str(e)}")
-        return jsonify({'error': 'Error al verificar disponibilidad'}), 500
+        logger.error(f"Error al validar stock del plan: {str(e)}")
+        return jsonify({'error': 'Error al validar stock del plan'}), 500
+
+
+@inventario_bp.route('/evento/<int:evento_id>/movimientos', methods=['GET'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def obtener_movimientos_evento(evento_id):
+    """Obtiene todos los movimientos de inventario para un evento"""
+    try:
+        movimientos = inventario_modelo.obtener_movimientos_evento(evento_id)
+        return jsonify({'movimientos': movimientos}), 200
+    except Exception as e:
+        logger.error(f"Error al obtener movimientos de inventario: {str(e)}")
+        return jsonify({'error': 'Error al obtener movimientos de inventario'}), 500
+
+
+@inventario_bp.route('/producto/<int:producto_id>/stock', methods=['GET'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def obtener_stock_producto(producto_id):
+    """Obtiene el stock disponible de un producto"""
+    try:
+        stock = inventario_modelo.obtener_stock_disponible(producto_id)
+        if not stock:
+            return jsonify({'error': 'Producto no encontrado'}), 404
+        return jsonify({'stock': stock}), 200
+    except Exception as e:
+        logger.error(f"Error al obtener stock del producto: {str(e)}")
+        return jsonify({'error': 'Error al obtener stock del producto'}), 500

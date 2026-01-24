@@ -82,6 +82,13 @@ def crear_pago():
 
             # Cambios de estado y notificaciones no deben romper la respuesta
             try:
+                estado_pago = (pago or {}).get('estado_pago')
+                if estado_pago and estado_pago != 'aprobado':
+                    return jsonify({
+                        'message': 'Pago registrado en revisión',
+                        'pago': pago,
+                        'total_pagado': total_pagado
+                    }), 201
                 from modelos.evento_modelo import EventoModelo
                 evento_modelo = EventoModelo()
                 evento = evento_modelo.obtener_evento_por_id(data['evento_id'])
@@ -113,30 +120,102 @@ def crear_pago():
         return jsonify({'error': f'Error al crear pago: {str(e)}'}), 500
 
 
+@pagos_bp.route('/<int:pago_id>/estado', methods=['PATCH'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def actualizar_estado_pago(pago_id):
+    """Actualiza el estado de un pago"""
+    try:
+        data = request.get_json() or {}
+        nuevo_estado = data.get('estado_pago')
+        if nuevo_estado not in ('en_revision', 'aprobado', 'rechazado'):
+            return jsonify({'error': 'Estado inválido'}), 400
+
+        pago_actual = pago_modelo.obtener_pago_por_id(pago_id)
+        if not pago_actual:
+            return jsonify({'error': 'Pago no encontrado'}), 404
+
+        estado_anterior = pago_actual.get('estado_pago')
+        if estado_anterior == nuevo_estado:
+            return jsonify({'message': 'Estado sin cambios', 'pago': pago_actual}), 200
+
+        if not pago_modelo.actualizar_estado_pago(pago_id, nuevo_estado):
+            return jsonify({'error': 'No se pudo actualizar el estado'}), 500
+
+        pago_actualizado = pago_modelo.obtener_pago_por_id(pago_id)
+        evento_id = pago_actualizado.get('id_evento')
+        total_pagado = None
+        try:
+            if evento_id:
+                total_pagado = pago_modelo.obtener_total_pagado_evento(evento_id)
+                pago_modelo.actualizar_saldo_evento(evento_id)
+        except Exception as e:
+            logger.warning(f"No se pudo actualizar saldo/totales del evento {evento_id}: {e}")
+
+        if nuevo_estado == 'aprobado' and estado_anterior != 'aprobado' and evento_id:
+            try:
+                from modelos.evento_modelo import EventoModelo
+                evento_modelo = EventoModelo()
+                evento = evento_modelo.obtener_evento_por_id(evento_id)
+                if evento:
+                    estado_actual = evento.get('estado')
+                    if estado_actual in ['cotizacion', 'confirmado']:
+                        evento_modelo.actualizar_estado(evento_id, 'en_proceso')
+                        logger.info(f"Estado del evento {evento_id} cambiado a 'en_proceso' por aprobación de pago")
+                    evento_actualizado = evento_modelo.obtener_evento_por_id(evento_id)
+                    saldo_pendiente = float((evento_actualizado or evento).get('saldo') or 0)
+                    if saldo_pendiente <= 0 and estado_actual not in ['completado', 'cancelado']:
+                        evento_modelo.actualizar_estado(evento_id, 'confirmado')
+                        logger.info(f"Estado del evento {evento_id} cambiado a 'confirmado' por pago completo")
+                    try:
+                        pago_modelo._enviar_notificacion_pago(
+                            evento,
+                            float(pago_actualizado.get('monto') or 0),
+                            pago_actualizado.get('tipo_pago'),
+                            pago_actualizado.get('metodo_pago') or '',
+                            str(pago_actualizado.get('fecha_pago') or '')
+                        )
+                    except Exception as e:
+                        logger.warning(f"No se pudo enviar notificación de pago aprobado {pago_id}: {e}")
+            except Exception as e:
+                logger.warning(f"Error al actualizar estado del evento {evento_id} tras aprobación: {e}")
+        elif nuevo_estado == 'rechazado' and estado_anterior != 'rechazado' and evento_id:
+            try:
+                from modelos.evento_modelo import EventoModelo
+                from integraciones.notificaciones_automaticas import NotificacionesAutomaticas
+                evento_modelo = EventoModelo()
+                evento = evento_modelo.obtener_evento_por_id(evento_id)
+                if evento:
+                    notif = NotificacionesAutomaticas()
+                    try:
+                        notif.enviar_notificacion_pago_anulado(
+                            evento=evento,
+                            monto=float(pago_actualizado.get('monto') or 0),
+                            metodo_pago=pago_actualizado.get('metodo_pago') or '',
+                            fecha_pago=str(pago_actualizado.get('fecha_pago') or ''),
+                            observaciones=pago_actualizado.get('observaciones')
+                        )
+                    except Exception as e:
+                        logger.warning(f"No se pudo enviar notificación de pago anulado {pago_id}: {e}")
+            except Exception as e:
+                logger.warning(f"Error al procesar anulación del pago {pago_id}: {e}")
+
+        return jsonify({
+            'message': 'Estado actualizado',
+            'pago': pago_actualizado,
+            'total_pagado': total_pagado
+        }), 200
+    except Exception as e:
+        logger.error(f"Error al actualizar estado del pago {pago_id}: {str(e)}")
+        return jsonify({'error': 'Error al actualizar estado del pago'}), 500
+
+
 @pagos_bp.route('/<int:pago_id>', methods=['DELETE'])
 @requiere_autenticacion
 @requiere_rol('administrador', 'gerente_general')
 def eliminar_pago(pago_id):
-    """Elimina un pago"""
-    try:
-        # Obtener evento_id antes de eliminar
-        pago = pago_modelo.obtener_pago_por_id(pago_id)
-        if not pago:
-            return jsonify({'error': 'Pago no encontrado'}), 404
-        
-        evento_id = pago.get('id_evento')
-        resultado = pago_modelo.eliminar_pago(pago_id)
-        if resultado:
-            total_pagado = pago_modelo.obtener_total_pagado_evento(evento_id) if evento_id else 0
-            return jsonify({
-                'message': 'Pago eliminado exitosamente',
-                'total_pagado': total_pagado
-            }), 200
-        else:
-            return jsonify({'error': 'Error al eliminar pago'}), 500
-    except Exception as e:
-        logger.error(f"Error al eliminar pago: {str(e)}")
-        return jsonify({'error': 'Error al eliminar pago'}), 500
+    """Eliminar pagos no está permitido, solo anular"""
+    return jsonify({'error': 'No se puede eliminar un pago. Usa anular.'}), 400
 
 
 @pagos_bp.route('/evento/<int:evento_id>/total', methods=['GET'])

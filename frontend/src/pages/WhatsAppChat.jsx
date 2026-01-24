@@ -242,27 +242,92 @@ const WhatsAppChat = () => {
 
   const formatFechaLista = (valor) => {
     if (!valor) return '';
-    const fecha = new Date(valor);
-    if (Number.isNaN(fecha.getTime())) return '';
-    const hoy = new Date();
-    const esHoy =
-      fecha.getFullYear() === hoy.getFullYear() &&
-      fecha.getMonth() === hoy.getMonth() &&
-      fecha.getDate() === hoy.getDate();
-    const hora = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    if (esHoy) {
-      return hora;
+    try {
+      // Si viene como string sin zona horaria (formato MySQL), interpretarlo como hora local
+      let fecha;
+      if (typeof valor === 'string' && !valor.includes('T') && !valor.includes('Z') && !valor.includes('+')) {
+        // Formato MySQL: 'YYYY-MM-DD HH:MM:SS'
+        const partes = valor.split(' ');
+        if (partes.length === 2) {
+          const [fechaPart, horaPart] = partes;
+          fecha = new Date(`${fechaPart}T${horaPart}`);
+        } else {
+          fecha = new Date(valor);
+        }
+      } else if (typeof valor === 'string' && valor.includes('T') && !valor.includes('Z') && !valor.includes('+')) {
+        // Formato ISO sin zona horaria: 'YYYY-MM-DDTHH:MM:SS'
+        fecha = new Date(valor);
+      } else {
+        fecha = new Date(valor);
+      }
+      
+      if (Number.isNaN(fecha.getTime())) return '';
+      
+      const hoy = new Date();
+      const esHoy =
+        fecha.getFullYear() === hoy.getFullYear() &&
+        fecha.getMonth() === hoy.getMonth() &&
+        fecha.getDate() === hoy.getDate();
+      
+      const hora = fecha.toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false
+      });
+      
+      if (esHoy) {
+        return hora;
+      }
+      
+      const dia = fecha.toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      });
+      return `${dia} ${hora}`;
+    } catch (err) {
+      return '';
     }
-    return `${fecha.toLocaleDateString()} ${hora}`;
   };
 
   const formatFechaMensaje = (valor) => {
     if (!valor) return '';
-    const fecha = new Date(valor);
-    if (Number.isNaN(fecha.getTime())) return '';
-    const dia = fecha.toLocaleDateString();
-    const hora = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return `${dia} ${hora}`;
+    try {
+      // Si viene como string sin zona horaria (formato MySQL), interpretarlo como hora local
+      let fecha;
+      if (typeof valor === 'string' && !valor.includes('T') && !valor.includes('Z') && !valor.includes('+')) {
+        // Formato MySQL: 'YYYY-MM-DD HH:MM:SS'
+        const partes = valor.split(' ');
+        if (partes.length === 2) {
+          const [fechaPart, horaPart] = partes;
+          fecha = new Date(`${fechaPart}T${horaPart}`);
+        } else {
+          fecha = new Date(valor);
+        }
+      } else if (typeof valor === 'string' && valor.includes('T') && !valor.includes('Z') && !valor.includes('+')) {
+        // Formato ISO sin zona horaria: 'YYYY-MM-DDTHH:MM:SS'
+        fecha = new Date(valor);
+      } else {
+        fecha = new Date(valor);
+      }
+      
+      if (Number.isNaN(fecha.getTime())) return '';
+      
+      // Formatear en zona horaria local
+      const dia = fecha.toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      });
+      const hora = fecha.toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false
+      });
+      return `${dia} ${hora}`;
+    } catch (err) {
+      return '';
+    }
   };
 
   const previewTexto = (texto) => {

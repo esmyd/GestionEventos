@@ -262,6 +262,7 @@ CREATE TABLE IF NOT EXISTS pagos (
     id_evento INT NOT NULL,
     monto DECIMAL(10, 2) NOT NULL,
     tipo_pago ENUM('abono', 'pago_completo', 'reembolso') DEFAULT 'abono',
+    estado_pago ENUM('en_revision', 'aprobado', 'rechazado') DEFAULT 'en_revision',
     metodo_pago ENUM('efectivo', 'transferencia', 'tarjeta', 'cheque') NOT NULL,
     numero_referencia VARCHAR(50),
     fecha_pago DATE NOT NULL,

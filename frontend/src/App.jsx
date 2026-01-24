@@ -17,6 +17,7 @@ import Productos from './pages/Productos';
 import Categorias from './pages/Categorias';
 import Planes from './pages/Planes';
 import Pagos from './pages/Pagos';
+import PagosEvento from './pages/PagosEvento';
 import Inventario from './pages/Inventario';
 import Salones from './pages/Salones';
 import Reportes from './pages/Reportes';
@@ -29,6 +30,7 @@ import WhatsAppChat from './pages/WhatsAppChat';
 import WhatsAppMetricas from './pages/WhatsAppMetricas';
 import ConfiguracionesDatos from './pages/ConfiguracionesDatos';
 import WhatsAppPlantillas from './pages/WhatsAppPlantillas';
+import CargaMasiva from './pages/CargaMasiva';
 
 // Componente para proteger rutas
 const ProtectedRoute = ({ children }) => {
@@ -220,6 +222,14 @@ function AppRoutes() {
             </RoleProtectedRoute>
           }
         />
+        <Route
+          path="pagos/evento/:id"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.PAGOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+              <PagosEvento />
+            </RoleProtectedRoute>
+          }
+        />
 
         {/* Inventario - Solo admin, gerente y coordinador */}
         <Route
@@ -269,7 +279,7 @@ function AppRoutes() {
           }
         />
         <Route
-          path="integraciones/whatsapp"
+          path="configuraciones/integraciones-whatsapp"
           element={
             <RoleProtectedRoute moduleKey={MODULES.INTEGRACIONES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
               <IntegracionesWhatsApp />
@@ -297,6 +307,14 @@ function AppRoutes() {
           element={
             <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_TEMPLATES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
               <WhatsAppPlantillas />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="configuraciones/carga-masiva"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.CARGA_MASIVA} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <CargaMasiva />
             </RoleProtectedRoute>
           }
         />

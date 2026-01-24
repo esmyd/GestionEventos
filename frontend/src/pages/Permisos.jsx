@@ -25,6 +25,7 @@ const MODULOS = [
   { key: MODULES.WHATSAPP_CHAT, label: 'WhatsApp Chat' },
   { key: MODULES.WHATSAPP_METRICAS, label: 'Panel WhatsApp/Email' },
   { key: MODULES.WHATSAPP_TEMPLATES, label: 'Plantillas WhatsApp' },
+  { key: MODULES.CARGA_MASIVA, label: 'Carga masiva' },
   { key: MODULES.CONFIG_DATOS, label: 'Limpieza de datos' },
 ];
 
@@ -38,7 +39,10 @@ const ACCIONES = [
   { key: PERMISSIONS.EVENTOS_DESCARTAR_SERVICIO, label: 'Eventos · Descartar servicio' },
   { key: PERMISSIONS.EVENTOS_ASIGNAR_COORDINADOR, label: 'Eventos · Asignar coordinador' },
   { key: PERMISSIONS.PAGOS_REGISTRAR, label: 'Pagos · Registrar' },
+  { key: PERMISSIONS.PAGOS_REEMBOLSAR, label: 'Pagos · Reembolsar' },
   { key: PERMISSIONS.PAGOS_ELIMINAR, label: 'Pagos · Eliminar' },
+  { key: PERMISSIONS.PAGOS_APROBAR, label: 'Pagos · Aprobar' },
+  { key: PERMISSIONS.PAGOS_ANULAR, label: 'Pagos · Anular' },
   { key: PERMISSIONS.PLANES_CREAR, label: 'Planes · Crear' },
   { key: PERMISSIONS.PLANES_EDITAR, label: 'Planes · Editar' },
   { key: PERMISSIONS.PLANES_ELIMINAR, label: 'Planes · Eliminar' },

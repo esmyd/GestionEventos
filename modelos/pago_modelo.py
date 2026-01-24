@@ -14,6 +14,7 @@ class PagoModelo:
         self.base_datos = BaseDatos()
         self.logger = obtener_logger()
         self._pagos_columnas_cache = None
+        self._asegurar_columna_estado_pago()
 
     def _pagos_tiene_columna(self, nombre):
         if self._pagos_columnas_cache is None:
@@ -24,6 +25,19 @@ class PagoModelo:
                 self.logger.warning(f"No se pudieron cargar columnas de pagos: {e}")
                 self._pagos_columnas_cache = set()
         return nombre in self._pagos_columnas_cache
+
+    def _asegurar_columna_estado_pago(self):
+        if self._pagos_tiene_columna("estado_pago"):
+            return
+        try:
+            self.base_datos.ejecutar_consulta(
+                "ALTER TABLE pagos ADD COLUMN estado_pago ENUM('en_revision','aprobado','rechazado') "
+                "DEFAULT 'en_revision' AFTER tipo_pago"
+            )
+            self._pagos_columnas_cache = None
+            self._pagos_tiene_columna("estado_pago")
+        except Exception as e:
+            self.logger.warning(f"No se pudo crear la columna estado_pago en pagos: {e}")
     
     def crear_pago(self, datos_pago):
         """Crea un nuevo pago o abono
@@ -92,46 +106,52 @@ class PagoModelo:
         # Usar id_evento en lugar de evento_id (nombre real de la columna)
         # Origen: 'web' para aplicación web, 'desktop' para aplicación de escritorio
         origen = datos_pago.get('origen', 'desktop')  # Por defecto 'desktop' para compatibilidad
+        metodo_pago = datos_pago.get('metodo_pago')
+        estado_pago = 'en_revision'
+        if not self._pagos_tiene_columna("estado_pago"):
+            estado_pago = 'aprobado'
+
+        columnas = [
+            "id_evento",
+            "monto",
+            "tipo_pago",
+            "metodo_pago",
+            "numero_referencia",
+            "fecha_pago",
+            "observaciones",
+            "usuario_registro_id",
+        ]
+        valores = [
+            evento_id,
+            monto,
+            tipo_pago,
+            metodo_pago,
+            datos_pago.get('numero_referencia'),
+            datos_pago['fecha_pago'],
+            datos_pago.get('observaciones'),
+            datos_pago.get('usuario_registro_id'),
+        ]
+        if self._pagos_tiene_columna("estado_pago"):
+            columnas.append("estado_pago")
+            valores.append(estado_pago)
         if self._pagos_tiene_columna("origen"):
-            consulta = """
-            INSERT INTO pagos (id_evento, monto, tipo_pago, metodo_pago, numero_referencia, 
-                              fecha_pago, observaciones, usuario_registro_id, origen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            parametros = (
-                evento_id,
-                monto,
-                tipo_pago,
-                datos_pago['metodo_pago'],
-                datos_pago.get('numero_referencia'),
-                datos_pago['fecha_pago'],
-                datos_pago.get('observaciones'),
-                datos_pago.get('usuario_registro_id'),
-                origen
-            )
-        else:
-            consulta = """
-            INSERT INTO pagos (id_evento, monto, tipo_pago, metodo_pago, numero_referencia, 
-                              fecha_pago, observaciones, usuario_registro_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            parametros = (
-                evento_id,
-                monto,
-                tipo_pago,
-                datos_pago['metodo_pago'],
-                datos_pago.get('numero_referencia'),
-                datos_pago['fecha_pago'],
-                datos_pago.get('observaciones'),
-                datos_pago.get('usuario_registro_id'),
-            )
+            columnas.append("origen")
+            valores.append(origen)
+
+        placeholders = ", ".join(["%s"] * len(columnas))
+        consulta = f"INSERT INTO pagos ({', '.join(columnas)}) VALUES ({placeholders})"
+        parametros = tuple(valores)
         if self.base_datos.ejecutar_consulta(consulta, parametros):
             # Obtener el último ID insertado (puede ser id_pago o id)
             pago_id = self.base_datos.obtener_ultimo_id()
             self.logger.info(f"Pago registrado exitosamente - ID: {pago_id}, Evento: {evento_id}, Monto: ${monto:.2f}, Tipo: {tipo_pago}")
             # El trigger actualizará automáticamente el saldo pendiente del evento
+            try:
+                self.actualizar_saldo_evento(evento_id)
+            except Exception as e:
+                self.logger.warning(f"No se pudo recalcular saldo del evento {evento_id} tras registrar pago: {e}")
             
-            # Enviar notificación automática
+            # Enviar notificación automática solo si está aprobado
             try:
                 evento_id = datos_pago.get('evento_id') or datos_pago.get('id_evento')
                 
@@ -144,29 +164,14 @@ class PagoModelo:
                 evento_modelo = EventoModelo()
                 evento = evento_modelo.obtener_evento_por_id(evento_id)
                 
-                if evento:
-                    # Determinar tipo de pago
-                    if precio_total > 0 and total_pagado >= precio_total:
-                        tipo_notif = 'pago_completo'
-                    elif datos_pago.get('tipo_pago') == 'reembolso':
-                        tipo_notif = 'reembolso'
-                    else:
-                        tipo_notif = 'abono'
-                    
-                    # Enviar notificación automáticamente
-                    from integraciones.notificaciones_automaticas import NotificacionesAutomaticas
-                    notif = NotificacionesAutomaticas()
-                    saldo_pendiente = float(evento.get('saldo', 0) or 0)
-                    
-                    notif.enviar_notificacion_pago(
-                        evento=evento,
-                        monto=float(monto),
-                        tipo_pago=tipo_notif,
-                        metodo_pago=datos_pago.get('metodo_pago', ''),
-                        fecha_pago=str(datos_pago.get('fecha_pago', '')),
-                        saldo_pendiente=saldo_pendiente
+                if evento and estado_pago == 'aprobado':
+                    self._enviar_notificacion_pago(
+                        evento,
+                        float(monto),
+                        datos_pago.get('tipo_pago'),
+                        datos_pago.get('metodo_pago', ''),
+                        str(datos_pago.get('fecha_pago', ''))
                     )
-                    self.logger.debug(f"Notificación enviada para pago ID: {pago_id}, Tipo: {tipo_notif}")
             except Exception as e:
                 self.logger.error(f"Error al enviar notificación de pago ID {pago_id}: {str(e)}")
                 import traceback
@@ -211,17 +216,26 @@ class PagoModelo:
         FROM pagos p
         LEFT JOIN usuarios u ON p.usuario_registro_id = u.id
         WHERE p.id_evento = %s
-        ORDER BY p.fecha_pago DESC
+        ORDER BY p.id DESC
         """
         return self.base_datos.obtener_todos(consulta, (evento_id,))
     
     def obtener_total_pagado_evento(self, evento_id):
         """Calcula el total pagado de un evento"""
-        consulta = """
-        SELECT COALESCE(SUM(monto), 0) as total_pagado
-        FROM pagos
-        WHERE id_evento = %s AND tipo_pago != 'reembolso'
-        """
+        if self._pagos_tiene_columna("estado_pago"):
+            consulta = """
+            SELECT COALESCE(SUM(monto), 0) as total_pagado
+            FROM pagos
+            WHERE id_evento = %s
+            AND tipo_pago != 'reembolso'
+            AND (estado_pago = 'aprobado' OR estado_pago IS NULL)
+            """
+        else:
+            consulta = """
+            SELECT COALESCE(SUM(monto), 0) as total_pagado
+            FROM pagos
+            WHERE id_evento = %s AND tipo_pago != 'reembolso'
+            """
         resultado = self.base_datos.obtener_uno(consulta, (evento_id,))
         return float(resultado['total_pagado']) if resultado else 0.0
 
@@ -233,23 +247,70 @@ class PagoModelo:
 
     def obtener_total_pagado_global(self):
         """Calcula el total pagado global (sin reembolsos)"""
-        consulta = """
-        SELECT COALESCE(SUM(monto), 0) as total_pagado
-        FROM pagos
-        WHERE tipo_pago != 'reembolso'
-        """
+        if self._pagos_tiene_columna("estado_pago"):
+            consulta = """
+            SELECT COALESCE(SUM(monto), 0) as total_pagado
+            FROM pagos
+            WHERE tipo_pago != 'reembolso'
+            AND (estado_pago = 'aprobado' OR estado_pago IS NULL)
+            """
+        else:
+            consulta = """
+            SELECT COALESCE(SUM(monto), 0) as total_pagado
+            FROM pagos
+            WHERE tipo_pago != 'reembolso'
+            """
         resultado = self.base_datos.obtener_uno(consulta)
         return float(resultado['total_pagado']) if resultado else 0.0
     
     def obtener_total_reembolsos_evento(self, evento_id):
         """Calcula el total de reembolsos de un evento"""
-        consulta = """
-        SELECT COALESCE(SUM(monto), 0) as total_reembolsos
-        FROM pagos
-        WHERE id_evento = %s AND tipo_pago = 'reembolso'
-        """
+        if self._pagos_tiene_columna("estado_pago"):
+            consulta = """
+            SELECT COALESCE(SUM(monto), 0) as total_reembolsos
+            FROM pagos
+            WHERE id_evento = %s
+            AND tipo_pago = 'reembolso'
+            AND (estado_pago = 'aprobado' OR estado_pago IS NULL)
+            """
+        else:
+            consulta = """
+            SELECT COALESCE(SUM(monto), 0) as total_reembolsos
+            FROM pagos
+            WHERE id_evento = %s AND tipo_pago = 'reembolso'
+            """
         resultado = self.base_datos.obtener_uno(consulta, (evento_id,))
         return float(resultado['total_reembolsos']) if resultado else 0.0
+
+    def actualizar_estado_pago(self, pago_id, nuevo_estado):
+        if not self._pagos_tiene_columna("estado_pago"):
+            return False
+        consulta = "UPDATE pagos SET estado_pago = %s WHERE id = %s"
+        return self.base_datos.ejecutar_consulta(consulta, (nuevo_estado, pago_id))
+
+    def _enviar_notificacion_pago(self, evento, monto, tipo_pago, metodo_pago, fecha_pago):
+        # Determinar tipo de pago
+        precio_total = self._obtener_precio_total_evento(evento.get('id_evento'))
+        total_pagado = self.obtener_total_pagado_evento(evento.get('id_evento'))
+        if precio_total > 0 and total_pagado >= precio_total:
+            tipo_notif = 'pago_completo'
+        elif tipo_pago == 'reembolso':
+            tipo_notif = 'reembolso'
+        else:
+            tipo_notif = 'abono'
+
+        from integraciones.notificaciones_automaticas import NotificacionesAutomaticas
+        notif = NotificacionesAutomaticas()
+        saldo_pendiente = float(evento.get('saldo', 0) or 0)
+        notif.enviar_notificacion_pago(
+            evento=evento,
+            monto=float(monto),
+            tipo_pago=tipo_notif,
+            metodo_pago=metodo_pago,
+            fecha_pago=str(fecha_pago),
+            saldo_pendiente=saldo_pendiente
+        )
+        self.logger.debug(f"Notificación enviada para pago evento {evento.get('id_evento')}, Tipo: {tipo_notif}")
     
     def actualizar_saldo_evento(self, evento_id):
         """Actualiza el saldo pendiente de un evento basado en los pagos

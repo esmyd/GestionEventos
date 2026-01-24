@@ -23,6 +23,7 @@ INSERT INTO rol_permisos (rol, permisos_json) VALUES
   "pagos",
   "inventario",
   "salones",
+  "carga_masiva",
   "reportes",
   "usuarios",
   "permisos",
@@ -35,7 +36,10 @@ INSERT INTO rol_permisos (rol, permisos_json) VALUES
   "eventos:descartar_servicio",
   "eventos:asignar_coordinador",
   "pagos:registrar",
+  "pagos:reembolsar",
   "pagos:eliminar",
+  "pagos:aprobar",
+  "pagos:anular",
   "planes:crear",
   "planes:editar",
   "planes:eliminar"
@@ -56,6 +60,7 @@ INSERT INTO rol_permisos (rol, permisos_json) VALUES
   "pagos",
   "inventario",
   "salones",
+  "carga_masiva",
   "reportes",
   "eventos:editar_estado",
   "eventos:agregar_producto",
@@ -66,7 +71,10 @@ INSERT INTO rol_permisos (rol, permisos_json) VALUES
   "eventos:descartar_servicio",
   "eventos:asignar_coordinador",
   "pagos:registrar",
+  "pagos:reembolsar",
   "pagos:eliminar",
+  "pagos:aprobar",
+  "pagos:anular",
   "planes:crear",
   "planes:editar",
   "planes:eliminar"
@@ -89,6 +97,8 @@ INSERT INTO rol_permisos (rol, permisos_json) VALUES
   "eventos:generar_servicios",
   "eventos:descartar_servicio",
   "pagos:registrar",
+  "pagos:aprobar",
+  "pagos:anular",
   "planes:crear",
   "planes:editar"
 ]')

@@ -3,7 +3,7 @@ import { integracionesService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
 
-const IntegracionesWhatsApp = () => {
+const IntegracionesWhatsApp = ({ embedded = false }) => {
   const { toasts, removeToast, success, error: showError } = useToast();
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -79,10 +79,10 @@ const IntegracionesWhatsApp = () => {
   };
 
   return (
-    <div style={{ padding: '1.5rem 2rem' }}>
+    <div style={{ padding: embedded ? 0 : '1.5rem 2rem' }}>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.6rem', marginBottom: '0.25rem' }}>Integracion WhatsApp</h2>
+        <h2 style={{ fontSize: embedded ? '1.25rem' : '1.6rem', marginBottom: '0.25rem' }}>Integracion WhatsApp</h2>
         <p style={{ color: 'var(--gray-600)' }}>
           Configura las credenciales de Meta para enviar mensajes via WhatsApp.
         </p>
@@ -90,7 +90,7 @@ const IntegracionesWhatsApp = () => {
       {loading ? (
         <p>Cargando...</p>
       ) : (
-        <div style={{ maxWidth: '720px', background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e5e7eb' }}>
+        <div style={{ maxWidth: embedded ? '100%' : '720px', background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e5e7eb' }}>
           <div style={{ display: 'grid', gap: '0.9rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: '#374151' }}>

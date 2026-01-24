@@ -245,6 +245,47 @@ def actualizar_estado_evento(evento_id):
                 'error': 'Un evento cancelado solo puede reactivarse cambiándolo a "cotización"'
             }), 400
         
+        # Validación de stock antes de confirmar evento
+        if nuevo_estado in ('confirmado', 'en_proceso') and estado_actual not in ('confirmado', 'en_proceso'):
+            from modelos.inventario_modelo import InventarioModelo
+            inventario = InventarioModelo()
+            
+            # Validar stock del plan
+            plan_id = evento_actual.get('plan_id')
+            if plan_id:
+                ok, productos_insuficientes = inventario.validar_stock_plan(plan_id)
+                if not ok:
+                    return jsonify({
+                        'error': 'Stock insuficiente para confirmar el evento',
+                        'productos_insuficientes': productos_insuficientes,
+                        'detalle': 'Uno o más productos del plan no tienen stock suficiente'
+                    }), 400
+            
+            # Validar stock de productos adicionales
+            productos_adicionales = evento_modelo.obtener_productos_evento(evento_id)
+            productos_insuficientes_adicionales = []
+            for producto in productos_adicionales or []:
+                producto_id = producto.get('producto_id')
+                cantidad = int(producto.get('cantidad') or 1)
+                ok, error = inventario.validar_stock_suficiente(producto_id, cantidad)
+                if not ok:
+                    producto_info = evento_modelo.base_datos.obtener_uno(
+                        "SELECT nombre FROM productos WHERE id = %s", (producto_id,)
+                    ) or {}
+                    productos_insuficientes_adicionales.append({
+                        'producto_id': producto_id,
+                        'nombre': producto_info.get('nombre', f'Producto {producto_id}'),
+                        'requerido': cantidad,
+                        'error': error
+                    })
+            
+            if productos_insuficientes_adicionales:
+                return jsonify({
+                    'error': 'Stock insuficiente en productos adicionales',
+                    'productos_insuficientes': productos_insuficientes_adicionales,
+                    'detalle': 'Uno o más productos adicionales no tienen stock suficiente'
+                }), 400
+        
         # Actualizar el estado
         resultado = evento_modelo.actualizar_estado(evento_id, nuevo_estado)
         if resultado:
@@ -350,19 +391,16 @@ def actualizar_servicio_evento(evento_id, servicio_id):
         if not data:
             return jsonify({'error': 'Datos requeridos'}), 400
         
-        # Actualizar completado si se proporciona
-        if 'completado' in data:
-            completado = bool(data.get('completado'))
-            resultado = evento_modelo.actualizar_servicio_evento(servicio_id, completado)
-            if not resultado:
-                return jsonify({'error': 'Error al actualizar servicio'}), 500
-        
-        # Actualizar descartado si se proporciona
-        if 'descartado' in data:
-            descartado = bool(data.get('descartado'))
-            resultado = evento_modelo.descartar_servicio_evento(servicio_id, descartado)
-            if not resultado:
-                return jsonify({'error': 'Error al descartar servicio'}), 500
+        # Actualizar completado y/o descartado
+        completado = data.get('completado')
+        descartado = data.get('descartado')
+        resultado = evento_modelo.actualizar_servicio_evento(
+            servicio_id, 
+            completado=completado if completado is not None else None,
+            descartado=descartado if descartado is not None else None
+        )
+        if not resultado:
+            return jsonify({'error': 'Error al actualizar servicio'}), 500
         
         servicios = evento_modelo.obtener_servicios_evento(evento_id)
         porcentaje_avance = evento_modelo.obtener_porcentaje_avance_servicios(evento_id)
@@ -374,6 +412,71 @@ def actualizar_servicio_evento(evento_id, servicio_id):
     except Exception as e:
         logger.error(f"Error al actualizar servicio: {str(e)}")
         return jsonify({'error': 'Error al actualizar servicio'}), 500
+
+
+@eventos_bp.route('/<int:evento_id>/servicios', methods=['POST'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def crear_servicio_personalizado(evento_id):
+    """Crea un servicio personalizado para un evento"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Datos requeridos'}), 400
+        
+        nombre = data.get('nombre')
+        if not nombre or not nombre.strip():
+            return jsonify({'error': 'El nombre del servicio es requerido'}), 400
+        
+        orden = data.get('orden')
+        servicio_id = evento_modelo.crear_servicio_personalizado(evento_id, nombre.strip(), orden)
+        
+        if servicio_id:
+            servicios = evento_modelo.obtener_servicios_evento(evento_id)
+            porcentaje_avance = evento_modelo.obtener_porcentaje_avance_servicios(evento_id)
+            return jsonify({
+                'message': 'Servicio creado exitosamente',
+                'servicios': servicios,
+                'porcentaje_avance': porcentaje_avance
+            }), 201
+        else:
+            return jsonify({'error': 'Error al crear servicio'}), 500
+    except Exception as e:
+        logger.error(f"Error al crear servicio personalizado: {str(e)}")
+        return jsonify({'error': 'Error al crear servicio'}), 500
+
+
+@eventos_bp.route('/<int:evento_id>/servicios/<int:servicio_id>', methods=['DELETE'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def eliminar_servicio_evento(evento_id, servicio_id):
+    """Elimina un servicio del evento (solo servicios personalizados)"""
+    try:
+        # Verificar que el servicio sea personalizado (sin plan_servicio_id)
+        servicios = evento_modelo.obtener_servicios_evento(evento_id)
+        servicio = next((s for s in servicios if s.get('id') == servicio_id), None)
+        
+        if not servicio:
+            return jsonify({'error': 'Servicio no encontrado'}), 404
+        
+        # Solo permitir eliminar servicios personalizados (sin plan_servicio_id)
+        if servicio.get('plan_servicio_id') is not None:
+            return jsonify({'error': 'No se puede eliminar un servicio del plan. Use la opción de descartar.'}), 400
+        
+        resultado = evento_modelo.eliminar_servicio_evento(servicio_id)
+        if resultado:
+            servicios = evento_modelo.obtener_servicios_evento(evento_id)
+            porcentaje_avance = evento_modelo.obtener_porcentaje_avance_servicios(evento_id)
+            return jsonify({
+                'message': 'Servicio eliminado exitosamente',
+                'servicios': servicios,
+                'porcentaje_avance': porcentaje_avance
+            }), 200
+        else:
+            return jsonify({'error': 'Error al eliminar servicio'}), 500
+    except Exception as e:
+        logger.error(f"Error al eliminar servicio: {str(e)}")
+        return jsonify({'error': 'Error al eliminar servicio'}), 500
 
 
 @eventos_bp.route('/<int:evento_id>/servicios/generar', methods=['POST'])

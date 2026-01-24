@@ -28,6 +28,7 @@ export const MODULES = {
   WHATSAPP_METRICAS: 'whatsapp_metricas',
   WHATSAPP_TEMPLATES: 'whatsapp_templates',
   CONFIG_DATOS: 'config_datos',
+  CARGA_MASIVA: 'carga_masiva',
 };
 
 export const PERMISSIONS = {
@@ -40,7 +41,10 @@ export const PERMISSIONS = {
   EVENTOS_DESCARTAR_SERVICIO: 'eventos:descartar_servicio',
   EVENTOS_ASIGNAR_COORDINADOR: 'eventos:asignar_coordinador',
   PAGOS_REGISTRAR: 'pagos:registrar',
+  PAGOS_REEMBOLSAR: 'pagos:reembolsar',
   PAGOS_ELIMINAR: 'pagos:eliminar',
+  PAGOS_APROBAR: 'pagos:aprobar',
+  PAGOS_ANULAR: 'pagos:anular',
   PLANES_CREAR: 'planes:crear',
   PLANES_EDITAR: 'planes:editar',
   PLANES_ELIMINAR: 'planes:eliminar',

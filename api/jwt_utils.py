@@ -58,7 +58,7 @@ def verificar_token(token):
         # Decodificar token
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
         
-        logger.debug(f"Token verificado para usuario: {payload.get('nombre_usuario')}")
+        # logger.debug(f"Token verificado para usuario: {payload.get('nombre_usuario')}")
         return payload
     
     except jwt.ExpiredSignatureError:

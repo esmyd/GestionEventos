@@ -21,6 +21,8 @@ from api.routes.whatsapp_chat import whatsapp_chat_bp
 from api.routes.whatsapp_metricas import whatsapp_metricas_bp
 from api.routes.configuraciones import configuraciones_bp
 from api.routes.whatsapp_templates import whatsapp_templates_bp
+from api.routes.carga_masiva import carga_masiva_bp
+from api.routes.whatsapp_reintentos import whatsapp_reintentos_bp
 from modelos.configuracion_general_modelo import ConfiguracionGeneralModelo
 
 
@@ -60,6 +62,8 @@ def create_app(config_name='development'):
     app.register_blueprint(whatsapp_metricas_bp, url_prefix='/api/whatsapp_metricas')
     app.register_blueprint(configuraciones_bp, url_prefix='/api/configuraciones')
     app.register_blueprint(whatsapp_templates_bp, url_prefix='/api/whatsapp_templates')
+    app.register_blueprint(carga_masiva_bp, url_prefix='/api/carga_masiva')
+    app.register_blueprint(whatsapp_reintentos_bp, url_prefix='/api/whatsapp_reintentos')
     
     # Ruta de salud
     @app.route('/api/health')

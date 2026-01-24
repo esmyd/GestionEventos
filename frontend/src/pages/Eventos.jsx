@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { eventosService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
-import { Plus, Search, Filter, Calendar, Clock, MapPin, Package, Users, Download, Eye, Edit, X, FileText, CheckCircle2, AlertCircle, TrendingUp, DollarSign, Activity } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, Clock, MapPin, Package, Users, Download, Eye, Edit, X, FileText, CheckCircle2, AlertCircle, TrendingUp, DollarSign, Activity, MoreVertical } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, PERMISSIONS, hasRole, hasPermission } from '../utils/roles';
 
@@ -204,16 +204,22 @@ const Eventos = () => {
     return estados;
   };
 
-  const eventosFiltrados = eventos.filter((evento) => {
-    if (!busqueda) return true;
-    const busquedaLower = busqueda.toLowerCase();
-    return (
-      evento.nombre_evento?.toLowerCase().includes(busquedaLower) ||
-      evento.documento_identidad_cliente?.toLowerCase().includes(busquedaLower) ||
-      evento.nombre_cliente?.toLowerCase().includes(busquedaLower) ||
-      evento.tipo_evento?.toLowerCase().includes(busquedaLower)
-    );
-  });
+  const eventosFiltrados = eventos
+    .filter((evento) => {
+      if (!busqueda) return true;
+      const busquedaLower = busqueda.toLowerCase();
+      return (
+        evento.nombre_evento?.toLowerCase().includes(busquedaLower) ||
+        evento.documento_identidad_cliente?.toLowerCase().includes(busquedaLower) ||
+        evento.nombre_cliente?.toLowerCase().includes(busquedaLower) ||
+        evento.tipo_evento?.toLowerCase().includes(busquedaLower)
+      );
+    })
+    .sort((a, b) => {
+      const idA = a.id_evento || a.id || 0;
+      const idB = b.id_evento || b.id || 0;
+      return idB - idA; // Orden descendente (más reciente primero)
+    });
 
   // Calcular estadísticas de eventos
   const estadisticas = {
@@ -649,7 +655,8 @@ const Eventos = () => {
           borderRadius: '0.5rem',
           boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
           border: '1px solid #e5e7eb',
-          overflow: 'hidden',
+          overflow: 'visible',
+          position: 'relative',
         }}
       >
         {isMobile ? (
@@ -674,7 +681,30 @@ const Eventos = () => {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
                     <div>
-                      <div style={{ fontWeight: '600', color: '#111827' }}>{evento.nombre_evento || '-'}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '600' }}>
+                        ID #{(evento.id_evento || evento.id)}
+                      </div>
+                      <Link
+                        to={`/eventos/${evento.id_evento || evento.id}`}
+                        style={{
+                          fontWeight: '600',
+                          color: '#6366f1',
+                          textDecoration: 'none',
+                          display: 'block',
+                          marginBottom: '0.25rem',
+                          transition: 'color 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#4f46e5';
+                          e.currentTarget.style.textDecoration = 'underline';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#6366f1';
+                          e.currentTarget.style.textDecoration = 'none';
+                        }}
+                      >
+                        {evento.nombre_evento || '-'}
+                      </Link>
                       <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{evento.tipo_evento || '-'}</div>
                     </div>
                     <span
@@ -727,7 +757,7 @@ const Eventos = () => {
                       </div>
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                     <Link
                       to={`/eventos/${evento.id_evento || evento.id}`}
                       style={{
@@ -843,16 +873,40 @@ const Eventos = () => {
                         </button>
                       </div>
                     </details>
+                    {evento.estado !== 'completado' && puedeEditarEstado && (
+                      <button
+                        onClick={() => abrirModalEstado(evento)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#f59e0b',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          fontSize: '0.8rem',
+                          fontWeight: '500',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <CheckCircle2 size={16} strokeWidth={2.5} />
+                        Estado
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
             )}
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ overflowX: 'auto', overflowY: 'visible', position: 'relative', zIndex: 1 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', position: 'relative' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                    ID
+                  </th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
                     Evento
                   </th>
@@ -898,7 +952,7 @@ const Eventos = () => {
               <tbody>
                 {eventosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan={esCoordinador ? 10 : 12} style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                    <td colSpan={esCoordinador ? 11 : 13} style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
                       No hay eventos disponibles
                     </td>
                   </tr>
@@ -913,10 +967,31 @@ const Eventos = () => {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                     >
+                    <td style={{ padding: '1rem', fontSize: '0.85rem', color: '#6b7280', fontWeight: '600' }}>
+                      #{(evento.id_evento || evento.id)}
+                    </td>
                     <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>
+                      <Link
+                        to={`/eventos/${evento.id_evento || evento.id}`}
+                        style={{
+                          fontWeight: '600',
+                          color: '#6366f1',
+                          marginBottom: '0.25rem',
+                          textDecoration: 'none',
+                          display: 'block',
+                          transition: 'color 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#4f46e5';
+                          e.currentTarget.style.textDecoration = 'underline';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#6366f1';
+                          e.currentTarget.style.textDecoration = 'none';
+                        }}
+                      >
                         {evento.nombre_evento || '-'}
-                      </div>
+                      </Link>
                       <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                         {evento.tipo_evento || '-'}
                       </div>
@@ -1039,17 +1114,18 @@ const Eventos = () => {
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.5rem 1rem',
+                            justifyContent: 'center',
+                            padding: '0.5rem',
                             backgroundColor: '#6366f1',
                             color: 'white',
                             borderRadius: '0.375rem',
                             textDecoration: 'none',
                             fontSize: '0.875rem',
-                            fontWeight: '500',
                             transition: 'all 0.2s',
                             border: 'none',
                             cursor: 'pointer',
+                            minWidth: '36px',
+                            height: '36px',
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = '#4f46e5';
@@ -1061,9 +1137,9 @@ const Eventos = () => {
                             e.currentTarget.style.transform = 'translateY(0)';
                             e.currentTarget.style.boxShadow = 'none';
                           }}
+                          title="Ver detalles"
                         >
                           <Eye size={18} strokeWidth={2.5} />
-                           
                         </Link>
                         {puedeEditarEvento && (
                           <Link
@@ -1072,17 +1148,18 @@ const Eventos = () => {
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.5rem',
-                              padding: '0.5rem 1rem',
+                              justifyContent: 'center',
+                              padding: '0.5rem',
                               backgroundColor: '#f59e0b',
                               color: 'white',
                               borderRadius: '0.375rem',
                               textDecoration: 'none',
                               fontSize: '0.875rem',
-                              fontWeight: '500',
                               transition: 'all 0.2s',
                               border: 'none',
                               cursor: 'pointer',
+                              minWidth: '36px',
+                              height: '36px',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = '#d97706';
@@ -1096,18 +1173,17 @@ const Eventos = () => {
                             }}
                           >
                             <Edit size={18} strokeWidth={2.5} />
-                             
                           </Link>
                         )}
-                        <details style={{ position: 'relative' }}>
+                        <details style={{ position: 'relative', display: 'inline-block' }}>
                           <summary
                             title="Archivos"
                             style={{
                               listStyle: 'none',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.5rem',
-                              padding: '0.5rem 1rem',
+                              justifyContent: 'center',
+                              padding: '0.5rem',
                               backgroundColor: '#10b981',
                               color: 'white',
                               borderRadius: '0.375rem',
@@ -1116,6 +1192,8 @@ const Eventos = () => {
                               cursor: 'pointer',
                               transition: 'all 0.2s',
                               userSelect: 'none',
+                              minWidth: '36px',
+                              height: '36px',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = '#059669';
@@ -1129,7 +1207,6 @@ const Eventos = () => {
                             }}
                           >
                             <FileText size={18} strokeWidth={2.5} />
-                            Archivos
                           </summary>
                           <div
                             style={{
@@ -1143,6 +1220,7 @@ const Eventos = () => {
                               minWidth: '180px',
                               zIndex: 20,
                               padding: '0.4rem',
+                              marginTop: '0.25rem',
                             }}
                           >
                             <button
@@ -1158,11 +1236,11 @@ const Eventos = () => {
                                 border: 'none',
                                 borderRadius: '0.375rem',
                                 cursor: 'pointer',
-                                fontSize: '0.875rem',
+                                fontSize: '0.8rem',
                                 textAlign: 'left',
                               }}
                             >
-                              <FileText size={16} strokeWidth={2} />
+                              <FileText size={14} strokeWidth={2} />
                               Cotización
                             </button>
                             <button
@@ -1178,11 +1256,11 @@ const Eventos = () => {
                                 border: 'none',
                                 borderRadius: '0.375rem',
                                 cursor: 'pointer',
-                                fontSize: '0.875rem',
+                                fontSize: '0.8rem',
                                 textAlign: 'left',
                               }}
                             >
-                              <Download size={16} strokeWidth={2} />
+                              <Download size={14} strokeWidth={2} />
                               Contrato
                             </button>
                           </div>
@@ -1193,8 +1271,8 @@ const Eventos = () => {
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.5rem',
-                              padding: '0.5rem 1rem',
+                              justifyContent: 'center',
+                              padding: '0.5rem',
                               backgroundColor: '#f59e0b',
                               color: 'white',
                               borderRadius: '0.375rem',
@@ -1203,6 +1281,8 @@ const Eventos = () => {
                               border: 'none',
                               cursor: 'pointer',
                               transition: 'all 0.2s',
+                              minWidth: '36px',
+                              height: '36px',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = '#d97706';
@@ -1214,9 +1294,9 @@ const Eventos = () => {
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = 'none';
                             }}
+                            title="Cambiar estado"
                           >
                             <CheckCircle2 size={18} strokeWidth={2.5} />
-                             
                           </button>
                         )}
                       </div>

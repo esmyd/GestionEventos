@@ -99,13 +99,15 @@ BEGIN
     SELECT COALESCE(SUM(monto), 0) INTO v_total_pagado
     FROM pagos
     WHERE id_evento = NEW.id_evento 
-    AND tipo_pago != 'reembolso';
+    AND tipo_pago != 'reembolso'
+    AND (estado_pago = 'aprobado' OR estado_pago IS NULL);
     
     -- Calcular total de reembolsos
     SELECT COALESCE(SUM(monto), 0) INTO v_total_reembolsos
     FROM pagos
     WHERE id_evento = NEW.id_evento 
-    AND tipo_pago = 'reembolso';
+    AND tipo_pago = 'reembolso'
+    AND (estado_pago = 'aprobado' OR estado_pago IS NULL);
     
     -- Calcular nuevo saldo
     SET v_nuevo_saldo = v_precio_total - v_total_pagado + v_total_reembolsos;
@@ -146,13 +148,15 @@ BEGIN
     SELECT COALESCE(SUM(monto), 0) INTO v_total_pagado
     FROM pagos
     WHERE id_evento = NEW.id_evento 
-    AND tipo_pago != 'reembolso';
+    AND tipo_pago != 'reembolso'
+    AND (estado_pago = 'aprobado' OR estado_pago IS NULL);
     
     -- Calcular total de reembolsos
     SELECT COALESCE(SUM(monto), 0) INTO v_total_reembolsos
     FROM pagos
     WHERE id_evento = NEW.id_evento 
-    AND tipo_pago = 'reembolso';
+    AND tipo_pago = 'reembolso'
+    AND (estado_pago = 'aprobado' OR estado_pago IS NULL);
     
     -- Calcular nuevo saldo
     SET v_nuevo_saldo = v_precio_total - v_total_pagado + v_total_reembolsos;
@@ -193,13 +197,15 @@ BEGIN
     SELECT COALESCE(SUM(monto), 0) INTO v_total_pagado
     FROM pagos
     WHERE id_evento = OLD.id_evento 
-    AND tipo_pago != 'reembolso';
+    AND tipo_pago != 'reembolso'
+    AND (estado_pago = 'aprobado' OR estado_pago IS NULL);
     
     -- Calcular total de reembolsos
     SELECT COALESCE(SUM(monto), 0) INTO v_total_reembolsos
     FROM pagos
     WHERE id_evento = OLD.id_evento 
-    AND tipo_pago = 'reembolso';
+    AND tipo_pago = 'reembolso'
+    AND (estado_pago = 'aprobado' OR estado_pago IS NULL);
     
     -- Calcular nuevo saldo
     SET v_nuevo_saldo = v_precio_total - v_total_pagado + v_total_reembolsos;

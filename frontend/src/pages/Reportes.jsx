@@ -216,8 +216,12 @@ const Reportes = ({
   };
 
   // Componente de indicador con progreso
-  const IndicadorProgreso = ({ titulo, valor, total, color, icono, formatear = (v) => v }) => {
-    const porcentaje = total > 0 ? (valor / total) * 100 : 0;
+  const IndicadorProgreso = ({ titulo, valor, total, color, icono, formatear = (v) => v, mostrarLimite = false, limite = null }) => {
+    const totalCalculo = mostrarLimite && limite !== null && limite !== undefined ? limite : total;
+    const porcentaje = totalCalculo > 0 ? (valor / totalCalculo) * 100 : 0;
+    const textoLimite = mostrarLimite 
+      ? (limite !== null && limite !== undefined ? `${valor}/${limite}` : `${valor}/Ilimitado`)
+      : (total > 0 ? `${porcentaje.toFixed(1)}% del total` : '');
     return (
       <div
         style={{
@@ -255,12 +259,12 @@ const Reportes = ({
             <div>
               <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>{titulo}</p>
               <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: color, margin: '0.25rem 0 0 0' }}>
-                {formatear(valor)}
+                {mostrarLimite ? textoLimite : formatear(valor)}
               </p>
             </div>
           </div>
         </div>
-        {total > 0 && (
+        {(total > 0 || mostrarLimite) && (
           <div>
             <div
               style={{
@@ -281,9 +285,15 @@ const Reportes = ({
                 }}
               />
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.5rem 0 0 0', textAlign: 'right' }}>
-              {porcentaje.toFixed(1)}% del total
-            </p>
+            {mostrarLimite ? (
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.5rem 0 0 0', textAlign: 'right' }}>
+                {textoLimite}
+              </p>
+            ) : (
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.5rem 0 0 0', textAlign: 'right' }}>
+                {porcentaje.toFixed(1)}% del total
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -528,16 +538,20 @@ const Reportes = ({
             <IndicadorProgreso
               titulo="Email (notificaciones)"
               valor={metricas.notificaciones.envios?.email || 0}
-              total={metricas.notificaciones.envios?.email || 0}
+              total={metricas.notificaciones.maximo_email || metricas.notificaciones.envios?.email || 0}
               color="#10b981"
               icono={Mail}
+              mostrarLimite={true}
+              limite={metricas.notificaciones.maximo_email}
             />
             <IndicadorProgreso
               titulo="WhatsApp (notificaciones)"
               valor={metricas.notificaciones.envios?.whatsapp || 0}
-              total={metricas.notificaciones.envios?.whatsapp || 0}
+              total={metricas.notificaciones.maximo_whatsapp || metricas.notificaciones.envios?.whatsapp || 0}
               color="#3b82f6"
               icono={MessageCircle}
+              mostrarLimite={true}
+              limite={metricas.notificaciones.maximo_whatsapp}
             />
             <IndicadorProgreso
               titulo="Costo Email"

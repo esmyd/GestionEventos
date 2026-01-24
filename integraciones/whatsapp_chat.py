@@ -322,8 +322,6 @@ class WhatsAppChatService:
             conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
         if conversacion:
             self.modelo.actualizar_conversacion(conversacion["id"])
-            if ok:
-                self.modelo.actualizar_interaccion_cliente(conversacion["id"])
             self._registrar_mensaje(
                 conversacion["id"],
                 "out",
@@ -1060,8 +1058,10 @@ class WhatsAppChatService:
                             self.modelo.actualizar_estado_por_wa_id_con_detalle(wa_message_id, estado, raw_json=status)
                             if estado == "failed":
                                 errores = status.get("errors") or []
+                                error_131047 = False
                                 for error in errores:
                                     if str(error.get("code")) == "131047":
+                                        error_131047 = True
                                         detalle = error.get("error_data", {}).get("details") or error.get("message")
                                         conversacion_id = self.modelo.obtener_conversacion_id_por_wa_id(wa_message_id)
                                         if conversacion_id:
@@ -1069,6 +1069,13 @@ class WhatsAppChatService:
                                         self.logger.warning(
                                             f"WhatsApp fuera de ventana 24h (re-engagement) para wa_id={wa_message_id}: {detalle}"
                                         )
+                                
+                                # Si no es error 131047, marcar como pendiente de reintento
+                                if not error_131047:
+                                    try:
+                                        self.modelo.marcar_pendiente_reintento_por_wa_id(wa_message_id)
+                                    except Exception as e:
+                                        self.logger.warning(f"Error al marcar mensaje como pendiente de reintento: {e}")
                     for mensaje in mensajes:
                         texto = (mensaje.get("text") or {}).get("body") or ""
                         tipo = mensaje.get("type")

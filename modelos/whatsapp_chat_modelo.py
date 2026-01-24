@@ -91,7 +91,27 @@ class WhatsAppChatModelo:
         LEFT JOIN usuarios u ON cl.usuario_id = u.id
         ORDER BY c.ultima_interaccion DESC
         """
-        return self.base_datos.obtener_todos(consulta)
+        resultados = self.base_datos.obtener_todos(consulta)
+        # Convertir fechas a formato ISO
+        from datetime import datetime
+        for resultado in resultados or []:
+            if resultado.get('ultima_fecha'):
+                try:
+                    fecha = resultado['ultima_fecha']
+                    # Si es un objeto datetime, convertirlo a ISO
+                    if isinstance(fecha, datetime):
+                        resultado['ultima_fecha'] = fecha.isoformat()
+                    elif isinstance(fecha, str):
+                        # Si ya es string, intentar parsearlo y convertirlo
+                        try:
+                            fecha_obj = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+                            resultado['ultima_fecha'] = fecha_obj.isoformat()
+                        except:
+                            # Si ya está en formato ISO, dejarlo así
+                            pass
+                except Exception:
+                    pass
+        return resultados
 
     def obtener_mensajes(self, conversacion_id, limit=200):
         consulta = """
@@ -100,7 +120,27 @@ class WhatsAppChatModelo:
         ORDER BY fecha_creacion ASC
         LIMIT %s
         """
-        return self.base_datos.obtener_todos(consulta, (conversacion_id, limit))
+        resultados = self.base_datos.obtener_todos(consulta, (conversacion_id, limit))
+        # Convertir fechas a formato ISO
+        from datetime import datetime
+        for resultado in resultados or []:
+            if resultado.get('fecha_creacion'):
+                try:
+                    fecha = resultado['fecha_creacion']
+                    # Si es un objeto datetime, convertirlo a ISO
+                    if isinstance(fecha, datetime):
+                        resultado['fecha_creacion'] = fecha.isoformat()
+                    elif isinstance(fecha, str):
+                        # Si ya es string, intentar parsearlo y convertirlo
+                        try:
+                            fecha_obj = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+                            resultado['fecha_creacion'] = fecha_obj.isoformat()
+                        except:
+                            # Si ya está en formato ISO, dejarlo así
+                            pass
+                except Exception:
+                    pass
+        return resultados
 
     def registrar_mensaje(
         self,
@@ -118,10 +158,19 @@ class WhatsAppChatModelo:
         costo_total=None
     ):
         self._asegurar_columnas_costos()
+        self._asegurar_columnas_reintento()
+        
+        # Determinar si el mensaje debe marcarse como pendiente de reintento
+        pendiente_reintento = 0
+        if estado == 'fallido' and direccion == 'out':
+            # Marcar como pendiente solo si no es un error no reintentable
+            if not self._es_error_no_reintentable(raw_json):
+                pendiente_reintento = 1
+        
         consulta = """
         INSERT INTO whatsapp_mensajes
-        (conversacion_id, direccion, mensaje, media_type, media_id, media_url, wa_message_id, origen, estado, raw_json, costo_unitario, costo_total)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        (conversacion_id, direccion, mensaje, media_type, media_id, media_url, wa_message_id, origen, estado, raw_json, costo_unitario, costo_total, pendiente_reintento)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         raw_text = json.dumps(raw_json, ensure_ascii=False, default=str) if isinstance(raw_json, dict) else raw_json
         return self.base_datos.ejecutar_consulta(
@@ -138,9 +187,68 @@ class WhatsAppChatModelo:
                 estado,
                 raw_text,
                 costo_unitario,
-                costo_total
+                costo_total,
+                pendiente_reintento
             )
         )
+    
+    def _asegurar_columnas_reintento(self):
+        """Asegura que las columnas de reintento existan"""
+        try:
+            consulta = """
+            SELECT COUNT(*) as total
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'whatsapp_mensajes'
+              AND COLUMN_NAME = 'intentos_reintento'
+            """
+            existe = self.base_datos.obtener_uno(consulta) or {}
+            if int(existe.get("total") or 0) == 0:
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE whatsapp_mensajes ADD COLUMN intentos_reintento INT DEFAULT 0"
+                )
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE whatsapp_mensajes ADD COLUMN fecha_ultimo_reintento TIMESTAMP NULL"
+                )
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE whatsapp_mensajes ADD COLUMN pendiente_reintento TINYINT(1) DEFAULT 0"
+                )
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE whatsapp_mensajes ADD COLUMN max_intentos_reintento INT DEFAULT 3"
+                )
+        except Exception:
+            pass
+    
+    def _es_error_no_reintentable(self, raw_json):
+        """Determina si un error no debe reintentarse"""
+        if not raw_json:
+            return False
+        
+        try:
+            import json
+            if isinstance(raw_json, str):
+                error_data = json.loads(raw_json)
+            else:
+                error_data = raw_json
+            
+            # Error de ventana 24h (131047) - no reintentar
+            if isinstance(error_data, dict):
+                errors = error_data.get("errors", [])
+                if isinstance(errors, list):
+                    for error in errors:
+                        if str(error.get("code")) == "131047":
+                            return True
+                # También verificar en el mensaje directamente
+                if "131047" in str(error_data):
+                    return True
+            
+            # Verificar en string
+            if "131047" in str(raw_json):
+                return True
+        except Exception:
+            pass
+        
+        return False
 
     def _asegurar_columnas_costos(self):
         try:
@@ -191,6 +299,23 @@ class WhatsAppChatModelo:
         """
         row = self.base_datos.obtener_uno(consulta, (wa_message_id,))
         return row.get("conversacion_id") if row else None
+    
+    def marcar_pendiente_reintento_por_wa_id(self, wa_message_id):
+        """Marca un mensaje como pendiente de reintento basado en su wa_message_id"""
+        self._asegurar_columnas_reintento()
+        # Solo marcar si no es un error no reintentable
+        consulta = """
+        UPDATE whatsapp_mensajes
+        SET pendiente_reintento = 1
+        WHERE wa_message_id = %s
+          AND estado = 'fallido'
+          AND direccion = 'out'
+          AND (
+            raw_json NOT LIKE '%131047%'
+            OR raw_json IS NULL
+          )
+        """
+        return self.base_datos.ejecutar_consulta(consulta, (wa_message_id,))
 
     def puede_enviar_whatsapp(self, telefono, ventana_horas=24):
         telefono = self.normalizar_telefono(telefono)

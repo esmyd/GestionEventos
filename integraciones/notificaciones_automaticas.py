@@ -6,6 +6,12 @@ from integraciones.email import IntegracionEmail
 from integraciones.whatsapp import IntegracionWhatsApp
 from datetime import datetime
 import re
+import json
+from modelos.configuracion_general_modelo import ConfiguracionGeneralModelo
+from modelos.whatsapp_chat_modelo import WhatsAppChatModelo
+from modelos.whatsapp_templates_modelo import WhatsAppTemplatesModelo
+from modelos.whatsapp_metricas_modelo import WhatsAppMetricasModelo
+from utilidades.logger import obtener_logger
 
 
 class NotificacionesAutomaticas:
@@ -14,6 +20,86 @@ class NotificacionesAutomaticas:
     def __init__(self):
         self.email = IntegracionEmail()
         self.whatsapp = IntegracionWhatsApp()
+        self.config_general = ConfiguracionGeneralModelo()
+        self.chat_modelo = WhatsAppChatModelo()
+        self.templates = WhatsAppTemplatesModelo()
+        self.metricas = WhatsAppMetricasModelo()
+        self.logger = obtener_logger()
+
+    def _obtener_nombre_plataforma(self):
+        try:
+            config = self.config_general.obtener_configuracion() or {}
+            return config.get("nombre_plataforma") or "Lirios Eventos"
+        except Exception:
+            return "Lirios Eventos"
+
+    def _render_parametros(self, plantilla_texto, datos):
+        if not plantilla_texto:
+            return []
+        class SafeDict(dict):
+            def __missing__(self, key):
+                return f"{{{key}}}"
+        valores = []
+        for item in str(plantilla_texto).split(","):
+            texto = item.strip()
+            if not texto:
+                continue
+            try:
+                valores.append(texto.format_map(SafeDict(datos)))
+            except Exception:
+                valores.append(texto)
+        return valores
+
+    def _es_error_ventana(self, error):
+        if not error:
+            return False
+        try:
+            data = json.loads(error) if isinstance(error, str) else error
+            codigo = (data or {}).get("error", {}).get("code")
+            return int(codigo) == 131047
+        except Exception:
+            return False
+
+    def _enviar_plantilla_reengagement(self, evento, datos):
+        config = self.config_general.obtener_configuracion() or {}
+        template_id = config.get("whatsapp_reengagement_template_id")
+        if not template_id:
+            return False
+        plantilla = self.templates.obtener_por_id(int(template_id))
+        if not plantilla or not plantilla.get("activo"):
+            return False
+        telefono = evento.get("telefono")
+        datos_template = {
+            "nombre_plataforma": self._obtener_nombre_plataforma(),
+            "nombre_cliente": evento.get("nombre_cliente") or "Cliente",
+            **(datos or {}),
+        }
+        header_params = self._render_parametros(plantilla.get("header_ejemplo"), datos_template)
+        body_params = self._render_parametros(plantilla.get("body_ejemplo"), datos_template)
+        ok, wa_id, error = self.whatsapp.enviar_template(
+            telefono,
+            plantilla.get("nombre"),
+            plantilla.get("idioma") or "es",
+            parametros=[],
+            header_parametros=header_params,
+            body_parametros=body_params
+        )
+        conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+        if not conversacion:
+            conversacion_id = self.chat_modelo.crear_conversacion(telefono, cliente_id=evento.get("id_cliente"))
+            conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+        if conversacion:
+            self.chat_modelo.actualizar_conversacion(conversacion["id"])
+            self.chat_modelo.registrar_mensaje(
+                conversacion["id"],
+                "out",
+                f"Plantilla: {plantilla.get('nombre')}",
+                estado="sent" if ok else "fallido",
+                wa_message_id=wa_id,
+                origen="campana",
+                raw_json=error
+            )
+        return ok
 
     def _formatear_moneda(self, valor):
         try:
@@ -162,12 +248,187 @@ class NotificacionesAutomaticas:
                 print(f"Error al enviar email: {e}")
         
         if evento.get('telefono') and self.whatsapp.activo:
+            telefono = evento.get("telefono")
             try:
-                if self.whatsapp.enviar_mensaje(evento['telefono'], mensaje_whatsapp):
+                permitido_metricas = self.metricas.permitir_envio_whatsapp(telefono)
+                permitido_cliente = self.metricas.permitir_envio_whatsapp_cliente(evento.get("id_cliente"))
+                if permitido_metricas and permitido_cliente:
+                    # Intentar enviar el mensaje original primero
+                    ok, wa_message_id, error = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje_whatsapp)
+                    
+                    # Si falla por error de ventana 24h, enviar plantilla de re-engagement y luego reintentar
+                    if not ok and self._es_error_ventana(error):
+                        self.logger.info(f"Error de ventana 24h detectado para pago evento {evento.get('id_evento')}, enviando plantilla de re-engagement")
+                        if self._enviar_plantilla_reengagement(evento, {
+                            "nombre_evento": nombre_evento,
+                            "monto": self._formatear_moneda(monto),
+                            "saldo_pendiente": self._formatear_moneda(saldo_pendiente),
+                        }):
+                            self.logger.info(f"Plantilla de re-engagement enviada, reintentando mensaje original")
+                            # Reintentar el mensaje original después del re-engagement
+                            ok2, wa_message_id2, error_reintento = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje_whatsapp)
+                            if ok2:
+                                exito = True
+                                wa_message_id = wa_message_id2
+                                ok = True  # Actualizar ok para el registro
+                                error = None  # Limpiar error
+                                self.logger.info(f"Mensaje de pago enviado exitosamente después del re-engagement")
+                            else:
+                                self.logger.warning(f"Mensaje de pago falló después del re-engagement: {error_reintento}")
+                                error = error_reintento  # Usar el error del reintento
+                        else:
+                            self.logger.warning("No se pudo enviar plantilla de re-engagement")
+                    elif ok:
+                        exito = True
+                    
+                    # Registrar en whatsapp_mensajes para trazabilidad
+                    try:
+                        conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+                        if not conversacion:
+                            conversacion_id = self.chat_modelo.crear_conversacion(
+                                telefono, 
+                                cliente_id=evento.get("id_cliente")
+                            )
+                            conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+                        
+                        if conversacion:
+                            self.chat_modelo.actualizar_conversacion(conversacion["id"])
+                            config_costos = self.metricas.obtener_config() or {}
+                            precio_whatsapp = float(config_costos.get("precio_whatsapp") or 0)
+                            costo_total = precio_whatsapp if ok else 0.0
+                            
+                            self.chat_modelo.registrar_mensaje(
+                                conversacion["id"],
+                                "out",
+                                mensaje_whatsapp[:500],
+                                estado="sent" if ok else "fallido",
+                                wa_message_id=wa_message_id,
+                                origen="sistema",
+                                raw_json=error,
+                                costo_unitario=precio_whatsapp if ok else None,
+                                costo_total=costo_total if ok else None
+                            )
+                            self.logger.info(
+                                f"Mensaje de pago '{tipo_pago}' registrado en whatsapp_mensajes "
+                                f"(conversacion_id={conversacion['id']}, ok={ok})"
+                            )
+                    except Exception as e_registro:
+                        self.logger.warning(f"Error al registrar mensaje de pago en whatsapp_mensajes: {e_registro}")
+                else:
+                    self.logger.warning(
+                        f"WhatsApp bloqueado para pago evento {evento.get('id_evento')}. "
+                        "Motivo: WHATSAPP_DESACTIVADO/CLIENTE"
+                    )
+            except Exception as e:
+                self.logger.error(f"Error al enviar WhatsApp: {e}")
+        
+        return exito
+
+    def enviar_notificacion_pago_anulado(self, evento, monto, metodo_pago, fecha_pago, observaciones=None):
+        """Envía notificación cuando un pago es anulado/rechazado"""
+        if not evento.get('email') and not evento.get('telefono'):
+            return False
+
+        nombre_cliente = evento.get('nombre_cliente', 'Cliente')
+        nombre_evento = evento.get('salon', evento.get('nombre_evento', 'Evento'))
+        detalles = [
+            {'label': 'Evento', 'value': nombre_evento},
+            {'label': 'Fecha del pago', 'value': fecha_pago},
+            {'label': 'Método de pago', 'value': metodo_pago.replace('_', ' ').title()},
+            {'label': 'Monto', 'value': self._formatear_moneda(monto)},
+        ]
+        if observaciones:
+            detalles.append({'label': 'Motivo', 'value': observaciones})
+
+        asunto = f"Pago anulado - {nombre_evento}"
+        mensaje_email = self._build_email_template(
+            "Pago anulado",
+            nombre_cliente,
+            "Hemos anulado el pago registrado para su evento. Si requiere asistencia, estamos atentos.",
+            detalles
+        )
+        mensaje_whatsapp = (
+            f"⚠️ Pago anulado: {self._formatear_moneda(monto)} para el evento \"{nombre_evento}\". "
+            f"Si necesitas ayuda, estamos atentos."
+        )
+
+        exito = False
+        if evento.get('email') and self.email.activo:
+            try:
+                if self.email.enviar_correo(evento['email'], asunto, mensaje_email, es_html=True):
                     exito = True
             except Exception as e:
-                print(f"Error al enviar WhatsApp: {e}")
-        
+                print(f"Error al enviar email: {e}")
+
+        if evento.get('telefono') and self.whatsapp.activo:
+            telefono = evento.get("telefono")
+            try:
+                permitido_metricas = self.metricas.permitir_envio_whatsapp(telefono)
+                permitido_cliente = self.metricas.permitir_envio_whatsapp_cliente(evento.get("id_cliente"))
+                if permitido_metricas and permitido_cliente:
+                    # Intentar enviar el mensaje original primero
+                    ok, wa_message_id, error = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje_whatsapp)
+                    
+                    # Si falla por error de ventana 24h, enviar plantilla de re-engagement y luego reintentar
+                    if not ok and self._es_error_ventana(error):
+                        self.logger.info(f"Error de ventana 24h detectado para pago anulado evento {evento.get('id_evento')}, enviando plantilla de re-engagement")
+                        if self._enviar_plantilla_reengagement(evento, {
+                            "nombre_evento": nombre_evento,
+                            "monto": self._formatear_moneda(monto),
+                        }):
+                            self.logger.info(f"Plantilla de re-engagement enviada, reintentando mensaje original")
+                            # Reintentar el mensaje original después del re-engagement
+                            ok2, wa_message_id2, error_reintento = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje_whatsapp)
+                            if ok2:
+                                exito = True
+                                wa_message_id = wa_message_id2
+                                ok = True  # Actualizar ok para el registro
+                                error = None  # Limpiar error
+                                self.logger.info(f"Mensaje de pago anulado enviado exitosamente después del re-engagement")
+                            else:
+                                self.logger.warning(f"Mensaje de pago anulado falló después del re-engagement: {error_reintento}")
+                                error = error_reintento  # Usar el error del reintento
+                        else:
+                            self.logger.warning("No se pudo enviar plantilla de re-engagement")
+                    elif ok:
+                        exito = True
+                    
+                    # Registrar en whatsapp_mensajes para trazabilidad
+                    try:
+                        conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+                        if not conversacion:
+                            conversacion_id = self.chat_modelo.crear_conversacion(
+                                telefono, 
+                                cliente_id=evento.get("id_cliente")
+                            )
+                            conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
+                        
+                        if conversacion:
+                            self.chat_modelo.actualizar_conversacion(conversacion["id"])
+                            config_costos = self.metricas.obtener_config() or {}
+                            precio_whatsapp = float(config_costos.get("precio_whatsapp") or 0)
+                            costo_total = precio_whatsapp if ok else 0.0
+                            
+                            self.chat_modelo.registrar_mensaje(
+                                conversacion["id"],
+                                "out",
+                                mensaje_whatsapp[:500],
+                                estado="sent" if ok else "fallido",
+                                wa_message_id=wa_message_id,
+                                origen="sistema",
+                                raw_json=error,
+                                costo_unitario=precio_whatsapp if ok else None,
+                                costo_total=costo_total if ok else None
+                            )
+                            self.logger.info(
+                                f"Mensaje de pago anulado registrado en whatsapp_mensajes "
+                                f"(conversacion_id={conversacion['id']}, ok={ok})"
+                            )
+                    except Exception as e_registro:
+                        self.logger.warning(f"Error al registrar mensaje de pago anulado en whatsapp_mensajes: {e_registro}")
+            except Exception as e:
+                self.logger.error(f"Error al enviar WhatsApp: {e}")
+
         return exito
     
     def enviar_notificacion_cambio_estado(self, evento, estado_anterior, estado_nuevo):
