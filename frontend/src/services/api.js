@@ -373,6 +373,35 @@ export const eventosService = {
     return response;
   },
 
+  completarEvento: async (eventoId, datosFinalizacion) => {
+    const response = await api.post(`/eventos/${eventoId}/completar`, datosFinalizacion);
+    return response.data;
+  },
+
+  obtenerDanos: async (eventoId) => {
+    const response = await api.get(`/eventos/${eventoId}/danos`);
+    return response.data;
+  },
+
+  registrarPagoDanos: async (eventoId, monto, metodoPago = 'efectivo', observaciones = '') => {
+    const response = await api.post(`/eventos/${eventoId}/pago-danos`, {
+      monto,
+      metodo_pago: metodoPago,
+      observaciones,
+    });
+    return response.data;
+  },
+
+  obtenerDanosPendientes: async () => {
+    const response = await api.get('/eventos/danos-pendientes');
+    return response.data;
+  },
+
+  registrarCalificacionManual: async (eventoId, datos) => {
+    const response = await api.post(`/eventos/${eventoId}/calificacion`, datos);
+    return response.data;
+  },
+
   descargarContratoPDF: async (eventoId) => {
     const response = await api.get(`/eventos/${eventoId}/contrato-pdf`, {
       responseType: 'blob',
@@ -568,8 +597,8 @@ export const salonesService = {
 
 // Servicios de reportes
 export const reportesService = {
-  getMetricas: async () => {
-    const response = await api.get('/reportes/metricas');
+  getMetricas: async (params = {}) => {
+    const response = await api.get('/reportes/metricas', { params });
     return response.data;
   },
 
@@ -581,6 +610,81 @@ export const reportesService = {
   getResumenFinanciero: async () => {
     const response = await api.get('/reportes/resumen-financiero');
     return response.data;
+  },
+
+  // Descargas de reportes
+  descargarEventos: async (params = {}) => {
+    const response = await api.get('/reportes/descargar/eventos', { 
+      params,
+      responseType: 'blob'
+    });
+    return response;
+  },
+
+  descargarInventario: async () => {
+    const response = await api.get('/reportes/descargar/inventario', { 
+      responseType: 'blob'
+    });
+    return response;
+  },
+
+  descargarCardex: async (params = {}) => {
+    const response = await api.get('/reportes/descargar/cardex', { 
+      params,
+      responseType: 'blob'
+    });
+    return response;
+  },
+
+  descargarNotificaciones: async (params = {}) => {
+    const response = await api.get('/reportes/descargar/notificaciones', { 
+      params,
+      responseType: 'blob'
+    });
+    return response;
+  },
+
+  descargarClientes: async () => {
+    const response = await api.get('/reportes/descargar/clientes', { 
+      responseType: 'blob'
+    });
+    return response;
+  },
+
+  descargarPagos: async (params = {}) => {
+    const response = await api.get('/reportes/descargar/pagos', { 
+      params,
+      responseType: 'blob'
+    });
+    return response;
+  },
+
+  // Resúmenes de daños y calificaciones
+  getResumenDanos: async (params = {}) => {
+    const response = await api.get('/reportes/resumen-danos', { params });
+    return response.data;
+  },
+
+  getResumenCalificaciones: async (params = {}) => {
+    const response = await api.get('/reportes/resumen-calificaciones', { params });
+    return response.data;
+  },
+
+  // Descargas de daños y calificaciones
+  descargarDanos: async (params = {}) => {
+    const response = await api.get('/reportes/descargar/danos', { 
+      params,
+      responseType: 'blob'
+    });
+    return response;
+  },
+
+  descargarCalificaciones: async (params = {}) => {
+    const response = await api.get('/reportes/descargar/calificaciones', { 
+      params,
+      responseType: 'blob'
+    });
+    return response;
   },
 };
 
@@ -656,15 +760,23 @@ export const whatsappChatService = {
     const response = await api.get(`/whatsapp_chat/media/${mediaId}`, { responseType: 'blob' });
     return response.data;
   },
+  marcarLeido: async (conversationId) => {
+    const response = await api.post(`/whatsapp_chat/conversations/${conversationId}/marcar-leido`);
+    return response.data;
+  },
+  getNoLeidos: async () => {
+    const response = await api.get('/whatsapp_chat/no-leidos');
+    return response.data;
+  },
 };
 
 export const whatsappMetricasService = {
-  getResumen: async () => {
-    const response = await api.get('/whatsapp_metricas/resumen');
+  getResumen: async (params = {}) => {
+    const response = await api.get('/whatsapp_metricas/resumen', { params });
     return response.data;
   },
-  getClientes: async () => {
-    const response = await api.get('/whatsapp_metricas/clientes');
+  getClientes: async (params = {}) => {
+    const response = await api.get('/whatsapp_metricas/clientes', { params });
     return response.data;
   },
   updateConfig: async (payload) => {

@@ -285,7 +285,22 @@ class SistemaNotificaciones:
                 valores.append(texto)
         return valores
 
+    # Control de rate limit para plantillas de re-engagement por teléfono
+    _reengagement_enviados = {}  # {telefono: timestamp}
+    _REENGAGEMENT_COOLDOWN = 60  # segundos entre envíos al mismo teléfono
+
     def _enviar_plantilla_reengagement(self, evento, datos):
+        import time
+        
+        telefono = evento.get("telefono")
+        
+        # Verificar si ya se envió recientemente a este teléfono (evitar bucles)
+        ahora = time.time()
+        ultimo_envio = self._reengagement_enviados.get(telefono, 0)
+        if ahora - ultimo_envio < self._REENGAGEMENT_COOLDOWN:
+            self.logger.warning(f"Rate limit: plantilla re-engagement ya enviada a {telefono} hace {int(ahora - ultimo_envio)}s")
+            return False
+        
         config = self.config_general.obtener_configuracion() or {}
         template_id = config.get("whatsapp_reengagement_template_id")
         if not template_id:
@@ -293,7 +308,6 @@ class SistemaNotificaciones:
         plantilla = self.templates.obtener_por_id(int(template_id))
         if not plantilla or not plantilla.get("activo"):
             return False
-        telefono = evento.get("telefono")
         header_params = self._render_parametros(plantilla.get("header_ejemplo"), datos)
         body_params = self._render_parametros(plantilla.get("body_ejemplo"), datos)
         ok, wa_id, error = self.whatsapp.enviar_template(
@@ -304,6 +318,10 @@ class SistemaNotificaciones:
             header_parametros=header_params,
             body_parametros=body_params
         )
+        
+        # Registrar el envío para el rate limit (incluso si falla, para evitar spam)
+        self._reengagement_enviados[telefono] = ahora
+        
         conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
         if not conversacion:
             conversacion_id = self.chat_modelo.crear_conversacion(telefono, cliente_id=evento.get("id_cliente"))

@@ -17,6 +17,8 @@ class NotificacionModelo:
             self._asegurar_recordatorio_evento()
         if tipo_notificacion == "evento_creado":
             self._asegurar_evento_creado_whatsapp()
+        if tipo_notificacion == "recordatorio_valores_pendientes":
+            self._asegurar_recordatorio_valores_pendientes()
         consulta = """
         SELECT * FROM configuracion_notificaciones 
         WHERE tipo_notificacion = %s AND activo = TRUE
@@ -27,6 +29,7 @@ class NotificacionModelo:
         """Obtiene todas las configuraciones de notificaciones"""
         self._asegurar_recordatorio_evento()
         self._asegurar_evento_creado_whatsapp()
+        self._asegurar_recordatorio_valores_pendientes()
         consulta = """
         SELECT * FROM configuracion_notificaciones 
         ORDER BY dias_antes DESC, nombre
@@ -96,6 +99,56 @@ class NotificacionModelo:
             self.base_datos.ejecutar_consulta(
                 "UPDATE configuracion_notificaciones SET enviar_whatsapp = TRUE WHERE tipo_notificacion = 'evento_creado'"
             )
+
+    def _asegurar_recordatorio_valores_pendientes(self):
+        """Asegura que exista la configuración para recordatorio de valores pendientes"""
+        consulta = """
+        SELECT 1
+        FROM configuracion_notificaciones
+        WHERE tipo_notificacion = 'recordatorio_valores_pendientes'
+        LIMIT 1
+        """
+        existe = self.base_datos.obtener_uno(consulta)
+        if existe:
+            return
+        plantilla_email = (
+            "<p>Hola {nombre_cliente},</p>"
+            "<p>Te recordamos que tienes un saldo pendiente de <strong>${saldo_pendiente:.2f}</strong> "
+            "para tu evento \"{nombre_evento}\" programado para el {fecha_evento}.</p>"
+            "<p><strong>Resumen financiero:</strong></p>"
+            "<ul>"
+            "<li>Total del evento: ${precio_total:.2f}</li>"
+            "<li>Saldo pendiente: ${saldo_pendiente:.2f}</li>"
+            "</ul>"
+            "<p>Te agradecemos realizar el pago a la brevedad para confirmar todos los detalles de tu evento.</p>"
+            "<p>Si ya realizaste el pago, por favor ignora este mensaje.</p>"
+            "<p>Gracias por confiar en {nombre_plataforma}.</p>"
+        )
+        plantilla_whatsapp = (
+            "{nombre_plataforma}: Hola {nombre_cliente}, te recordamos que tienes un saldo pendiente de "
+            "${saldo_pendiente:.2f} para tu evento \"{nombre_evento}\" del {fecha_evento}. "
+            "Total: ${precio_total:.2f}. Agradecemos tu pronto pago."
+        )
+        insertar = """
+        INSERT INTO configuracion_notificaciones (
+            tipo_notificacion, nombre, descripcion, activo, enviar_email, enviar_whatsapp,
+            dias_antes, plantilla_email, plantilla_whatsapp
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        self.base_datos.ejecutar_consulta(
+            insertar,
+            (
+                "recordatorio_valores_pendientes",
+                "Recordatorio de valores pendientes",
+                "Recordatorio manual para notificar al cliente sobre saldo pendiente de pago",
+                True,
+                True,
+                True,
+                0,
+                plantilla_email,
+                plantilla_whatsapp,
+            ),
+        )
     
     def actualizar_configuracion(self, tipo_notificacion, datos):
         """Actualiza la configuración de una notificación"""

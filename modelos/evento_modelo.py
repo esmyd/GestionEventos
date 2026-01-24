@@ -203,6 +203,96 @@ class EventoModelo:
             eventos_mapeados.append(evento_mapeado)
         
         return eventos_mapeados
+
+    def obtener_eventos_por_rango(self, fecha_desde=None, fecha_hasta=None):
+        """Obtiene eventos filtrados por rango de fechas"""
+        consulta = """
+        SELECT e.*, c.usuario_id, c.documento_identidad as documento_identidad_cliente,
+               u.nombre_completo as nombre_cliente,
+               salones.nombre as nombre_salon, p.nombre as nombre_plan,
+               u_coor.nombre_completo as nombre_coordinador
+        FROM eventos e
+        LEFT JOIN clientes c ON e.id_cliente = c.id
+        LEFT JOIN usuarios u ON c.usuario_id = u.id
+        LEFT JOIN usuarios u_coor ON e.coordinador_id = u_coor.id
+        LEFT JOIN salones ON e.id_salon = salones.id_salon
+        LEFT JOIN planes p ON e.plan_id = p.id
+        WHERE 1=1
+        """
+        parametros = []
+        
+        if fecha_desde and fecha_hasta:
+            consulta += " AND e.fecha_evento BETWEEN %s AND %s"
+            parametros.extend([fecha_desde, fecha_hasta])
+        elif fecha_desde:
+            consulta += " AND e.fecha_evento >= %s"
+            parametros.append(fecha_desde)
+        elif fecha_hasta:
+            consulta += " AND e.fecha_evento <= %s"
+            parametros.append(fecha_hasta)
+        
+        consulta += " ORDER BY e.id_evento DESC"
+        
+        if parametros:
+            resultados = self.base_datos.obtener_todos(consulta, tuple(parametros))
+        else:
+            resultados = self.base_datos.obtener_todos(consulta)
+        
+        # Usar el mismo mapeo que obtener_todos_eventos
+        eventos_mapeados = []
+        for evento in resultados:
+            hora_inicio = evento.get('hora_inicio')
+            if isinstance(hora_inicio, timedelta):
+                total_seconds = int(hora_inicio.total_seconds())
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                seconds = total_seconds % 60
+                hora_inicio = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            elif hora_inicio is not None:
+                hora_inicio = str(hora_inicio)
+            
+            hora_fin = evento.get('hora_fin')
+            if isinstance(hora_fin, timedelta):
+                total_seconds = int(hora_fin.total_seconds())
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                seconds = total_seconds % 60
+                hora_fin = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            elif hora_fin is not None:
+                hora_fin = str(hora_fin)
+            
+            fecha_evento = evento.get('fecha_evento')
+            if fecha_evento is not None and not isinstance(fecha_evento, str):
+                fecha_evento = str(fecha_evento)
+            
+            evento_mapeado = {
+                'id_evento': evento.get('id_evento', evento.get('id')),
+                'id': evento.get('id_evento', evento.get('id')),
+                'id_salon': evento.get('id_salon'),
+                'salon_id': evento.get('id_salon'),
+                'salon': evento.get('salon', evento.get('salon_nombre')),
+                'cliente_id': evento.get('id_cliente'),
+                'nombre_evento': evento.get('nombre_evento', evento.get('evento_nombre', 'Evento')),
+                'tipo_evento': evento.get('tipo_evento', 'Otro'),
+                'fecha_evento': fecha_evento,
+                'estado': evento.get('estado'),
+                'hora_inicio': hora_inicio,
+                'hora_fin': hora_fin,
+                'numero_invitados': evento.get('numero_invitados'),
+                'total': float(evento.get('total', 0) or 0),
+                'precio_total': float(evento.get('total', 0) or 0),
+                'saldo': float(evento.get('saldo', 0) or 0),
+                'saldo_pendiente': float(evento.get('saldo', 0) or 0),
+                'nombre_cliente': evento.get('nombre_cliente', 'N/A'),
+                'documento_identidad_cliente': evento.get('documento_identidad_cliente') or evento.get('documento_identidad'),
+                'nombre_salon': evento.get('nombre_salon'),
+                'nombre_plan': evento.get('nombre_plan'),
+                'coordinador_id': evento.get('coordinador_id'),
+                'nombre_coordinador': evento.get('nombre_coordinador')
+            }
+            eventos_mapeados.append(evento_mapeado)
+        
+        return eventos_mapeados
     
     def obtener_eventos_por_cliente(self, cliente_id):
         """Obtiene todos los eventos de un cliente"""
@@ -881,3 +971,377 @@ class EventoModelo:
         if resultado and resultado['total_servicios'] > 0:
             return round((resultado['servicios_completados'] / resultado['total_servicios']) * 100)
         return 0
+
+    def completar_evento_con_observaciones(self, evento_id, datos_finalizacion, usuario_id=None):
+        """
+        Completa un evento registrando observaciones y daños si aplica.
+        
+        Args:
+            evento_id: ID del evento
+            datos_finalizacion: dict con:
+                - observacion_finalizacion: str (observación general)
+                - tiene_danos: bool
+                - descripcion_danos: str (descripción general de daños)
+                - costo_danos: float
+                - cobrar_danos: bool
+                - danos_detalle: list[dict] (lista de daños individuales, opcional)
+            usuario_id: ID del usuario que registra la finalización
+        """
+        try:
+            evento = self.obtener_evento_por_id(evento_id)
+            if not evento:
+                return False, "Evento no encontrado"
+            
+            estado_anterior = evento.get('estado')
+            
+            # Verificar que no esté ya completado
+            if estado_anterior == 'completado':
+                return False, "El evento ya está completado"
+            
+            # Extraer datos
+            observacion = datos_finalizacion.get('observacion_finalizacion', '')
+            tiene_danos = datos_finalizacion.get('tiene_danos', False)
+            descripcion_danos = datos_finalizacion.get('descripcion_danos', '')
+            costo_danos = float(datos_finalizacion.get('costo_danos', 0) or 0)
+            cobrar_danos = datos_finalizacion.get('cobrar_danos', False)
+            
+            # Actualizar evento con datos de finalización
+            consulta = """
+            UPDATE eventos 
+            SET estado = 'completado',
+                observacion_finalizacion = %s,
+                tiene_danos = %s,
+                descripcion_danos = %s,
+                costo_danos = %s,
+                cobrar_danos = %s,
+                fecha_finalizacion = NOW()
+            WHERE id_evento = %s
+            """
+            self.base_datos.ejecutar_consulta(consulta, (
+                observacion,
+                tiene_danos,
+                descripcion_danos if tiene_danos else None,
+                costo_danos if tiene_danos else 0,
+                cobrar_danos if tiene_danos else False,
+                evento_id
+            ))
+            
+            # Si hay daños detallados, registrarlos
+            danos_detalle = datos_finalizacion.get('danos_detalle', [])
+            if tiene_danos and danos_detalle:
+                for dano in danos_detalle:
+                    self.registrar_dano_evento(evento_id, dano, usuario_id)
+            
+            # Nota: Los daños ahora se manejan por separado con su propio estado de pago
+            # Ya no se agregan como producto adicional al evento
+            # El cobro de daños se gestiona con los campos: danos_pagados, monto_pagado_danos, etc.
+            
+            # Gestionar inventario
+            plan_id = evento.get('plan_id')
+            if estado_anterior and estado_anterior != 'completado':
+                try:
+                    self._gestionar_inventario_por_estado(evento_id, estado_anterior, 'completado', plan_id, plan_id)
+                except Exception as e:
+                    self.logger.error(f"Error al gestionar inventario al completar: {e}")
+            
+            # Enviar notificación de cambio de estado
+            try:
+                evento_actualizado = self.obtener_evento_por_id(evento_id)
+                if evento_actualizado:
+                    from integraciones.notificaciones_automaticas import NotificacionesAutomaticas
+                    notif = NotificacionesAutomaticas()
+                    notif.enviar_notificacion_cambio_estado(
+                        evento=evento_actualizado,
+                        estado_anterior=estado_anterior,
+                        estado_nuevo='completado'
+                    )
+            except Exception as e:
+                self.logger.error(f"Error al enviar notificación de evento completado: {e}")
+            
+            return True, "Evento completado exitosamente"
+            
+        except Exception as e:
+            self.logger.error(f"Error al completar evento con observaciones: {e}")
+            return False, str(e)
+    
+    def registrar_dano_evento(self, evento_id, dano_data, usuario_id=None):
+        """
+        Registra un daño específico para un evento.
+        
+        Args:
+            evento_id: ID del evento
+            dano_data: dict con descripcion, item_danado, cantidad, costo_unitario, cobrar_cliente, observaciones
+            usuario_id: ID del usuario que registra
+        """
+        try:
+            # Verificar si existe la tabla evento_danos
+            check_tabla = """
+            SELECT COUNT(*) as existe FROM information_schema.tables 
+            WHERE table_schema = DATABASE() AND table_name = 'evento_danos'
+            """
+            resultado = self.base_datos.obtener_uno(check_tabla)
+            if not resultado or resultado.get('existe', 0) == 0:
+                self.logger.warning("Tabla evento_danos no existe, saltando registro de daño")
+                return None
+            
+            descripcion = dano_data.get('descripcion', '')
+            item_danado = dano_data.get('item_danado', '')
+            cantidad = int(dano_data.get('cantidad', 1) or 1)
+            costo_unitario = float(dano_data.get('costo_unitario', 0) or 0)
+            costo_total = cantidad * costo_unitario
+            cobrar_cliente = dano_data.get('cobrar_cliente', False)
+            observaciones = dano_data.get('observaciones', '')
+            
+            consulta = """
+            INSERT INTO evento_danos 
+            (id_evento, descripcion, item_danado, cantidad, costo_unitario, costo_total, cobrar_cliente, observaciones, registrado_por)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            return self.base_datos.ejecutar_consulta(consulta, (
+                evento_id, descripcion, item_danado, cantidad, 
+                costo_unitario, costo_total, cobrar_cliente, observaciones, usuario_id
+            ))
+        except Exception as e:
+            self.logger.error(f"Error al registrar daño: {e}")
+            return None
+    
+    def obtener_danos_evento(self, evento_id):
+        """Obtiene todos los daños registrados para un evento."""
+        try:
+            # Verificar si existe la tabla
+            check_tabla = """
+            SELECT COUNT(*) as existe FROM information_schema.tables 
+            WHERE table_schema = DATABASE() AND table_name = 'evento_danos'
+            """
+            resultado = self.base_datos.obtener_uno(check_tabla)
+            if not resultado or resultado.get('existe', 0) == 0:
+                return []
+            
+            consulta = """
+            SELECT ed.*, u.nombre_completo as registrado_por_nombre
+            FROM evento_danos ed
+            LEFT JOIN usuarios u ON ed.registrado_por = u.id
+            WHERE ed.id_evento = %s
+            ORDER BY ed.fecha_registro DESC
+            """
+            return self.base_datos.obtener_todos(consulta, (evento_id,)) or []
+        except Exception as e:
+            self.logger.error(f"Error al obtener daños del evento: {e}")
+            return []
+    
+    def _agregar_cargo_danos(self, evento_id, monto, descripcion):
+        """
+        Agrega un cargo por daños como producto adicional al evento.
+        """
+        try:
+            # Buscar o crear el producto de cargo por daños
+            consulta_producto = """
+            SELECT id FROM productos WHERE nombre = 'Cargo por daños' LIMIT 1
+            """
+            producto = self.base_datos.obtener_uno(consulta_producto)
+            
+            if not producto:
+                # Crear el producto si no existe
+                consulta_crear = """
+                INSERT INTO productos (nombre, descripcion, precio, tipo_servicio, activo)
+                VALUES ('Cargo por daños', 'Cargo aplicado por daños causados durante el evento', 0, 'servicio', TRUE)
+                """
+                self.base_datos.ejecutar_consulta(consulta_crear)
+                producto = self.base_datos.obtener_uno(consulta_producto)
+            
+            if producto:
+                producto_id = producto['id']
+                
+                # Verificar si ya existe un cargo por daños para este evento
+                consulta_existe = """
+                SELECT id FROM evento_productos 
+                WHERE id_evento = %s AND producto_id = %s
+                """
+                existe = self.base_datos.obtener_uno(consulta_existe, (evento_id, producto_id))
+                
+                if existe:
+                    # Actualizar el cargo existente
+                    consulta_update = """
+                    UPDATE evento_productos 
+                    SET cantidad = 1, precio_unitario = %s, subtotal = %s, observaciones = %s
+                    WHERE id_evento = %s AND producto_id = %s
+                    """
+                    self.base_datos.ejecutar_consulta(consulta_update, (monto, monto, descripcion, evento_id, producto_id))
+                else:
+                    # Insertar nuevo cargo
+                    consulta_insert = """
+                    INSERT INTO evento_productos (id_evento, producto_id, cantidad, precio_unitario, subtotal, observaciones)
+                    VALUES (%s, %s, 1, %s, %s, %s)
+                    """
+                    self.base_datos.ejecutar_consulta(consulta_insert, (evento_id, producto_id, monto, monto, descripcion))
+                
+                # Recalcular total del evento
+                self.calcular_total_evento(evento_id)
+                
+                self.logger.info(f"Cargo por daños de ${monto} agregado al evento {evento_id}")
+                return True
+                
+        except Exception as e:
+            self.logger.error(f"Error al agregar cargo por daños: {e}")
+            return False
+    
+    def obtener_info_finalizacion(self, evento_id):
+        """Obtiene la información de finalización de un evento."""
+        try:
+            # Verificar si existen las columnas
+            check_columna = """
+            SELECT COUNT(*) as existe FROM information_schema.columns 
+            WHERE table_schema = DATABASE() AND table_name = 'eventos' AND column_name = 'observacion_finalizacion'
+            """
+            resultado = self.base_datos.obtener_uno(check_columna)
+            
+            if not resultado or resultado.get('existe', 0) == 0:
+                return None
+            
+            consulta = """
+            SELECT observacion_finalizacion, tiene_danos, descripcion_danos, 
+                   costo_danos, cobrar_danos, fecha_finalizacion,
+                   danos_pagados, monto_pagado_danos, fecha_pago_danos, 
+                   metodo_pago_danos, observaciones_pago_danos
+            FROM eventos
+            WHERE id_evento = %s
+            """
+            return self.base_datos.obtener_uno(consulta, (evento_id,))
+        except Exception as e:
+            self.logger.error(f"Error al obtener info de finalización: {e}")
+            return None
+
+    def registrar_pago_danos(self, evento_id, monto, metodo_pago='efectivo', observaciones=''):
+        """
+        Registra el pago de daños de un evento.
+        
+        Args:
+            evento_id: ID del evento
+            monto: Monto pagado
+            metodo_pago: Método de pago (efectivo, transferencia, tarjeta, etc.)
+            observaciones: Observaciones del pago
+        """
+        try:
+            # Verificar que el evento exista y tenga daños por cobrar
+            evento = self.obtener_evento_por_id(evento_id)
+            if not evento:
+                return False, "Evento no encontrado"
+            
+            if not evento.get('tiene_danos'):
+                return False, "El evento no tiene daños registrados"
+            
+            if not evento.get('cobrar_danos'):
+                return False, "Los daños de este evento no están marcados para cobrar al cliente"
+            
+            costo_danos = float(evento.get('costo_danos') or 0)
+            monto_pagado_actual = float(evento.get('monto_pagado_danos') or 0)
+            monto = float(monto)
+            
+            if monto <= 0:
+                return False, "El monto debe ser mayor a 0"
+            
+            nuevo_monto_pagado = monto_pagado_actual + monto
+            danos_pagados = nuevo_monto_pagado >= costo_danos
+            
+            # Verificar si existen las columnas
+            check_columna = """
+            SELECT COUNT(*) as existe FROM information_schema.columns 
+            WHERE table_schema = DATABASE() AND table_name = 'eventos' AND column_name = 'danos_pagados'
+            """
+            resultado = self.base_datos.obtener_uno(check_columna)
+            
+            if not resultado or resultado.get('existe', 0) == 0:
+                return False, "Campos de pago de daños no disponibles. Ejecute el script SQL actualizado."
+            
+            consulta = """
+            UPDATE eventos 
+            SET danos_pagados = %s,
+                monto_pagado_danos = %s,
+                fecha_pago_danos = NOW(),
+                metodo_pago_danos = %s,
+                observaciones_pago_danos = %s
+            WHERE id_evento = %s
+            """
+            self.base_datos.ejecutar_consulta(consulta, (
+                danos_pagados,
+                nuevo_monto_pagado,
+                metodo_pago,
+                observaciones,
+                evento_id
+            ))
+            
+            self.logger.info(f"Pago de daños registrado para evento {evento_id}: ${monto} ({metodo_pago})")
+            
+            return True, "Pago de daños registrado exitosamente"
+            
+        except Exception as e:
+            self.logger.error(f"Error al registrar pago de daños: {e}")
+            return False, str(e)
+
+    def obtener_eventos_con_danos_pendientes(self):
+        """Obtiene eventos con daños pendientes de pago"""
+        try:
+            # Verificar si existen las columnas
+            check_columna = """
+            SELECT COUNT(*) as existe FROM information_schema.columns 
+            WHERE table_schema = DATABASE() AND table_name = 'eventos' AND column_name = 'danos_pagados'
+            """
+            resultado = self.base_datos.obtener_uno(check_columna)
+            
+            if not resultado or resultado.get('existe', 0) == 0:
+                return []
+            
+            consulta = """
+            SELECT e.id_evento, e.nombre_evento, e.fecha_evento, e.fecha_finalizacion,
+                   e.descripcion_danos, e.costo_danos, e.monto_pagado_danos,
+                   (e.costo_danos - COALESCE(e.monto_pagado_danos, 0)) as saldo_danos,
+                   u.nombre_completo as nombre_cliente, u.telefono, u.email
+            FROM eventos e
+            JOIN clientes c ON e.id_cliente = c.id
+            JOIN usuarios u ON c.usuario_id = u.id
+            WHERE e.tiene_danos = TRUE 
+            AND e.cobrar_danos = TRUE 
+            AND (e.danos_pagados = FALSE OR e.danos_pagados IS NULL)
+            ORDER BY e.fecha_finalizacion DESC
+            """
+            return self.base_datos.obtener_todos(consulta) or []
+        except Exception as e:
+            self.logger.error(f"Error al obtener eventos con daños pendientes: {e}")
+            return []
+
+    def obtener_resumen_danos(self, fecha_inicio=None, fecha_fin=None):
+        """Obtiene resumen de daños para reportes"""
+        try:
+            # Verificar si existen las columnas
+            check_columna = """
+            SELECT COUNT(*) as existe FROM information_schema.columns 
+            WHERE table_schema = DATABASE() AND table_name = 'eventos' AND column_name = 'danos_pagados'
+            """
+            resultado = self.base_datos.obtener_uno(check_columna)
+            
+            if not resultado or resultado.get('existe', 0) == 0:
+                return {}
+            
+            where_fecha = ""
+            params = []
+            if fecha_inicio and fecha_fin:
+                where_fecha = "AND e.fecha_finalizacion BETWEEN %s AND %s"
+                params = [fecha_inicio, fecha_fin]
+            
+            consulta = f"""
+            SELECT 
+                COUNT(*) as total_eventos_con_danos,
+                SUM(e.costo_danos) as costo_total_danos,
+                SUM(CASE WHEN e.cobrar_danos = TRUE THEN e.costo_danos ELSE 0 END) as total_a_cobrar,
+                SUM(CASE WHEN e.cobrar_danos = FALSE THEN e.costo_danos ELSE 0 END) as total_asumido_empresa,
+                SUM(COALESCE(e.monto_pagado_danos, 0)) as total_pagado,
+                SUM(CASE WHEN e.cobrar_danos = TRUE THEN (e.costo_danos - COALESCE(e.monto_pagado_danos, 0)) ELSE 0 END) as total_pendiente,
+                COUNT(CASE WHEN e.cobrar_danos = TRUE AND (e.danos_pagados = FALSE OR e.danos_pagados IS NULL) THEN 1 END) as eventos_pendientes_pago
+            FROM eventos e
+            WHERE e.tiene_danos = TRUE
+            {where_fecha}
+            """
+            return self.base_datos.obtener_uno(consulta, tuple(params)) or {}
+        except Exception as e:
+            self.logger.error(f"Error al obtener resumen de daños: {e}")
+            return {}

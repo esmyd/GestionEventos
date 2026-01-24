@@ -86,7 +86,11 @@ def crear_cliente():
         datos_cliente = {
             'usuario_id': usuario_id,
             'documento_identidad': data.get('documento_identidad'),
-            'direccion': data.get('direccion')
+            'direccion': data.get('direccion'),
+            'fecha_nacimiento': data.get('fecha_nacimiento'),
+            'pais': data.get('pais', 'Ecuador'),
+            'provincia': data.get('provincia', 'Guayas'),
+            'ciudad': data.get('ciudad', 'Guayaquil')
         }
         
         cliente_id = cliente_modelo.crear_cliente(datos_cliente)
@@ -161,7 +165,11 @@ def actualizar_cliente(cliente_id):
         # Actualizar datos del cliente
         datos_cliente = {
             'documento_identidad': data.get('documento_identidad') or None,
-            'direccion': data.get('direccion') or None
+            'direccion': data.get('direccion') or None,
+            'fecha_nacimiento': data.get('fecha_nacimiento') or None,
+            'pais': data.get('pais') or cliente_actual.get('pais', 'Ecuador'),
+            'provincia': data.get('provincia') or cliente_actual.get('provincia', 'Guayas'),
+            'ciudad': data.get('ciudad') or cliente_actual.get('ciudad', 'Guayaquil')
         }
         
         resultado = cliente_modelo.actualizar_cliente(cliente_id, datos_cliente)

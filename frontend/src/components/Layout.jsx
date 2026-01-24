@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNombrePlataforma } from '../hooks/useNombrePlataforma';
 import { getRoleLabel, hasModuleAccess, hasRole, MODULES, ROLES } from '../utils/roles';
+import { whatsappChatService } from '../services/api';
 import {
   Calendar,
   CalendarDays,
@@ -40,6 +41,7 @@ const Layout = () => {
   const [operacionesOpen, setOperacionesOpen] = useState(true);
   const [configuracionesOpen, setConfiguracionesOpen] = useState(true);
   const [usuariosOpen, setUsuariosOpen] = useState(true);
+  const [whatsappNoLeidos, setWhatsappNoLeidos] = useState(0);
   const iniciales = nombrePlataforma
     .split(' ')
     .filter(Boolean)
@@ -66,7 +68,7 @@ const Layout = () => {
       { path: '/usuarios', icon: Settings, label: 'Usuarios', moduleKey: MODULES.USUARIOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/clientes', icon: Users, label: 'Clientes', moduleKey: MODULES.CLIENTES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/permisos', icon: Settings, label: 'Roles y Permisos', moduleKey: MODULES.PERMISOS, roles: [ROLES.ADMIN] },
-      { path: '/configuraciones/whatsapp-chat', icon: MessageCircle, label: 'WhatsApp Chat', moduleKey: MODULES.WHATSAPP_CHAT, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/whatsapp-chat', icon: MessageCircle, label: 'WhatsApp', moduleKey: MODULES.WHATSAPP_CHAT, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/whatsapp-panel', icon: Gauge, label: 'Panel WhatsApp', moduleKey: MODULES.WHATSAPP_METRICAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/whatsapp-plantillas', icon: Mail, label: 'Plantillas WhatsApp', moduleKey: MODULES.WHATSAPP_TEMPLATES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/carga-masiva', icon: Upload, label: 'Carga masiva', moduleKey: MODULES.CARGA_MASIVA, roles: [ROLES.ADMIN, ROLES.MANAGER] },
@@ -87,13 +89,12 @@ const Layout = () => {
     '/eventos',
     '/pagos',
     '/salones',
-    '/configuraciones/whatsapp-chat',
-    '/configuraciones/whatsapp-plantillas',
+    '/configuraciones/whatsapp-chat'
   ];
   const rutasConfiguraciones = [
     '/notificaciones-nativas',
     '/configuraciones/whatsapp-panel',
-    
+    '/configuraciones/whatsapp-plantillas',
     '/configuraciones/limpieza-datos',
   ];
   const rutasUsuarios = ['/usuarios', '/clientes', '/permisos'];
@@ -159,6 +160,31 @@ const Layout = () => {
     return () => window.removeEventListener('resize', actualizarVista);
   }, []);
 
+  // Cargar notificaciones de WhatsApp no leídos
+  const cargarNoLeidos = useCallback(async () => {
+    if (!usuario || !hasModuleAccess(usuario.rol, MODULES.WHATSAPP_CHAT)) return;
+    try {
+      const data = await whatsappChatService.getNoLeidos();
+      setWhatsappNoLeidos(data.total || 0);
+    } catch (err) {
+      // Silenciar errores
+    }
+  }, [usuario]);
+
+  useEffect(() => {
+    cargarNoLeidos();
+    // Actualizar cada 10 segundos
+    const interval = setInterval(cargarNoLeidos, 10000);
+    return () => clearInterval(interval);
+  }, [cargarNoLeidos]);
+
+  // Cuando cambie la ubicación y estemos en WhatsApp Chat, resetear el badge
+  useEffect(() => {
+    if (location.pathname === '/configuraciones/whatsapp-chat') {
+      // Dar tiempo para que el componente interno marque como leído
+      setTimeout(cargarNoLeidos, 500);
+    }
+  }, [location.pathname, cargarNoLeidos]);
 
   const handleLogout = async () => {
     await logout();
@@ -299,6 +325,8 @@ const Layout = () => {
                       {operacionesItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '/');
+                        const esWhatsApp = item.path === '/configuraciones/whatsapp-chat';
+                        const mostrarBadgeWA = esWhatsApp && whatsappNoLeidos > 0;
                         return (
                           <Link
                             key={item.path}
@@ -321,8 +349,55 @@ const Layout = () => {
                               if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
                             }}
                           >
-                            <Icon size={18} />
-                            {sidebarOpen && <span>{item.label}</span>}
+                            <div style={{ position: 'relative', display: 'inline-flex' }}>
+                              <Icon size={18} />
+                              {mostrarBadgeWA && !sidebarOpen && (
+                                <span
+                                  style={{
+                                    position: 'absolute',
+                                    top: '-6px',
+                                    right: '-6px',
+                                    minWidth: '16px',
+                                    height: '16px',
+                                    borderRadius: '8px',
+                                    backgroundColor: '#ef4444',
+                                    color: 'white',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '0 4px',
+                                  }}
+                                >
+                                  {whatsappNoLeidos > 9 ? '9+' : whatsappNoLeidos}
+                                </span>
+                              )}
+                            </div>
+                            {sidebarOpen && (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {item.label}
+                                {mostrarBadgeWA && (
+                                  <span
+                                    style={{
+                                      minWidth: '18px',
+                                      height: '18px',
+                                      borderRadius: '9px',
+                                      backgroundColor: '#ef4444',
+                                      color: 'white',
+                                      fontSize: '0.7rem',
+                                      fontWeight: 700,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      padding: '0 5px',
+                                    }}
+                                  >
+                                    {whatsappNoLeidos > 99 ? '99+' : whatsappNoLeidos}
+                                  </span>
+                                )}
+                              </span>
+                            )}
                           </Link>
                         );
                       })}

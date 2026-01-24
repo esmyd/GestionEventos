@@ -298,6 +298,226 @@ def actualizar_estado_evento(evento_id):
         return jsonify({'error': f'Error al actualizar estado: {str(e)}'}), 500
 
 
+@eventos_bp.route('/<int:evento_id>/completar', methods=['POST'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def completar_evento(evento_id):
+    """
+    Completa un evento registrando observaciones y daños si aplica.
+    
+    Body JSON:
+        - observacion_finalizacion: str (observación general del evento)
+        - tiene_danos: bool (indica si hubo daños)
+        - descripcion_danos: str (descripción general de los daños)
+        - costo_danos: float (costo total de los daños)
+        - cobrar_danos: bool (si se cobra al cliente)
+        - danos_detalle: list[dict] (opcional, lista de daños individuales)
+    """
+    try:
+        data = request.get_json() or {}
+        
+        # Obtener el evento actual
+        evento_actual = evento_modelo.obtener_evento_por_id(evento_id)
+        if not evento_actual:
+            return jsonify({'error': 'Evento no encontrado'}), 404
+        
+        estado_actual = evento_actual.get('estado')
+        
+        # Validación: No se puede completar un evento ya completado
+        if estado_actual == 'completado':
+            return jsonify({
+                'error': 'El evento ya está completado'
+            }), 400
+        
+        # Validación: Solo se pueden completar eventos confirmados o en proceso
+        if estado_actual not in ('confirmado', 'en_proceso'):
+            return jsonify({
+                'error': f'Solo se pueden completar eventos en estado "confirmado" o "en_proceso". Estado actual: {estado_actual}'
+            }), 400
+        
+        # Validación de saldo: Si hay saldo pendiente, solo se puede completar si se cobran daños
+        saldo_pendiente = float(evento_actual.get('saldo', 0) or 0)
+        cobrar_danos = data.get('cobrar_danos', False)
+        costo_danos = float(data.get('costo_danos', 0) or 0)
+        
+        # Si hay saldo pendiente y no se van a cobrar daños suficientes
+        if saldo_pendiente > 0 and not (cobrar_danos and costo_danos >= saldo_pendiente):
+            # Permitir completar si el saldo pendiente es por daños que se van a cobrar
+            tiene_danos = data.get('tiene_danos', False)
+            if not (tiene_danos and cobrar_danos):
+                return jsonify({
+                    'error': f'No se puede completar el evento con saldo pendiente de ${saldo_pendiente:,.0f}. Registre el pago o marque los daños para cobrar al cliente.'
+                }), 400
+        
+        # Obtener usuario actual
+        usuario_id = request.usuario.get('id') if hasattr(request, 'usuario') else None
+        
+        # Completar el evento
+        exito, mensaje = evento_modelo.completar_evento_con_observaciones(
+            evento_id, 
+            data, 
+            usuario_id
+        )
+        
+        if exito:
+            evento = evento_modelo.obtener_evento_por_id(evento_id)
+            return jsonify({
+                'message': mensaje,
+                'evento': evento
+            }), 200
+        else:
+            return jsonify({'error': mensaje}), 400
+            
+    except Exception as e:
+        logger.error(f"Error al completar evento: {str(e)}")
+        return jsonify({'error': f'Error al completar evento: {str(e)}'}), 500
+
+
+@eventos_bp.route('/<int:evento_id>/danos', methods=['GET'])
+@requiere_autenticacion
+def obtener_danos_evento(evento_id):
+    """Obtiene los daños registrados para un evento."""
+    try:
+        evento = evento_modelo.obtener_evento_por_id(evento_id)
+        if not evento:
+            return jsonify({'error': 'Evento no encontrado'}), 404
+        
+        danos = evento_modelo.obtener_danos_evento(evento_id)
+        info_finalizacion = evento_modelo.obtener_info_finalizacion(evento_id)
+        
+        return jsonify({
+            'danos': danos,
+            'info_finalizacion': info_finalizacion
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error al obtener daños: {str(e)}")
+        return jsonify({'error': f'Error al obtener daños: {str(e)}'}), 500
+
+
+@eventos_bp.route('/<int:evento_id>/pago-danos', methods=['POST'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def registrar_pago_danos(evento_id):
+    """
+    Registra el pago de daños de un evento.
+    
+    Body JSON:
+        - monto: float (monto a pagar)
+        - metodo_pago: str (efectivo, transferencia, tarjeta, etc.)
+        - observaciones: str (opcional)
+    """
+    try:
+        data = request.get_json() or {}
+        
+        monto = data.get('monto')
+        if not monto:
+            return jsonify({'error': 'monto es requerido'}), 400
+        
+        try:
+            monto = float(monto)
+        except (ValueError, TypeError):
+            return jsonify({'error': 'monto debe ser un número válido'}), 400
+        
+        metodo_pago = data.get('metodo_pago', 'efectivo')
+        observaciones = data.get('observaciones', '')
+        
+        exito, mensaje = evento_modelo.registrar_pago_danos(
+            evento_id, monto, metodo_pago, observaciones
+        )
+        
+        if exito:
+            evento = evento_modelo.obtener_evento_por_id(evento_id)
+            return jsonify({
+                'message': mensaje,
+                'evento': evento
+            }), 200
+        else:
+            return jsonify({'error': mensaje}), 400
+            
+    except Exception as e:
+        logger.error(f"Error al registrar pago de daños: {str(e)}")
+        return jsonify({'error': f'Error al registrar pago de daños: {str(e)}'}), 500
+
+
+@eventos_bp.route('/danos-pendientes', methods=['GET'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def obtener_danos_pendientes():
+    """Obtiene todos los eventos con daños pendientes de pago"""
+    try:
+        eventos = evento_modelo.obtener_eventos_con_danos_pendientes()
+        resumen = evento_modelo.obtener_resumen_danos()
+        
+        return jsonify({
+            'eventos': eventos,
+            'resumen': resumen
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error al obtener daños pendientes: {str(e)}")
+        return jsonify({'error': f'Error al obtener daños pendientes: {str(e)}'}), 500
+
+
+@eventos_bp.route('/<int:evento_id>/calificacion', methods=['POST'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def registrar_calificacion_manual(evento_id):
+    """
+    Registra una calificación de forma manual para un evento completado.
+    
+    Body JSON:
+        - calificacion: int (1-5)
+        - observaciones: str (opcional si calificación es 5)
+    """
+    try:
+        data = request.get_json() or {}
+        
+        calificacion = data.get('calificacion')
+        if not calificacion or not isinstance(calificacion, int) or not 1 <= calificacion <= 5:
+            return jsonify({'error': 'calificacion debe ser un número entre 1 y 5'}), 400
+        
+        observaciones = data.get('observaciones', '').strip()
+        
+        # Si calificación < 5, se requieren observaciones
+        if calificacion < 5 and not observaciones:
+            return jsonify({'error': 'Se requieren observaciones para calificaciones menores a 5'}), 400
+        
+        evento = evento_modelo.obtener_evento_por_id(evento_id)
+        if not evento:
+            return jsonify({'error': 'Evento no encontrado'}), 404
+        
+        if evento.get('estado') != 'completado':
+            return jsonify({'error': 'Solo se pueden calificar eventos completados'}), 400
+        
+        # Registrar la calificación usando el modelo
+        from modelos.calificacion_modelo import CalificacionModelo
+        calificacion_modelo = CalificacionModelo()
+        
+        cliente_id = evento.get('id_cliente')
+        
+        exito, mensaje = calificacion_modelo.registrar_calificacion(
+            evento_id, 
+            cliente_id, 
+            calificacion, 
+            observaciones=observaciones,
+            canal='manual'
+        )
+        
+        if exito:
+            evento_actualizado = evento_modelo.obtener_evento_por_id(evento_id)
+            return jsonify({
+                'message': 'Calificación registrada exitosamente',
+                'evento': evento_actualizado
+            }), 200
+        else:
+            return jsonify({'error': mensaje}), 400
+            
+    except Exception as e:
+        logger.error(f"Error al registrar calificación manual: {str(e)}")
+        return jsonify({'error': f'Error al registrar calificación: {str(e)}'}), 500
+
+
 @eventos_bp.route('/<int:evento_id>/productos', methods=['POST'])
 @requiere_autenticacion
 @requiere_rol('administrador', 'gerente_general', 'coordinador', 'cliente')

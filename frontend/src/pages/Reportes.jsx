@@ -3,39 +3,69 @@ import { reportesService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
 import {
-  BarChart3,
   DollarSign,
   TrendingUp,
+  TrendingDown,
   Users,
   Calendar,
   Package,
   FileText,
   Building,
-  CreditCard,
   Target,
   Activity,
-  PieChart,
   Mail,
   MessageCircle,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  XCircle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Filter,
+  Download,
+  FileSpreadsheet,
+  Box,
+  CreditCard,
+  Bell,
+  AlertTriangle,
+  Star,
 } from 'lucide-react';
 
 const Reportes = ({
-  titulo = 'Reportes y Análisis',
-  subtitulo = 'Métricas y estadísticas del sistema',
+  titulo = 'Dashboard Ejecutivo',
+  subtitulo = 'Resumen de operaciones y métricas clave',
   mostrarToast = true,
 }) => {
   const { toasts, removeToast, error: showError } = useToast();
   const [metricas, setMetricas] = useState(null);
   const [eventosPorEstado, setEventosPorEstado] = useState(null);
   const [resumenFinanciero, setResumenFinanciero] = useState(null);
+  const [resumenDanos, setResumenDanos] = useState(null);
+  const [resumenCalificaciones, setResumenCalificaciones] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [descargando, setDescargando] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  
+  // Filtros de fecha
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
 
   useEffect(() => {
     cargarReportes();
+    
+    // Detectar tamaño de pantalla
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+      setIsTablet(window.innerWidth >= 640 && window.innerWidth < 1024);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const cargarReportes = async () => {
+  const cargarReportes = async (desde = fechaDesde, hasta = fechaHasta) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
@@ -44,14 +74,23 @@ const Reportes = ({
         setLoading(false);
         return;
       }
-      const [metricasData, eventosData, resumenData] = await Promise.all([
-        reportesService.getMetricas(),
+      
+      const params = {};
+      if (desde) params.fecha_desde = desde;
+      if (hasta) params.fecha_hasta = hasta;
+      
+      const [metricasData, eventosData, resumenData, danosData, calificacionesData] = await Promise.all([
+        reportesService.getMetricas(params),
         reportesService.getEventosPorEstado().catch(() => null),
         reportesService.getResumenFinanciero().catch(() => null),
+        reportesService.getResumenDanos(params).catch(() => null),
+        reportesService.getResumenCalificaciones(params).catch(() => null),
       ]);
       setMetricas(metricasData.metricas);
       setEventosPorEstado(eventosData?.resumen || null);
       setResumenFinanciero(resumenData?.resumen_financiero || null);
+      setResumenDanos(danosData?.resumen || null);
+      setResumenCalificaciones(calificacionesData?.resumen || null);
       setError('');
     } catch (err) {
       const errorMessage =
@@ -77,234 +116,212 @@ const Reportes = ({
     }
   };
 
+  const aplicarFiltros = () => {
+    cargarReportes(fechaDesde, fechaHasta);
+  };
+
+  const limpiarFiltros = () => {
+    setFechaDesde('');
+    setFechaHasta('');
+    cargarReportes('', '');
+  };
+
+  const descargarReporte = async (tipo) => {
+    try {
+      setDescargando(tipo);
+      const params = {};
+      if (fechaDesde) params.fecha_desde = fechaDesde;
+      if (fechaHasta) params.fecha_hasta = fechaHasta;
+      
+      let response;
+      switch (tipo) {
+        case 'eventos':
+          response = await reportesService.descargarEventos(params);
+          break;
+        case 'inventario':
+          response = await reportesService.descargarInventario();
+          break;
+        case 'cardex':
+          response = await reportesService.descargarCardex(params);
+          break;
+        case 'notificaciones':
+          response = await reportesService.descargarNotificaciones(params);
+          break;
+        case 'clientes':
+          response = await reportesService.descargarClientes();
+          break;
+        case 'pagos':
+          response = await reportesService.descargarPagos(params);
+          break;
+        case 'danos':
+          response = await reportesService.descargarDanos(params);
+          break;
+        case 'calificaciones':
+          response = await reportesService.descargarCalificaciones(params);
+          break;
+        default:
+          return;
+      }
+      
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Obtener nombre del archivo desde el header o usar uno por defecto
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `reporte_${tipo}_${new Date().toISOString().slice(0, 10)}.csv`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=(.+)/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(`Error al descargar reporte de ${tipo}:`, err);
+      if (mostrarToast) {
+        showError(`Error al descargar el reporte de ${tipo}`);
+      }
+    } finally {
+      setDescargando(null);
+    }
+  };
+
   const formatearMoneda = (valor) => {
-    return new Intl.NumberFormat('es-CO', {
+    return new Intl.NumberFormat('es-EC', {
       style: 'currency',
-      currency: 'COP',
+      currency: 'USD',
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(valor);
   };
 
-  const formatearMonedaSimple = (valor) =>
-    new Intl.NumberFormat('es-CO', {
+  const formatearMonedaDecimal = (valor) =>
+    new Intl.NumberFormat('es-EC', {
       style: 'currency',
-      currency: 'COP',
+      currency: 'USD',
       minimumFractionDigits: 2,
     }).format(valor);
 
-  // Componente de gráfico de barras
-  const GraficoBarras = ({ datos, altura = 200, color = '#6366f1' }) => {
-    const maxValor = Math.max(...datos.map((d) => d.valor), 1);
-    const alturaMaxima = altura - 40;
-
-    return (
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', height: `${altura}px`, padding: '1rem' }}>
-        {datos.map((item, index) => {
-          const alturaBarra = (item.valor / maxValor) * alturaMaxima;
-          return (
-            <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div
-                style={{
-                  width: '100%',
-                  height: `${alturaBarra}px`,
-                  backgroundColor: item.color || color,
-                  borderRadius: '0.25rem 0.25rem 0 0',
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
-                  padding: '0.5rem',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '0.8';
-                  e.currentTarget.style.transform = 'scaleY(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                  e.currentTarget.style.transform = 'scaleY(1)';
-                }}
-              >
-                {alturaBarra > 20 && (
-                  <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: '600' }}>{item.valor}</span>
-                )}
-              </div>
-              <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#6b7280', textAlign: 'center' }}>
-                {item.label}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Componente de gráfico de pastel
-  const GraficoPastel = ({ datos, tamaño = 200 }) => {
-    let acumulado = 0;
-    const total = datos.reduce((sum, item) => sum + item.valor, 0);
-    const radio = tamaño / 2 - 10;
-    const centro = tamaño / 2;
-
-    if (total === 0) {
-      return (
+  // Componente KPI Card compacto y responsivo
+  const KPICard = ({ titulo, valor, subtexto, icono, color, tendencia }) => (
+    <div
+      style={{
+        backgroundColor: 'white',
+        borderRadius: '0.75rem',
+        padding: isMobile ? '1rem' : '1.25rem',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <p style={{ 
+            fontSize: isMobile ? '0.7rem' : '0.75rem', 
+            color: '#6b7280', 
+            margin: 0, 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.05em', 
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}>
+            {titulo}
+          </p>
+          <p style={{ 
+            fontSize: isMobile ? '1.25rem' : '1.75rem', 
+            fontWeight: 700, 
+            color: '#111827', 
+            margin: '0.25rem 0',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}>
+            {valor}
+          </p>
+          {subtexto && (
+            <p style={{ 
+              fontSize: isMobile ? '0.65rem' : '0.75rem', 
+              color: tendencia === 'up' ? '#059669' : tendencia === 'down' ? '#dc2626' : '#6b7280', 
+              margin: 0, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.25rem',
+              whiteSpace: 'nowrap',
+            }}>
+              {tendencia === 'up' && <ArrowUpRight size={isMobile ? 10 : 12} />}
+              {tendencia === 'down' && <ArrowDownRight size={isMobile ? 10 : 12} />}
+              {subtexto}
+            </p>
+          )}
+        </div>
         <div
           style={{
-            width: `${tamaño}px`,
-            height: `${tamaño}px`,
-            borderRadius: '50%',
-            backgroundColor: '#f3f4f6',
+            width: isMobile ? '2rem' : '2.5rem',
+            height: isMobile ? '2rem' : '2.5rem',
+            borderRadius: '0.5rem',
+            backgroundColor: `${color}15`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#6b7280',
+            flexShrink: 0,
+            marginLeft: '0.5rem',
           }}
         >
-          Sin datos
+          {React.createElement(icono, { size: isMobile ? 16 : 20, color: color })}
         </div>
-      );
-    }
+      </div>
+    </div>
+  );
 
-    const segmentos = datos.map((item, index) => {
-      const porcentaje = (item.valor / total) * 100;
-      const anguloInicio = (acumulado / total) * 360;
-      const anguloFin = ((acumulado + item.valor) / total) * 360;
-      acumulado += item.valor;
-
-      const x1 = centro + radio * Math.cos((anguloInicio * Math.PI) / 180);
-      const y1 = centro + radio * Math.sin((anguloInicio * Math.PI) / 180);
-      const x2 = centro + radio * Math.cos((anguloFin * Math.PI) / 180);
-      const y2 = centro + radio * Math.sin((anguloFin * Math.PI) / 180);
-
-      const largeArc = porcentaje > 50 ? 1 : 0;
-
-      return (
-        <path
-          key={index}
-          d={`M ${centro} ${centro} L ${x1} ${y1} A ${radio} ${radio} 0 ${largeArc} 1 ${x2} ${y2} Z`}
-          fill={item.color}
-          stroke="white"
-          strokeWidth="2"
-        />
-      );
-    });
-
+  // Barra de progreso horizontal compacta
+  const ProgressBar = ({ label, valor, total, color }) => {
+    const porcentaje = total > 0 ? (valor / total) * 100 : 0;
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-        <svg width={tamaño} height={tamaño} style={{ transform: 'rotate(-90deg)' }}>
-          {segmentos}
-        </svg>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {datos.map((item, index) => (
-            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div
-                style={{
-                  width: '1rem',
-                  height: '1rem',
-                  borderRadius: '0.25rem',
-                  backgroundColor: item.color,
-                }}
-              />
-              <span style={{ fontSize: '0.875rem', color: '#374151' }}>
-                {item.label}: {item.valor} ({((item.valor / total) * 100).toFixed(1)}%)
-              </span>
-            </div>
-          ))}
+      <div style={{ marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+          <span style={{ fontSize: '0.8rem', color: '#4b5563' }}>{label}</span>
+          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>{valor}</span>
+        </div>
+        <div style={{ height: '6px', backgroundColor: '#f3f4f6', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(porcentaje, 100)}%`, backgroundColor: color, borderRadius: '3px', transition: 'width 0.3s' }} />
         </div>
       </div>
     );
   };
 
-  // Componente de indicador con progreso
-  const IndicadorProgreso = ({ titulo, valor, total, color, icono, formatear = (v) => v, mostrarLimite = false, limite = null }) => {
-    const totalCalculo = mostrarLimite && limite !== null && limite !== undefined ? limite : total;
-    const porcentaje = totalCalculo > 0 ? (valor / totalCalculo) * 100 : 0;
-    const textoLimite = mostrarLimite 
-      ? (limite !== null && limite !== undefined ? `${valor}/${limite}` : `${valor}/Ilimitado`)
-      : (total > 0 ? `${porcentaje.toFixed(1)}% del total` : '');
-    return (
-      <div
-        style={{
-          backgroundColor: 'white',
-          padding: '1.5rem',
-          borderRadius: '0.5rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e5e7eb',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div
-              style={{
-                width: '3rem',
-                height: '3rem',
-                borderRadius: '0.5rem',
-                backgroundColor: `${color}20`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {React.createElement(icono, { size: 24, color: color })}
-            </div>
-            <div>
-              <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>{titulo}</p>
-              <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: color, margin: '0.25rem 0 0 0' }}>
-                {mostrarLimite ? textoLimite : formatear(valor)}
-              </p>
-            </div>
-          </div>
-        </div>
-        {(total > 0 || mostrarLimite) && (
-          <div>
-            <div
-              style={{
-                width: '100%',
-                height: '0.5rem',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '9999px',
-                overflow: 'hidden',
-              }}
-            >
-              <div
-                style={{
-                  width: `${Math.min(porcentaje, 100)}%`,
-                  height: '100%',
-                  backgroundColor: color,
-                  borderRadius: '9999px',
-                  transition: 'width 0.3s ease',
-                }}
-              />
-            </div>
-            {mostrarLimite ? (
-              <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.5rem 0 0 0', textAlign: 'right' }}>
-                {textoLimite}
-              </p>
-            ) : (
-              <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.5rem 0 0 0', textAlign: 'right' }}>
-                {porcentaje.toFixed(1)}% del total
-              </p>
-            )}
-          </div>
-        )}
+  // Mini card de estado de evento (responsivo)
+  const EstadoCard = ({ icono, label, valor, color, bgColor }) => (
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: isMobile ? '0.5rem' : '0.75rem',
+      padding: isMobile ? '0.6rem 0.75rem' : '0.75rem 1rem',
+      backgroundColor: bgColor,
+      borderRadius: '0.5rem',
+      flex: 1,
+      minWidth: isMobile ? '100px' : '140px',
+    }}>
+      {React.createElement(icono, { size: isMobile ? 14 : 18, color: color })}
+      <div>
+        <p style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: color, margin: 0 }}>{valor}</p>
+        <p style={{ fontSize: isMobile ? '0.6rem' : '0.7rem', color: '#6b7280', margin: 0 }}>{label}</p>
       </div>
-    );
-  };
+    </div>
+  );
 
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem' }}>
-        <Activity size={48} color="#6366f1" style={{ margin: '0 auto 1rem' }} />
-        <p style={{ color: '#6b7280', fontSize: '1.125rem' }}>Cargando reportes...</p>
+        <Activity size={48} color="#6366f1" style={{ margin: '0 auto 1rem', animation: 'spin 1s linear infinite' }} />
+        <p style={{ color: '#6b7280', fontSize: '1rem' }}>Cargando dashboard...</p>
       </div>
     );
   }
@@ -312,6 +329,7 @@ const Reportes = ({
   if (error) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem' }}>
+        <AlertCircle size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} />
         <p style={{ color: '#ef4444', marginBottom: '1rem' }}>{error}</p>
         <button
           onClick={cargarReportes}
@@ -339,473 +357,814 @@ const Reportes = ({
     );
   }
 
-  // Preparar datos para gráficos
-  const datosEventosPorEstado = eventosPorEstado
-    ? Object.entries(eventosPorEstado)
-        .filter(([estado]) => estado !== 'total_eventos')
-        .map(([estado, datos]) => ({
-          label: estado.charAt(0).toUpperCase() + estado.slice(1).replace('_', ' '),
-          valor: datos.cantidad || 0,
-          color:
-            estado === 'completado'
-              ? '#10b981'
-              : estado === 'en_proceso'
-              ? '#3b82f6'
-              : estado === 'confirmado'
-              ? '#8b5cf6'
-              : estado === 'cancelado'
-              ? '#ef4444'
-              : '#6b7280',
-        }))
-    : [];
+  // Calculos financieros
+  const totalIngresos = metricas.financiero?.total_ingresos || 0;
+  const totalCobrado = metricas.financiero?.total_cobrado || 0;
+  const saldoPendiente = metricas.financiero?.total_pendiente || 0;
+  const porcentajeCobrado = totalIngresos > 0 ? ((totalCobrado / totalIngresos) * 100).toFixed(1) : 0;
 
-  const datosFinanciero = resumenFinanciero
-    ? [
-        { label: 'Cobrado', valor: resumenFinanciero.total_cobrado || 0, color: '#10b981' },
-        { label: 'Pendiente', valor: resumenFinanciero.total_pendiente || 0, color: '#f59e0b' },
-      ]
-    : [];
+  // Calculos de eventos
+  const totalEventos = metricas.eventos?.total || 0;
+  const eventosConfirmados = metricas.eventos?.confirmados || 0;
+  const eventosEnProceso = metricas.eventos?.en_proceso || 0;
+  const eventosCompletados = metricas.eventos?.completados || 0;
+  const eventosCancelados = metricas.eventos?.cancelados || 0;
+  const eventosCotizacion = metricas.eventos?.cotizacion || 0;
+
+  // Calculos de notificaciones
+  const totalWA = metricas.notificaciones?.whatsapp_total_out || 0;
+  const maxWA = metricas.notificaciones?.maximo_whatsapp;
+  const totalEmail = metricas.notificaciones?.envios?.email || 0;
+  const maxEmail = metricas.notificaciones?.maximo_email;
 
   return (
-    <div>
+    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: isMobile ? '0 0.5rem' : 0 }}>
       {mostrarToast && <ToastContainer toasts={toasts} removeToast={removeToast} />}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>{titulo}</h1>
-        <p style={{ color: '#6b7280' }}>{subtitulo}</p>
+      
+      {/* Header con filtros */}
+      <div style={{ 
+        marginBottom: '1.5rem', 
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: 'space-between', 
+        alignItems: isMobile ? 'stretch' : 'flex-start', 
+        gap: '1rem' 
+      }}>
+        <div>
+          <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, marginBottom: '0.25rem', color: '#111827' }}>{titulo}</h1>
+          <p style={{ color: '#6b7280', fontSize: isMobile ? '0.8rem' : '0.875rem', margin: 0 }}>{subtitulo}</p>
+        </div>
+        
+        {/* Filtros de fecha - Responsivos */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center', 
+          gap: '0.75rem', 
+          flexWrap: 'wrap' 
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            flexWrap: isMobile ? 'wrap' : 'nowrap',
+          }}>
+            {!isMobile && <Calendar size={16} color="#6b7280" />}
+            <input
+              type="date"
+              value={fechaDesde}
+              onChange={(e) => setFechaDesde(e.target.value)}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                fontSize: '0.875rem',
+                flex: isMobile ? 1 : 'none',
+                minWidth: isMobile ? '0' : 'auto',
+              }}
+              placeholder="Desde"
+            />
+            <span style={{ color: '#6b7280', display: isMobile ? 'none' : 'inline' }}>-</span>
+            <input
+              type="date"
+              value={fechaHasta}
+              onChange={(e) => setFechaHasta(e.target.value)}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                fontSize: '0.875rem',
+                flex: isMobile ? 1 : 'none',
+                minWidth: isMobile ? '0' : 'auto',
+              }}
+              placeholder="Hasta"
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={aplicarFiltros}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                border: 'none',
+                background: '#3b82f6',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem',
+                fontSize: '0.875rem',
+                flex: isMobile ? 1 : 'none',
+              }}
+            >
+              <Filter size={14} />
+              Filtrar
+            </button>
+            {(fechaDesde || fechaHasta) && (
+              <button
+                type="button"
+                onClick={limpiarFiltros}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db',
+                  background: '#f3f4f6',
+                  color: '#374151',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  flex: isMobile ? 1 : 'none',
+                }}
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {error && (
-        <div
-          style={{
-            padding: '1rem',
-            backgroundColor: '#fee2e2',
-            color: '#dc2626',
-            borderRadius: '0.375rem',
-            marginBottom: '1rem',
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {/* Indicadores principales */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1.5rem',
-          marginBottom: '2rem',
-        }}
-      >
-        <IndicadorProgreso
-          titulo="Total Eventos"
-          valor={metricas.eventos?.total || 0}
-          total={metricas.eventos?.total || 0}
-          color="#6366f1"
-          icono={Calendar}
-        />
-        <IndicadorProgreso
+      {/* KPIs Principales - Primera fila */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: isMobile ? '0.75rem' : '1rem', 
+        marginBottom: '1.5rem' 
+      }}>
+        <KPICard
           titulo="Ingresos Totales"
-          valor={metricas.financiero?.total_ingresos || 0}
-          total={metricas.financiero?.total_ingresos || 0}
-          color="#10b981"
+          valor={formatearMoneda(totalIngresos)}
+          subtexto={`${totalEventos} eventos`}
           icono={DollarSign}
-          formatear={formatearMoneda}
+          color="#059669"
         />
-        <IndicadorProgreso
-          titulo="Total Cobrado"
-          valor={metricas.financiero?.total_cobrado || 0}
-          total={metricas.financiero?.total_ingresos || 1}
+        <KPICard
+          titulo="Cobrado"
+          valor={formatearMoneda(totalCobrado)}
+          subtexto={`${porcentajeCobrado}% recaudado`}
+          icono={CheckCircle}
           color="#3b82f6"
-          icono={CreditCard}
-          formatear={formatearMoneda}
+          tendencia="up"
         />
-        <IndicadorProgreso
-          titulo="Saldo Pendiente"
-          valor={metricas.financiero?.total_pendiente || 0}
-          total={metricas.financiero?.total_ingresos || 1}
+        <KPICard
+          titulo="Pendiente"
+          valor={formatearMoneda(saldoPendiente)}
+          subtexto="Por cobrar"
+          icono={Clock}
           color="#f59e0b"
-          icono={Target}
-          formatear={formatearMoneda}
+          tendencia={saldoPendiente > totalCobrado ? 'down' : null}
         />
-        <IndicadorProgreso
+        <KPICard
           titulo="Ticket Promedio"
-          valor={metricas.financiero?.ticket_promedio || 0}
-          total={metricas.financiero?.ticket_promedio || 0}
-          color="#8b5cf6"
+          valor={formatearMoneda(metricas.financiero?.ticket_promedio || 0)}
+          subtexto="Por evento"
           icono={TrendingUp}
-          formatear={formatearMoneda}
+          color="#8b5cf6"
         />
-        <IndicadorProgreso
-          titulo="Total Clientes"
+        <KPICard
+          titulo="Clientes"
           valor={metricas.clientes?.total || 0}
-          total={metricas.clientes?.total || 0}
-          color="#ec4899"
+          subtexto={`${(metricas.clientes?.promedio_eventos_cliente || 0).toFixed(1)} eventos/cliente`}
           icono={Users}
+          color="#ec4899"
         />
       </div>
 
-      {/* Gráfico de eventos por estado */}
-      <div
-        style={{
-          backgroundColor: 'white',
-          padding: '2rem',
-          borderRadius: '0.5rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e5e7eb',
-          marginBottom: '2rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <BarChart3 size={24} color="#6366f1" />
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Eventos por Estado</h2>
-        </div>
-        {datosEventosPorEstado.length > 0 ? (
-          <GraficoBarras datos={datosEventosPorEstado} altura={250} />
-        ) : (
-          <p style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>No hay datos disponibles</p>
-        )}
-      </div>
-
-      {/* Gráfico de pastel - Eventos por estado */}
-      <div
-        style={{
-          backgroundColor: 'white',
-          padding: '2rem',
-          borderRadius: '0.5rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e5e7eb',
-          marginBottom: '2rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <PieChart size={24} color="#6366f1" />
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Distribución de Eventos</h2>
-        </div>
-        {datosEventosPorEstado.length > 0 ? (
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <GraficoPastel datos={datosEventosPorEstado} tamaño={250} />
-          </div>
-        ) : (
-          <p style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>No hay datos disponibles</p>
-        )}
-      </div>
-
-      {/* Gráfico financiero */}
-      {datosFinanciero.length > 0 && (
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb',
-            marginBottom: '2rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <DollarSign size={24} color="#10b981" />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Estado Financiero</h2>
-          </div>
-          <GraficoBarras datos={datosFinanciero} altura={200} />
+      {/* KPIs de Daños y Calificaciones */}
+      {(resumenDanos || resumenCalificaciones) && (
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(180px, 1fr))', 
+          gap: isMobile ? '0.75rem' : '1rem', 
+          marginBottom: '1.5rem' 
+        }}>
+          {/* Indicadores de Daños */}
+          {resumenDanos && (
+            <>
+              <KPICard
+                titulo="Eventos con Daños"
+                valor={resumenDanos.total_eventos_con_danos || 0}
+                subtexto={`${resumenDanos.eventos_pendientes_pago || 0} pendientes pago`}
+                icono={AlertTriangle}
+                color="#dc2626"
+                tendencia={resumenDanos.eventos_pendientes_pago > 0 ? 'down' : null}
+              />
+              <KPICard
+                titulo="Costo Total Daños"
+                valor={formatearMoneda(resumenDanos.costo_total_danos || 0)}
+                subtexto={`${formatearMoneda(resumenDanos.total_asumido_empresa || 0)} asumido`}
+                icono={AlertCircle}
+                color="#f59e0b"
+              />
+              <KPICard
+                titulo="Daños Cobrados"
+                valor={formatearMoneda(resumenDanos.total_pagado || 0)}
+                subtexto={`${formatearMoneda(resumenDanos.total_pendiente || 0)} pendiente`}
+                icono={DollarSign}
+                color={resumenDanos.total_pendiente > 0 ? '#f59e0b' : '#10b981'}
+                tendencia={resumenDanos.total_pendiente > 0 ? 'down' : 'up'}
+              />
+            </>
+          )}
+          
+          {/* Indicadores de Calificaciones */}
+          {resumenCalificaciones && (
+            <>
+              <KPICard
+                titulo="Promedio Calificación"
+                valor={`${(resumenCalificaciones.promedio_calificacion || 0).toFixed(1)} / 5`}
+                subtexto={`${resumenCalificaciones.total_calificaciones || 0} evaluaciones`}
+                icono={Star}
+                color="#f59e0b"
+                tendencia={resumenCalificaciones.promedio_calificacion >= 4 ? 'up' : resumenCalificaciones.promedio_calificacion < 3 ? 'down' : null}
+              />
+              <KPICard
+                titulo="Calificaciones 5⭐"
+                valor={resumenCalificaciones.calificaciones_5 || 0}
+                subtexto={`${((resumenCalificaciones.calificaciones_5 || 0) / Math.max(resumenCalificaciones.total_calificaciones || 1, 1) * 100).toFixed(0)}% del total`}
+                icono={Star}
+                color="#10b981"
+                tendencia="up"
+              />
+              <KPICard
+                titulo="Pendientes de Calificar"
+                valor={resumenCalificaciones.pendientes_calificar || 0}
+                subtexto="Eventos completados"
+                icono={Clock}
+                color="#6366f1"
+              />
+            </>
+          )}
         </div>
       )}
 
-      {/* Notificaciones y WhatsApp */}
-      {metricas?.notificaciones && (
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb',
-            marginBottom: '2rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <Activity size={24} color="#6366f1" />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Notificaciones y WhatsApp</h2>
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '1rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <IndicadorProgreso
-              titulo="Email (notificaciones)"
-              valor={metricas.notificaciones.envios?.email || 0}
-              total={metricas.notificaciones.maximo_email || metricas.notificaciones.envios?.email || 0}
-              color="#10b981"
-              icono={Mail}
-              mostrarLimite={true}
-              limite={metricas.notificaciones.maximo_email}
-            />
-            <IndicadorProgreso
-              titulo="WhatsApp (notificaciones)"
-              valor={metricas.notificaciones.envios?.whatsapp || 0}
-              total={metricas.notificaciones.maximo_whatsapp || metricas.notificaciones.envios?.whatsapp || 0}
-              color="#3b82f6"
-              icono={MessageCircle}
-              mostrarLimite={true}
-              limite={metricas.notificaciones.maximo_whatsapp}
-            />
-            <IndicadorProgreso
-              titulo="Costo Email"
-              valor={metricas.notificaciones.costos?.email || 0}
-              total={metricas.notificaciones.costos?.email || 0}
-              color="#f59e0b"
-              icono={DollarSign}
-              formatear={formatearMonedaSimple}
-            />
-            <IndicadorProgreso
-              titulo="Costo WhatsApp"
-              valor={metricas.notificaciones.costos?.whatsapp || 0}
-              total={metricas.notificaciones.costos?.whatsapp || 0}
-              color="#8b5cf6"
-              icono={DollarSign}
-              formatear={formatearMonedaSimple}
-            />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
-            <div style={{ backgroundColor: '#f9fafb', borderRadius: '0.5rem', padding: '1rem' }}>
-              <h4 style={{ margin: 0, marginBottom: '0.75rem', fontSize: '0.95rem' }}>WhatsApp (inbound/outbound)</h4>
-              <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: '#374151' }}>
-                <div>Inbound: {metricas.notificaciones.whatsapp_chat?.inbound || 0}</div>
-                <div>Outbound: {metricas.notificaciones.whatsapp_chat?.outbound || 0}</div>
-                <div>Bot: {metricas.notificaciones.whatsapp_chat?.bot || 0}</div>
-                <div>Humano: {metricas.notificaciones.whatsapp_chat?.humano || 0}</div>
+      {/* Segunda fila: Estado Financiero + Pipeline de Eventos */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', 
+        gap: '1rem', 
+        marginBottom: '1.5rem' 
+      }}>
+        {/* Estado Financiero - Gráfico de progreso */}
+        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: isMobile ? '1rem' : '1.25rem', border: '1px solid #e5e7eb' }}>
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '0 0 1rem 0', color: '#374151' }}>
+            Estado de Cartera
+          </h3>
+          
+          {/* Barra visual principal */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', height: '32px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#f3f4f6' }}>
+              <div 
+                style={{ 
+                  width: `${totalIngresos > 0 ? (totalCobrado / totalIngresos) * 100 : 0}%`, 
+                  backgroundColor: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'width 0.5s ease',
+                }}
+              >
+                {totalIngresos > 0 && (totalCobrado / totalIngresos) * 100 > 15 && (
+                  <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {formatearMoneda(totalCobrado)}
+                  </span>
+                )}
+              </div>
+              <div 
+                style={{ 
+                  width: `${totalIngresos > 0 ? (saldoPendiente / totalIngresos) * 100 : 0}%`, 
+                  backgroundColor: '#f59e0b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'width 0.5s ease',
+                }}
+              >
+                {totalIngresos > 0 && (saldoPendiente / totalIngresos) * 100 > 15 && (
+                  <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {formatearMoneda(saldoPendiente)}
+                  </span>
+                )}
               </div>
             </div>
-            <div style={{ backgroundColor: '#f9fafb', borderRadius: '0.5rem', padding: '1rem' }}>
-              <h4 style={{ margin: 0, marginBottom: '0.75rem', fontSize: '0.95rem' }}>Totales WhatsApp</h4>
-              <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem', color: '#374151' }}>
-                <div>Total outbound: {metricas.notificaciones.whatsapp_total_out || 0}</div>
-                <div>
-                  Costo total: {formatearMonedaSimple(metricas.notificaciones.whatsapp_total_cost || 0)}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#10b981' }} />
+                <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Cobrado ({porcentajeCobrado}%)</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#f59e0b' }} />
+                <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Pendiente ({(100 - parseFloat(porcentajeCobrado)).toFixed(1)}%)</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>Total de pagos recibidos</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>{metricas.financiero?.total_pagos || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Pipeline de Eventos */}
+        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: isMobile ? '1rem' : '1.25rem', border: '1px solid #e5e7eb' }}>
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '0 0 1rem 0', color: '#374151' }}>
+            Pipeline de Eventos
+          </h3>
+          
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(140px, 1fr))', 
+            gap: isMobile ? '0.5rem' : '0.75rem' 
+          }}>
+            <EstadoCard icono={FileText} label="Cotización" valor={eventosCotizacion} color="#6b7280" bgColor="#f9fafb" />
+            <EstadoCard icono={CheckCircle} label="Confirmados" valor={eventosConfirmados} color="#8b5cf6" bgColor="#f5f3ff" />
+            <EstadoCard icono={Activity} label="En Proceso" valor={eventosEnProceso} color="#3b82f6" bgColor="#eff6ff" />
+            <EstadoCard icono={Target} label="Completados" valor={eventosCompletados} color="#059669" bgColor="#ecfdf5" />
+            <EstadoCard icono={XCircle} label="Cancelados" valor={eventosCancelados} color="#dc2626" bgColor="#fef2f2" />
+          </div>
+
+          <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '1rem', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>Promedio invitados/evento</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>{Math.round(metricas.estadisticas?.promedio_invitados || 0)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tercera fila: Comunicaciones + Recursos */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', 
+        gap: '1rem', 
+        marginBottom: '1.5rem' 
+      }}>
+        {/* Comunicaciones */}
+        {metricas?.notificaciones && (
+          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: isMobile ? '1rem' : '1.25rem', border: '1px solid #e5e7eb' }}>
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '0 0 1rem 0', color: '#374151' }}>
+              Comunicaciones
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              {/* WhatsApp */}
+              <div style={{ backgroundColor: '#f0fdf4', borderRadius: '0.5rem', padding: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <MessageCircle size={16} color="#059669" />
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#059669' }}>WhatsApp</span>
                 </div>
+                <p style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', margin: 0 }}>
+                  {totalWA}
+                  <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#6b7280' }}>
+                    {' '}/ {maxWA !== null && maxWA !== undefined ? maxWA.toLocaleString() : '∞'}
+                  </span>
+                </p>
+                {maxWA !== null && maxWA !== undefined && totalWA > maxWA && (
+                  <p style={{ fontSize: '0.7rem', color: '#dc2626', margin: '0.25rem 0 0 0' }}>
+                    Excedidos: {totalWA - maxWA}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div style={{ backgroundColor: '#eff6ff', borderRadius: '0.5rem', padding: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <Mail size={16} color="#3b82f6" />
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#3b82f6' }}>Email</span>
+                </div>
+                <p style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', margin: 0 }}>
+                  {totalEmail}
+                  <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#6b7280' }}>
+                    {' '}/ {maxEmail !== null && maxEmail !== undefined ? maxEmail.toLocaleString() : '∞'}
+                  </span>
+                </p>
+                {maxEmail !== null && maxEmail !== undefined && totalEmail > maxEmail && (
+                  <p style={{ fontSize: '0.7rem', color: '#dc2626', margin: '0.25rem 0 0 0' }}>
+                    Excedidos: {totalEmail - maxEmail}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Costos */}
+            <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Costo WhatsApp</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#111827' }}>
+                  {formatearMonedaDecimal(metricas.notificaciones.whatsapp_total_cost || 0)}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Costo Email</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#111827' }}>
+                  {formatearMonedaDecimal(metricas.notificaciones.email_total_cost || 0)}
+                </span>
               </div>
             </div>
           </div>
+        )}
 
-          <div style={{ marginTop: '1.5rem' }}>
-            <h4 style={{ margin: 0, marginBottom: '0.75rem', fontSize: '0.95rem' }}>Notificaciones por tipo</h4>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '520px' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f3f4f6', textAlign: 'left' }}>
-                    <th style={{ padding: '0.6rem' }}>Tipo</th>
-                    <th style={{ padding: '0.6rem' }}>Email</th>
-                    <th style={{ padding: '0.6rem' }}>WhatsApp</th>
-                    <th style={{ padding: '0.6rem' }}>Total</th>
-                    <th style={{ padding: '0.6rem' }}>Costo Email</th>
-                    <th style={{ padding: '0.6rem' }}>Costo WhatsApp</th>
+        {/* Recursos del Sistema */}
+        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: isMobile ? '1rem' : '1.25rem', border: '1px solid #e5e7eb' }}>
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '0 0 1rem 0', color: '#374151' }}>
+            Recursos del Sistema
+          </h3>
+
+          <ProgressBar
+            label="Productos activos"
+            valor={`${metricas.recursos?.productos?.activos || 0} / ${metricas.recursos?.productos?.total || 0}`}
+            total={metricas.recursos?.productos?.total || 1}
+            color="#6366f1"
+          />
+          <ProgressBar
+            label="Planes activos"
+            valor={`${metricas.recursos?.planes?.activos || 0} / ${metricas.recursos?.planes?.total || 0}`}
+            total={metricas.recursos?.planes?.total || 1}
+            color="#8b5cf6"
+          />
+          <ProgressBar
+            label="Salones activos"
+            valor={`${metricas.recursos?.salones?.activos || 0} / ${metricas.recursos?.salones?.total || 0}`}
+            total={metricas.recursos?.salones?.total || 1}
+            color="#10b981"
+          />
+        </div>
+      </div>
+
+      {/* Tabla de notificaciones por tipo (compacta y responsiva) */}
+      {metricas?.notificaciones?.por_tipo && metricas.notificaciones.por_tipo.length > 0 && (
+        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: isMobile ? '1rem' : '1.25rem', border: '1px solid #e5e7eb' }}>
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '0 0 1rem 0', color: '#374151' }}>
+            Detalle de Notificaciones
+          </h3>
+          <div style={{ overflowX: 'auto', margin: isMobile ? '0 -1rem' : 0, padding: isMobile ? '0 1rem' : 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: isMobile ? '0.75rem' : '0.8rem', minWidth: isMobile ? '400px' : 'auto' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb' }}>
+                  <th style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'left', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>Tipo</th>
+                  <th style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'center', fontWeight: 600, color: '#374151' }}>Email</th>
+                  <th style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'center', fontWeight: 600, color: '#374151' }}>WA</th>
+                  <th style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'center', fontWeight: 600, color: '#374151' }}>Total</th>
+                  <th style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'right', fontWeight: 600, color: '#374151' }}>Costo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {metricas.notificaciones.por_tipo.map((row) => (
+                  <tr key={row.tipo_notificacion} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                    <td style={{ padding: isMobile ? '0.5rem' : '0.6rem', color: '#4b5563', whiteSpace: 'nowrap' }}>{row.tipo_notificacion.replace(/_/g, ' ')}</td>
+                    <td style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'center', color: '#4b5563' }}>{row.email_out}</td>
+                    <td style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'center', color: '#4b5563' }}>{row.whatsapp_out}</td>
+                    <td style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'center', fontWeight: 600, color: '#111827' }}>{row.total}</td>
+                    <td style={{ padding: isMobile ? '0.5rem' : '0.6rem', textAlign: 'right', color: '#4b5563', whiteSpace: 'nowrap' }}>
+                      {formatearMonedaDecimal((row.costo_email || 0) + (row.costo_whatsapp || 0))}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {(metricas.notificaciones.por_tipo || []).map((row) => (
-                    <tr key={row.tipo_notificacion} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                      <td style={{ padding: '0.6rem' }}>{row.tipo_notificacion}</td>
-                      <td style={{ padding: '0.6rem' }}>{row.email_out}</td>
-                      <td style={{ padding: '0.6rem' }}>{row.whatsapp_out}</td>
-                      <td style={{ padding: '0.6rem' }}>{row.total}</td>
-                      <td style={{ padding: '0.6rem' }}>{formatearMonedaSimple(row.costo_email || 0)}</td>
-                      <td style={{ padding: '0.6rem' }}>{formatearMonedaSimple(row.costo_whatsapp || 0)}</td>
-                    </tr>
-                  ))}
-                  {(metricas.notificaciones.por_tipo || []).length === 0 && (
-                    <tr>
-                      <td colSpan={6} style={{ padding: '0.75rem', color: '#6b7280' }}>
-                        Sin datos de notificaciones enviadas.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {/* Resumen detallado */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '1.5rem',
-          marginBottom: '2rem',
-        }}
-      >
-        {/* Estadísticas de eventos */}
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '1.5rem',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <Calendar size={20} color="#6366f1" />
-            <h3 style={{ fontSize: '1rem', fontWeight: '600', margin: 0 }}>Estadísticas de Eventos</h3>
-          </div>
-          <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {[
-              { label: 'Cotización', valor: metricas.eventos?.cotizacion || 0, color: '#6b7280' },
-              { label: 'Confirmados', valor: metricas.eventos?.confirmados || 0, color: '#8b5cf6' },
-              { label: 'En Proceso', valor: metricas.eventos?.en_proceso || 0, color: '#3b82f6' },
-              { label: 'Completados', valor: metricas.eventos?.completados || 0, color: '#10b981' },
-              { label: 'Cancelados', valor: metricas.eventos?.cancelados || 0, color: '#ef4444' },
-            ].map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.75rem',
-                  backgroundColor: '#f9fafb',
-                  borderRadius: '0.375rem',
-                }}
-              >
-                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{item.label}</span>
-                <span style={{ fontSize: '1rem', fontWeight: '600', color: item.color }}>{item.valor}</span>
-              </div>
-            ))}
-          </div>
+      {/* Sección de Descarga de Reportes */}
+      <div style={{ 
+        backgroundColor: 'white', 
+        borderRadius: '0.75rem', 
+        padding: isMobile ? '1rem' : '1.5rem', 
+        border: '1px solid #e5e7eb',
+        marginTop: '1.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <FileSpreadsheet size={isMobile ? 18 : 20} color="#6366f1" />
+          <h3 style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 600, margin: 0, color: '#374151' }}>
+            Descargar Reportes
+          </h3>
         </div>
-
-        {/* Estadísticas financieras */}
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '1.5rem',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <DollarSign size={20} color="#10b981" />
-            <h3 style={{ fontSize: '1rem', fontWeight: '600', margin: 0 }}>Resumen Financiero</h3>
-          </div>
-          <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {[
-              {
-                label: 'Total Ingresos',
-                valor: formatearMoneda(metricas.financiero?.total_ingresos || 0),
-                color: '#10b981',
-              },
-              {
-                label: 'Total Cobrado',
-                valor: formatearMoneda(metricas.financiero?.total_cobrado || 0),
-                color: '#3b82f6',
-              },
-              {
-                label: 'Saldo Pendiente',
-                valor: formatearMoneda(metricas.financiero?.total_pendiente || 0),
-                color: '#f59e0b',
-              },
-              {
-                label: '% Cobrado',
-                valor: `${(metricas.financiero?.porcentaje_cobrado || 0).toFixed(1)}%`,
-                color: '#8b5cf6',
-              },
-              {
-                label: 'Total Pagos',
-                valor: metricas.financiero?.total_pagos || 0,
-                color: '#6366f1',
-              },
-            ].map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.75rem',
-                  backgroundColor: '#f9fafb',
-                  borderRadius: '0.375rem',
-                }}
-              >
-                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{item.label}</span>
-                <span style={{ fontSize: '1rem', fontWeight: '600', color: item.color }}>{item.valor}</span>
+        <p style={{ fontSize: isMobile ? '0.8rem' : '0.85rem', color: '#6b7280', marginBottom: '1rem' }}>
+          {isMobile 
+            ? 'Descarga los datos en CSV.' 
+            : `Descarga los datos de su sistema. ${fechaDesde || fechaHasta ? 'Los reportes con filtro de fecha usarán el rango seleccionado.' : 'Usa los filtros de fecha para limitar los datos.'}`
+          }
+        </p>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))', 
+          gap: isMobile ? '0.75rem' : '1rem' 
+        }}>
+          {/* Reporte de Eventos */}
+          <button
+            onClick={() => descargarReporte('eventos')}
+            disabled={descargando === 'eventos'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'eventos' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'eventos' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#dbeafe',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Calendar size={isMobile ? 14 : 18} color="#2563eb" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Eventos</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'eventos' ? 'Descargando...' : 'Lista completa'}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
 
-        {/* Estadísticas de recursos */}
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '1.5rem',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <Package size={20} color="#f59e0b" />
-            <h3 style={{ fontSize: '1rem', fontWeight: '600', margin: 0 }}>Recursos del Sistema</h3>
-          </div>
-          <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {[
-              {
-                label: 'Productos',
-                valor: `${metricas.recursos?.productos?.activos || 0} / ${metricas.recursos?.productos?.total || 0}`,
-                icono: Package,
-                color: '#6366f1',
-              },
-              {
-                label: 'Planes',
-                valor: `${metricas.recursos?.planes?.activos || 0} / ${metricas.recursos?.planes?.total || 0}`,
-                icono: FileText,
-                color: '#8b5cf6',
-              },
-              {
-                label: 'Salones',
-                valor: `${metricas.recursos?.salones?.activos || 0} / ${metricas.recursos?.salones?.total || 0}`,
-                icono: Building,
-                color: '#10b981',
-              },
-              {
-                label: 'Promedio Eventos/Cliente',
-                valor: (metricas.clientes?.promedio_eventos_cliente || 0).toFixed(1),
-                icono: Users,
-                color: '#ec4899',
-              },
-              {
-                label: 'Promedio Invitados',
-                valor: Math.round(metricas.estadisticas?.promedio_invitados || 0),
-                icono: Users,
-                color: '#f59e0b',
-              },
-            ].map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.75rem',
-                  backgroundColor: '#f9fafb',
-                  borderRadius: '0.375rem',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  {React.createElement(item.icono, { size: 16, color: item.color })}
-                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{item.label}</span>
-                </div>
-                <span style={{ fontSize: '1rem', fontWeight: '600', color: item.color }}>{item.valor}</span>
+          {/* Reporte de Pagos */}
+          <button
+            onClick={() => descargarReporte('pagos')}
+            disabled={descargando === 'pagos'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'pagos' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'pagos' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#dcfce7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <CreditCard size={isMobile ? 14 : 18} color="#16a34a" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Pagos</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'pagos' ? 'Descargando...' : 'Historial'}
               </div>
-            ))}
-          </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
+
+          {/* Reporte de Inventario */}
+          <button
+            onClick={() => descargarReporte('inventario')}
+            disabled={descargando === 'inventario'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'inventario' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'inventario' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#fef3c7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Package size={isMobile ? 14 : 18} color="#d97706" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Inventario</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'inventario' ? 'Descargando...' : 'Productos'}
+              </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
+
+          {/* Reporte de Cardex */}
+          <button
+            onClick={() => descargarReporte('cardex')}
+            disabled={descargando === 'cardex'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'cardex' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'cardex' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#e0e7ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Box size={isMobile ? 14 : 18} color="#4f46e5" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Cardex</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'cardex' ? 'Descargando...' : 'Movimientos'}
+              </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
+
+          {/* Reporte de Notificaciones */}
+          <button
+            onClick={() => descargarReporte('notificaciones')}
+            disabled={descargando === 'notificaciones'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'notificaciones' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'notificaciones' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#fce7f3',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Bell size={isMobile ? 14 : 18} color="#db2777" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Notificaciones</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'notificaciones' ? 'Descargando...' : 'Historial'}
+              </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
+
+          {/* Reporte de Clientes */}
+          <button
+            onClick={() => descargarReporte('clientes')}
+            disabled={descargando === 'clientes'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'clientes' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'clientes' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#f3e8ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Users size={isMobile ? 14 : 18} color="#9333ea" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Clientes</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'clientes' ? 'Descargando...' : 'Base de datos'}
+              </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
+
+          {/* Reporte de Daños */}
+          <button
+            onClick={() => descargarReporte('danos')}
+            disabled={descargando === 'danos'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'danos' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'danos' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <AlertTriangle size={isMobile ? 14 : 18} color="#dc2626" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Daños</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'danos' ? 'Descargando...' : 'Registro de daños'}
+              </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
+
+          {/* Reporte de Calificaciones */}
+          <button
+            onClick={() => descargarReporte('calificaciones')}
+            disabled={descargando === 'calificaciones'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              padding: isMobile ? '0.75rem' : '1rem',
+              backgroundColor: descargando === 'calificaciones' ? '#f3f4f6' : '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.5rem',
+              cursor: descargando === 'calificaciones' ? 'wait' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !descargando && (e.currentTarget.style.backgroundColor = '#f9fafb')}
+          >
+            <div style={{ 
+              width: isMobile ? '2rem' : '2.5rem', 
+              height: isMobile ? '2rem' : '2.5rem', 
+              borderRadius: '0.5rem', 
+              backgroundColor: '#fef9c3',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Star size={isMobile ? 14 : 18} color="#ca8a04" />
+            </div>
+            <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#111827' }}>Calificaciones</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {descargando === 'calificaciones' ? 'Descargando...' : 'Evaluaciones clientes'}
+              </div>
+            </div>
+            <Download size={isMobile ? 14 : 18} color="#6b7280" />
+          </button>
         </div>
       </div>
     </div>

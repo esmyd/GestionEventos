@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { whatsappMetricasService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
+import { Calendar, Filter } from 'lucide-react';
 
 const WhatsAppMetricas = () => {
   const { toasts, removeToast, error: showError, success } = useToast();
@@ -16,12 +17,20 @@ const WhatsAppMetricas = () => {
   const [clientes, setClientes] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [guardando, setGuardando] = useState(false);
+  
+  // Filtros de fecha
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
 
-  const cargar = async () => {
+  const cargar = async (desde = fechaDesde, hasta = fechaHasta) => {
     try {
+      const params = {};
+      if (desde) params.fecha_desde = desde;
+      if (hasta) params.fecha_hasta = hasta;
+      
       const [resumenResp, clientesResp] = await Promise.all([
-        whatsappMetricasService.getResumen(),
-        whatsappMetricasService.getClientes(),
+        whatsappMetricasService.getResumen(params),
+        whatsappMetricasService.getClientes(params),
       ]);
       setResumen(resumenResp.resumen || {});
       setConfig(resumenResp.config || { 
@@ -41,6 +50,16 @@ const WhatsAppMetricas = () => {
   useEffect(() => {
     cargar();
   }, []);
+
+  const aplicarFiltros = () => {
+    cargar(fechaDesde, fechaHasta);
+  };
+
+  const limpiarFiltros = () => {
+    setFechaDesde('');
+    setFechaHasta('');
+    cargar('', '');
+  };
 
   const parseDecimal = (valor) => {
     if (valor === null || valor === undefined) return 0;
@@ -136,11 +155,81 @@ const WhatsAppMetricas = () => {
   return (
     <div style={{ padding: '1.5rem 2rem' }}>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ marginBottom: '1rem' }}>
-        <h2 style={{ fontSize: '1.6rem', marginBottom: '0.25rem' }}>Panel WhatsApp & Email</h2>
-        <p style={{ color: 'var(--gray-600)' }}>
-          Control de consumos, costos y bloqueos por cliente.
-        </p>
+      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1.6rem', marginBottom: '0.25rem' }}>Panel WhatsApp & Email</h2>
+          <p style={{ color: 'var(--gray-600)' }}>
+            Control de consumos, costos y bloqueos por cliente.
+          </p>
+        </div>
+        
+        {/* Filtros de fecha */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Calendar size={16} color="#6b7280" />
+            <input
+              type="date"
+              value={fechaDesde}
+              onChange={(e) => setFechaDesde(e.target.value)}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                fontSize: '0.875rem',
+              }}
+              placeholder="Desde"
+            />
+            <span style={{ color: '#6b7280' }}>-</span>
+            <input
+              type="date"
+              value={fechaHasta}
+              onChange={(e) => setFechaHasta(e.target.value)}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                fontSize: '0.875rem',
+              }}
+              placeholder="Hasta"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={aplicarFiltros}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#3b82f6',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontSize: '0.875rem',
+            }}
+          >
+            <Filter size={14} />
+            Filtrar
+          </button>
+          {(fechaDesde || fechaHasta) && (
+            <button
+              type="button"
+              onClick={limpiarFiltros}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                background: '#f3f4f6',
+                color: '#374151',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
@@ -284,9 +373,7 @@ const WhatsAppMetricas = () => {
             <thead>
               <tr style={{ background: '#f9fafb' }}>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Cliente</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem' }}>WhatsApp Out</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem' }}>WhatsApp Sistema</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem' }}>Bot/Humano</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem' }}>WhatsApp Enviados</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Email</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Costo WhatsApp</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem' }}>Costo Email</th>
@@ -294,15 +381,25 @@ const WhatsAppMetricas = () => {
               </tr>
             </thead>
             <tbody>
-              {clientesFiltrados.map((c) => (
+              {clientesFiltrados.map((c) => {
+                const totalWA = c.whatsapp_out || 0;
+                const sistemaWA = c.whatsapp_sistema || 0;
+                const chatWA = (c.whatsapp_bot || 0) + (c.whatsapp_humano || 0);
+                return (
                 <tr key={c.cliente_id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '0.75rem' }}>
                     <div style={{ fontWeight: 600 }}>{c.nombre_cliente}</div>
                     <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{c.telefono}</div>
                   </td>
-                  <td style={{ padding: '0.75rem' }}>{c.whatsapp_out || 0}</td>
-                  <td style={{ padding: '0.75rem' }}>{c.whatsapp_sistema || 0}</td>
-                  <td style={{ padding: '0.75rem' }}>{c.whatsapp_bot || 0} / {c.whatsapp_humano || 0}</td>
+                  <td style={{ padding: '0.75rem' }}>
+                    <div style={{ fontWeight: 600 }}>{totalWA}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      {sistemaWA > 0 && <span>Sistema: {sistemaWA}</span>}
+                      {sistemaWA > 0 && chatWA > 0 && <span> · </span>}
+                      {chatWA > 0 && <span>Chat: {chatWA}</span>}
+                      {sistemaWA === 0 && chatWA === 0 && totalWA > 0 && <span>Otros: {totalWA}</span>}
+                    </div>
+                  </td>
                   <td style={{ padding: '0.75rem' }}>{c.email_out || 0}</td>
                   <td style={{ padding: '0.75rem' }}>${(c.costo_whatsapp || 0).toFixed(2)}</td>
                   <td style={{ padding: '0.75rem' }}>${(c.costo_email || 0).toFixed(2)}</td>
@@ -339,10 +436,11 @@ const WhatsAppMetricas = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
               {clientesFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan={8} style={{ padding: '1rem', color: '#9ca3af' }}>
+                  <td colSpan={6} style={{ padding: '1rem', color: '#9ca3af' }}>
                     No hay clientes para mostrar.
                   </td>
                 </tr>

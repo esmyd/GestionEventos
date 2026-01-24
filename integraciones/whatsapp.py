@@ -501,3 +501,123 @@ class IntegracionWhatsApp:
         }
         return mensajes.get(tipo_notificacion, "Notificación de evento")
 
+    def enviar_mensaje_con_botones(self, telefono, titulo, mensaje, botones):
+        """
+        Envía un mensaje interactivo con botones de respuesta rápida.
+        
+        Args:
+            telefono: Número de teléfono destino
+            titulo: Título del mensaje (encabezado)
+            mensaje: Cuerpo del mensaje
+            botones: Lista de dicts con {'id': 'btn_id', 'titulo': 'Texto botón'}
+                     Máximo 3 botones por limitación de WhatsApp
+        
+        Returns:
+            (exito, wa_message_id, error)
+        """
+        self.cargar_configuracion()
+        if not self.activo:
+            return False, None, "Integración WhatsApp no activa"
+        if not telefono:
+            return False, None, "No hay teléfono"
+        
+        # WhatsApp permite máximo 3 botones en mensajes interactivos
+        if len(botones) > 3:
+            botones = botones[:3]
+        
+        try:
+            url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}/messages"
+            
+            # Construir estructura de botones
+            buttons_payload = []
+            for btn in botones:
+                buttons_payload.append({
+                    "type": "reply",
+                    "reply": {
+                        "id": btn.get('id', str(uuid.uuid4())[:20]),
+                        "title": btn.get('titulo', 'Opción')[:20]  # Máx 20 caracteres
+                    }
+                })
+            
+            payload = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": str(telefono).replace("+", "").replace(" ", ""),
+                "type": "interactive",
+                "interactive": {
+                    "type": "button",
+                    "header": {
+                        "type": "text",
+                        "text": titulo[:60]  # Máx 60 caracteres
+                    },
+                    "body": {
+                        "text": mensaje[:1024]  # Máx 1024 caracteres
+                    },
+                    "action": {
+                        "buttons": buttons_payload
+                    }
+                }
+            }
+            
+            data = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(url, data=data, method="POST")
+            req.add_header("Content-Type", "application/json")
+            req.add_header("Authorization", f"Bearer {self.access_token}")
+            
+            with urllib.request.urlopen(req, timeout=15) as response:
+                body = response.read().decode("utf-8")
+                if 200 <= response.status < 300:
+                    result = json.loads(body)
+                    wa_message_id = result.get("messages", [{}])[0].get("id")
+                    self.logger.info(f"WhatsApp con botones enviado OK a {telefono}")
+                    return True, wa_message_id, None
+                return False, None, f"Respuesta no OK: {response.status}"
+                
+        except urllib.error.HTTPError as e:
+            try:
+                body = e.read().decode("utf-8")
+            except Exception:
+                body = str(e)
+            self.logger.error(f"Error HTTP WhatsApp botones: {e.code} {body}")
+            return False, None, body
+        except Exception as e:
+            self.logger.error(f"Error al enviar WhatsApp con botones: {e}")
+            return False, None, str(e)
+
+    def enviar_solicitud_calificacion(self, telefono, nombre_evento, evento_id):
+        """
+        Envía solicitud de calificación como mensaje de texto simple.
+        El cliente responde con un número del 1 al 5.
+        Este método es compatible con todas las cuentas de WhatsApp Business.
+        """
+        self.cargar_configuracion()
+        if not self.activo:
+            return False, None, "Integración WhatsApp no activa"
+        if not telefono:
+            return False, None, "No hay teléfono"
+        
+        # Mensaje de texto simple que funciona sin permisos especiales
+        mensaje = f"""⭐ *¡Califique su experiencia!*
+
+Gracias por confiar en nosotros para su evento *"{nombre_evento}"*.
+
+Nos encantaría conocer su opinión. Por favor, responda con un número del *1 al 5*:
+
+5️⃣ - Excelente (superó mis expectativas)
+4️⃣ - Muy Bueno (cumplió mis expectativas)
+3️⃣ - Bueno (fue aceptable)
+2️⃣ - Regular (pudo ser mejor)
+1️⃣ - Malo (no cumplió expectativas)
+
+_Simplemente responda con el número de su calificación._
+
+📝 Ref: calif_{evento_id}"""
+        
+        # Usar el método con error que retorna tupla (exito, wa_message_id, error)
+        exito, wa_message_id, error = self.enviar_mensaje_con_error(telefono, mensaje)
+        
+        if exito:
+            self.logger.info(f"Solicitud de calificación enviada a {telefono} para evento {evento_id}")
+        
+        return exito, wa_message_id, error
+

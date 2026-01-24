@@ -116,9 +116,27 @@ class IntegracionEmail:
             self.logger.info(f"Autenticando SMTP como {self.email_from}")
             server.login(self.email_from, self.email_password)
             
-            # Enviar correo
+            # Enviar correo usando sendmail para capturar respuesta completa
             self.logger.info(f"Enviando correo a {destinatario}")
-            server.send_message(msg)
+            
+            # Usar sendmail directamente para obtener respuesta detallada
+            msg_string = msg.as_string()
+            self.logger.info(f"Tamaño del mensaje: {len(msg_string)} bytes")
+            
+            rechazados = server.sendmail(
+                self.email_from,
+                [destinatario],
+                msg_string
+            )
+            
+            # sendmail retorna un diccionario de rechazados
+            if rechazados:
+                self.logger.error(f"Destinatarios rechazados por SMTP: {rechazados}")
+                server.quit()
+                return False
+            
+            # Verificar última respuesta del servidor
+            self.logger.info(f"Correo aceptado por servidor SMTP para {destinatario}")
             server.quit()
             self.logger.info("Conexion SMTP cerrada correctamente")
             self.logger.info(f"Correo enviado exitosamente a {destinatario}: {asunto}")

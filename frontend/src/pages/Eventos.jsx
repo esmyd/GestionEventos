@@ -20,6 +20,7 @@ const Eventos = () => {
   const [error, setError] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroAsignacion, setFiltroAsignacion] = useState('todos');
+  const [filtroEspecial, setFiltroEspecial] = useState(''); // 'saldo_pendiente', 'pagado', etc.
   const [busqueda, setBusqueda] = useState('');
   const [mostrarModalEstado, setMostrarModalEstado] = useState(false);
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
@@ -206,14 +207,28 @@ const Eventos = () => {
 
   const eventosFiltrados = eventos
     .filter((evento) => {
-      if (!busqueda) return true;
-      const busquedaLower = busqueda.toLowerCase();
-      return (
-        evento.nombre_evento?.toLowerCase().includes(busquedaLower) ||
-        evento.documento_identidad_cliente?.toLowerCase().includes(busquedaLower) ||
-        evento.nombre_cliente?.toLowerCase().includes(busquedaLower) ||
-        evento.tipo_evento?.toLowerCase().includes(busquedaLower)
-      );
+      // Filtro por búsqueda de texto
+      if (busqueda) {
+        const busquedaLower = busqueda.toLowerCase();
+        const coincide = (
+          evento.nombre_evento?.toLowerCase().includes(busquedaLower) ||
+          evento.documento_identidad_cliente?.toLowerCase().includes(busquedaLower) ||
+          evento.nombre_cliente?.toLowerCase().includes(busquedaLower) ||
+          evento.tipo_evento?.toLowerCase().includes(busquedaLower)
+        );
+        if (!coincide) return false;
+      }
+      
+      // Filtro especial (saldo pendiente, pagado completo, etc.)
+      if (filtroEspecial === 'saldo_pendiente') {
+        const saldo = parseFloat(evento.saldo || 0);
+        if (saldo <= 0) return false;
+      } else if (filtroEspecial === 'pagado_completo') {
+        const saldo = parseFloat(evento.saldo || 0);
+        if (saldo > 0) return false;
+      }
+      
+      return true;
     })
     .sort((a, b) => {
       const idA = a.id_evento || a.id || 0;
@@ -294,7 +309,7 @@ const Eventos = () => {
             backgroundColor: 'white',
             padding: '1.25rem',
             borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            boxShadow: (!filtroEstado && !filtroEspecial) ? '0 0 0 2px #6366f1' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             border: '1px solid #e5e7eb',
             display: 'flex',
             alignItems: 'center',
@@ -304,13 +319,16 @@ const Eventos = () => {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = (!filtroEstado && !filtroEspecial) ? '0 0 0 2px #6366f1, 0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = (!filtroEstado && !filtroEspecial) ? '0 0 0 2px #6366f1' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
           }}
-          onClick={() => setFiltroEstado('')}
+          onClick={() => {
+            setFiltroEstado('');
+            setFiltroEspecial('');
+          }}
         >
           <div
             style={{
@@ -342,7 +360,7 @@ const Eventos = () => {
             backgroundColor: 'white',
             padding: '1.25rem',
             borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            boxShadow: filtroEstado === 'en_proceso' ? '0 0 0 2px #3b82f6' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             border: '1px solid #e5e7eb',
             display: 'flex',
             alignItems: 'center',
@@ -352,13 +370,16 @@ const Eventos = () => {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = filtroEstado === 'en_proceso' ? '0 0 0 2px #3b82f6, 0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = filtroEstado === 'en_proceso' ? '0 0 0 2px #3b82f6' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
           }}
-          onClick={() => setFiltroEstado('en_proceso')}
+          onClick={() => {
+            setFiltroEspecial('');
+            setFiltroEstado(filtroEstado === 'en_proceso' ? '' : 'en_proceso');
+          }}
         >
           <div
             style={{
@@ -390,7 +411,7 @@ const Eventos = () => {
             backgroundColor: 'white',
             padding: '1.25rem',
             borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            boxShadow: filtroEstado === 'confirmado' ? '0 0 0 2px #10b981' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             border: '1px solid #e5e7eb',
             display: 'flex',
             alignItems: 'center',
@@ -400,13 +421,16 @@ const Eventos = () => {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = filtroEstado === 'confirmado' ? '0 0 0 2px #10b981, 0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = filtroEstado === 'confirmado' ? '0 0 0 2px #10b981' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
           }}
-          onClick={() => setFiltroEstado('confirmado')}
+          onClick={() => {
+            setFiltroEspecial('');
+            setFiltroEstado(filtroEstado === 'confirmado' ? '' : 'confirmado');
+          }}
         >
           <div
             style={{
@@ -438,7 +462,7 @@ const Eventos = () => {
             backgroundColor: 'white',
             padding: '1.25rem',
             borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            boxShadow: filtroEstado === 'completado' ? '0 0 0 2px #8b5cf6' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             border: '1px solid #e5e7eb',
             display: 'flex',
             alignItems: 'center',
@@ -448,13 +472,16 @@ const Eventos = () => {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = filtroEstado === 'completado' ? '0 0 0 2px #8b5cf6, 0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.boxShadow = filtroEstado === 'completado' ? '0 0 0 2px #8b5cf6' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
           }}
-          onClick={() => setFiltroEstado('completado')}
+          onClick={() => {
+            setFiltroEspecial('');
+            setFiltroEstado(filtroEstado === 'completado' ? '' : 'completado');
+          }}
         >
           <div
             style={{
@@ -488,20 +515,25 @@ const Eventos = () => {
                 backgroundColor: 'white',
                 padding: '1.25rem',
                 borderRadius: '0.5rem',
-                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                boxShadow: filtroEspecial === 'pagado_completo' ? '0 0 0 2px #10b981' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e5e7eb',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1rem',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = filtroEspecial === 'pagado_completo' ? '0 0 0 2px #10b981, 0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = filtroEspecial === 'pagado_completo' ? '0 0 0 2px #10b981' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+              }}
+              onClick={() => {
+                setFiltroEstado('');
+                setFiltroEspecial(filtroEspecial === 'pagado_completo' ? '' : 'pagado_completo');
               }}
             >
               <div
@@ -534,20 +566,25 @@ const Eventos = () => {
                 backgroundColor: 'white',
                 padding: '1.25rem',
                 borderRadius: '0.5rem',
-                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                boxShadow: filtroEspecial === 'saldo_pendiente' ? '0 0 0 2px #f59e0b' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e5e7eb',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1rem',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = filtroEspecial === 'saldo_pendiente' ? '0 0 0 2px #f59e0b, 0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = filtroEspecial === 'saldo_pendiente' ? '0 0 0 2px #f59e0b' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+              }}
+              onClick={() => {
+                setFiltroEstado('');
+                setFiltroEspecial(filtroEspecial === 'saldo_pendiente' ? '' : 'saldo_pendiente');
               }}
             >
               <div
@@ -576,6 +613,66 @@ const Eventos = () => {
           </>
         )}
       </div>
+
+      {/* Indicador de filtro activo */}
+      {(filtroEstado || filtroEspecial) && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.75rem 1rem',
+            backgroundColor: '#fef3c7',
+            borderRadius: '0.5rem',
+            marginBottom: '1rem',
+            border: '1px solid #fcd34d',
+          }}
+        >
+          <Filter size={18} color="#d97706" />
+          <span style={{ color: '#92400e', fontWeight: '500', flex: 1 }}>
+            Filtro activo: {' '}
+            <strong>
+              {filtroEstado === 'en_proceso' && 'En Proceso'}
+              {filtroEstado === 'confirmado' && 'Confirmados'}
+              {filtroEstado === 'completado' && 'Completados'}
+              {filtroEstado === 'cotizacion' && 'Cotización'}
+              {filtroEstado === 'cancelado' && 'Cancelados'}
+              {filtroEspecial === 'saldo_pendiente' && 'Con Saldo Pendiente'}
+              {filtroEspecial === 'pagado_completo' && 'Pagado Completo'}
+            </strong>
+            {' '} ({eventosFiltrados.length} {eventosFiltrados.length === 1 ? 'resultado' : 'resultados'})
+          </span>
+          <button
+            onClick={() => {
+              setFiltroEstado('');
+              setFiltroEspecial('');
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#fff',
+              color: '#92400e',
+              border: '1px solid #fcd34d',
+              borderRadius: '0.375rem',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '0.875rem',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fef3c7';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fff';
+            }}
+          >
+            <X size={16} />
+            Quitar filtro
+          </button>
+        </div>
+      )}
 
       {/* Filtros */}
       <div

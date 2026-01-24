@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
-import { Plus, Search, User, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, User, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2, Calendar, MapPin, Award } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
 
 const Clientes = () => {
@@ -32,6 +32,10 @@ const Clientes = () => {
     telefono: '',
     documento_identidad: '',
     direccion: '',
+    fecha_nacimiento: '',
+    pais: 'Ecuador',
+    provincia: 'Guayas',
+    ciudad: 'Guayaquil',
   });
   const [guardando, setGuardando] = useState(false);
   const [errorFormulario, setErrorFormulario] = useState('');
@@ -71,31 +75,29 @@ const Clientes = () => {
     );
   });
 
+  const resetFormData = () => ({
+    nombre_usuario: '',
+    contrasena: '',
+    nombre_completo: '',
+    email: '',
+    telefono: '',
+    documento_identidad: '',
+    direccion: '',
+    fecha_nacimiento: '',
+    pais: 'Ecuador',
+    provincia: 'Guayas',
+    ciudad: 'Guayaquil',
+  });
+
   const abrirModalCrear = () => {
-    setFormData({
-      nombre_usuario: '',
-      contrasena: '',
-      nombre_completo: '',
-      email: '',
-      telefono: '',
-      documento_identidad: '',
-      direccion: '',
-    });
+    setFormData(resetFormData());
     setErrorFormulario('');
     setMostrarModalCrear(true);
   };
 
   const cerrarModalCrear = () => {
     setMostrarModalCrear(false);
-    setFormData({
-      nombre_usuario: '',
-      contrasena: '',
-      nombre_completo: '',
-      email: '',
-      telefono: '',
-      documento_identidad: '',
-      direccion: '',
-    });
+    setFormData(resetFormData());
     setErrorFormulario('');
   };
 
@@ -107,6 +109,10 @@ const Clientes = () => {
       telefono: cliente.telefono || '',
       documento_identidad: cliente.documento_identidad || '',
       direccion: cliente.direccion || '',
+      fecha_nacimiento: cliente.fecha_nacimiento ? cliente.fecha_nacimiento.split('T')[0] : '',
+      pais: cliente.pais || 'Ecuador',
+      provincia: cliente.provincia || 'Guayas',
+      ciudad: cliente.ciudad || 'Guayaquil',
     });
     setErrorFormulario('');
     setMostrarModalEditar(true);
@@ -115,15 +121,7 @@ const Clientes = () => {
   const cerrarModalEditar = () => {
     setMostrarModalEditar(false);
     setClienteSeleccionado(null);
-    setFormData({
-      nombre_usuario: '',
-      contrasena: '',
-      nombre_completo: '',
-      email: '',
-      telefono: '',
-      documento_identidad: '',
-      direccion: '',
-    });
+    setFormData(resetFormData());
     setErrorFormulario('');
   };
 
@@ -736,12 +734,85 @@ const Clientes = () => {
 
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                    Fecha de Nacimiento
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.fecha_nacimiento}
+                    onChange={(e) => setFormData({ ...formData, fecha_nacimiento: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '1rem',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      País
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pais}
+                      onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.375rem',
+                        fontSize: '1rem',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      Provincia
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.provincia}
+                      onChange={(e) => setFormData({ ...formData, provincia: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.375rem',
+                        fontSize: '1rem',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      Ciudad
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.ciudad}
+                      onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.375rem',
+                        fontSize: '1rem',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                     Dirección
                   </label>
                   <textarea
                     value={formData.direccion}
                     onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                    rows={3}
+                    rows={2}
+                    placeholder="Calle, número, sector..."
                     style={{
                       width: '100%',
                       padding: '0.75rem',
@@ -935,12 +1006,85 @@ const Clientes = () => {
 
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                    Fecha de Nacimiento
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.fecha_nacimiento}
+                    onChange={(e) => setFormData({ ...formData, fecha_nacimiento: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '1rem',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      País
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pais}
+                      onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.375rem',
+                        fontSize: '1rem',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      Provincia
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.provincia}
+                      onChange={(e) => setFormData({ ...formData, provincia: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.375rem',
+                        fontSize: '1rem',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      Ciudad
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.ciudad}
+                      onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.375rem',
+                        fontSize: '1rem',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                     Dirección
                   </label>
                   <textarea
                     value={formData.direccion}
                     onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                    rows={3}
+                    rows={2}
+                    placeholder="Calle, número, sector..."
                     style={{
                       width: '100%',
                       padding: '0.75rem',
@@ -1043,6 +1187,7 @@ const Clientes = () => {
             </div>
 
             <div style={{ display: 'grid', gap: '1.5rem' }}>
+              {/* Encabezado con nombre y estadísticas */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid #e5e7eb' }}>
                 <div
                   style={{
@@ -1057,21 +1202,50 @@ const Clientes = () => {
                 >
                   <User size={32} color="#6366f1" />
                 </div>
-                <div>
+                <div style={{ flex: 1 }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>
                     {clienteSeleccionado.nombre_completo || 'N/A'}
                   </h3>
-                  <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0' }}>Cliente</p>
+                  <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0' }}>
+                    {clienteSeleccionado.edad ? `${clienteSeleccionado.edad} años` : 'Cliente'}
+                  </p>
                 </div>
+                {clienteSeleccionado.cantidad_eventos_completados > 0 && (
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem',
+                    backgroundColor: '#fef3c7',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '2rem',
+                  }}>
+                    <Award size={18} color="#d97706" />
+                    <span style={{ fontWeight: '600', color: '#92400e' }}>
+                      {clienteSeleccionado.cantidad_eventos_completados} evento{clienteSeleccionado.cantidad_eventos_completados > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              <div style={{ display: 'grid', gap: '1rem' }}>
+              {/* Información de contacto */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
                     Documento de Identidad
                   </label>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
                     {clienteSeleccionado.documento_identidad || 'N/A'}
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    Fecha de Nacimiento
+                  </label>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
+                    {clienteSeleccionado.fecha_nacimiento 
+                      ? new Date(clienteSeleccionado.fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
+                      : 'N/A'}
                   </p>
                 </div>
 
@@ -1092,16 +1266,63 @@ const Clientes = () => {
                     {clienteSeleccionado.telefono || 'N/A'}
                   </p>
                 </div>
+              </div>
 
+              {/* Ubicación */}
+              <div style={{ 
+                backgroundColor: '#f9fafb', 
+                padding: '1rem', 
+                borderRadius: '0.5rem',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem'
+              }}>
+                <MapPin size={20} color="#6b7280" style={{ marginTop: '2px' }} />
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-                    Dirección
-                  </label>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
-                    {clienteSeleccionado.direccion || 'N/A'}
-                  </p>
+                  <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
+                    {clienteSeleccionado.ciudad || 'Guayaquil'}, {clienteSeleccionado.provincia || 'Guayas'}
+                  </div>
+                  <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                    {clienteSeleccionado.pais || 'Ecuador'}
+                  </div>
+                  {clienteSeleccionado.direccion && (
+                    <div style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                      {clienteSeleccionado.direccion}
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Estadísticas de fidelización */}
+              {(clienteSeleccionado.cantidad_eventos_completados > 0 || clienteSeleccionado.fecha_ultimo_evento) && (
+                <div style={{ 
+                  backgroundColor: '#eff6ff', 
+                  padding: '1rem', 
+                  borderRadius: '0.5rem',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem'
+                }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', color: '#3b82f6', marginBottom: '0.25rem', textTransform: 'uppercase', fontWeight: '600' }}>
+                      Eventos Completados
+                    </label>
+                    <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: '#1e40af' }}>
+                      {clienteSeleccionado.cantidad_eventos_completados || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', color: '#3b82f6', marginBottom: '0.25rem', textTransform: 'uppercase', fontWeight: '600' }}>
+                      Último Evento
+                    </label>
+                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500', color: '#1e40af' }}>
+                      {clienteSeleccionado.fecha_ultimo_evento 
+                        ? new Date(clienteSeleccionado.fecha_ultimo_evento + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+                        : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>

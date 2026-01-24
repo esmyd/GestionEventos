@@ -126,7 +126,12 @@ class WhatsAppChatService:
         telefono = conversacion.get("telefono")
         permitido, motivo = self._puede_enviar_whatsapp(telefono)
         if not permitido:
-            if allow_reengagement and motivo in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
+            # Si el cliente NUNCA ha escrito, no enviamos nada (ni error ni plantilla)
+            # Solo esperamos a que el cliente inicie la conversación
+            if motivo == "SIN_INTERACCION":
+                self.logger.info(f"Conversación sin interacción del cliente, esperando primer mensaje")
+                return False
+            if allow_reengagement and motivo in ("REENGAGEMENT", "FUERA_VENTANA"):
                 if self._enviar_plantilla_reengagement(telefono, conversacion.get("cliente_id")):
                     return self._enviar_respuesta(conversacion, mensaje, allow_reengagement=False)
             self._registrar_mensaje(
@@ -134,7 +139,7 @@ class WhatsAppChatService:
                 "out",
                 self._mensaje_bloqueo(motivo),
                 estado="bloqueado",
-                origen="humano"
+                origen="bot"
             )
             return False
         enviado, wa_message_id = self.whatsapp.enviar_mensaje_chat(telefono, mensaje)
@@ -181,7 +186,11 @@ class WhatsAppChatService:
         telefono = conversacion.get("telefono")
         permitido, motivo = self._puede_enviar_whatsapp(telefono)
         if not permitido:
-            if allow_reengagement and motivo in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
+            # Si el cliente NUNCA ha escrito, no enviamos nada
+            if motivo == "SIN_INTERACCION":
+                self.logger.info(f"Conversación sin interacción del cliente, esperando primer mensaje")
+                return False
+            if allow_reengagement and motivo in ("REENGAGEMENT", "FUERA_VENTANA"):
                 if self._enviar_plantilla_reengagement(telefono, conversacion.get("cliente_id")):
                     return self._enviar_opciones(conversacion, mensaje, opciones, boton_texto, allow_reengagement=False)
             self._registrar_mensaje(
@@ -288,7 +297,20 @@ class WhatsAppChatService:
                 valores.append(texto)
         return valores
 
+    # Control de rate limit para plantillas de re-engagement por teléfono
+    _reengagement_enviados = {}  # {telefono: timestamp}
+    _REENGAGEMENT_COOLDOWN = 60  # segundos entre envíos al mismo teléfono
+
     def _enviar_plantilla_reengagement(self, telefono, cliente_id=None):
+        import time
+        
+        # Verificar si ya se envió recientemente a este teléfono (evitar bucles)
+        ahora = time.time()
+        ultimo_envio = self._reengagement_enviados.get(telefono, 0)
+        if ahora - ultimo_envio < self._REENGAGEMENT_COOLDOWN:
+            self.logger.warning(f"Rate limit: plantilla re-engagement ya enviada a {telefono} hace {int(ahora - ultimo_envio)}s")
+            return False
+        
         config = self.config_general.obtener_configuracion() or {}
         template_id = config.get("whatsapp_reengagement_template_id")
         if not template_id:
@@ -316,6 +338,10 @@ class WhatsAppChatService:
             header_parametros=header_params,
             body_parametros=body_params
         )
+        
+        # Registrar el envío para el rate limit (incluso si falla, para evitar spam)
+        self._reengagement_enviados[telefono] = ahora
+        
         conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
         if not conversacion:
             conversacion_id = self.modelo.crear_conversacion(telefono, cliente_id=cliente_id)
@@ -1103,6 +1129,18 @@ class WhatsAppChatService:
                         telefono = mensaje.get("from")
                         if not telefono:
                             continue
+                        
+                        # Procesar calificación si es una respuesta de calificación (formato interactivo)
+                        if texto and texto.startswith("calif_"):
+                            self._procesar_calificacion(telefono, texto, mensaje.get("id"))
+                            continue
+                        
+                        # Procesar calificación si es un número simple (1-5) y hay solicitud pendiente
+                        texto_limpio = texto.strip() if texto else ""
+                        if texto_limpio in ['1', '2', '3', '4', '5']:
+                            if self._procesar_calificacion_simple(telefono, int(texto_limpio), mensaje.get("id")):
+                                continue
+                        
                         conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
                         if not conversacion:
                             cliente = self._obtener_cliente_por_telefono(telefono)
@@ -1110,6 +1148,16 @@ class WhatsAppChatService:
                             conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
                         self.modelo.actualizar_conversacion(conversacion["id"])
                         self.modelo.actualizar_interaccion_cliente(conversacion["id"])
+                        # Incrementar contador de mensajes no leídos
+                        self.modelo.incrementar_no_leidos(conversacion["id"])
+                        
+                        # Reenviar mensajes fallidos por ventana 24h ahora que el cliente escribió
+                        self._reenviar_mensajes_fallidos_por_ventana(telefono, conversacion["id"])
+                        
+                        # Verificar si hay calificación pendiente de observaciones
+                        if self._procesar_observaciones_calificacion(telefono, texto):
+                            continue
+                        
                         self._registrar_mensaje(
                             conversacion["id"],
                             "in",
@@ -1126,6 +1174,228 @@ class WhatsAppChatService:
                         self._procesar_bot(conversacion, telefono, texto, media_type=media_type, media_id=media_id)
         except Exception as e:
             self.logger.error(f"Error procesando webhook WhatsApp: {e}")
+
+    def _reenviar_mensajes_fallidos_por_ventana(self, telefono, conversacion_id):
+        """
+        Reenvía mensajes que fallaron por ventana de 24h cuando el cliente escribe.
+        """
+        try:
+            # Buscar mensajes fallidos por error 131047 (ventana 24h) para esta conversación
+            consulta = """
+            SELECT id, mensaje, origen, wa_message_id, raw_json
+            FROM whatsapp_mensajes
+            WHERE conversacion_id = %s
+              AND direccion = 'out'
+              AND estado = 'fallido'
+              AND fecha_creacion > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+            ORDER BY fecha_creacion ASC
+            LIMIT 10
+            """
+            mensajes_fallidos = self.modelo.base_datos.obtener_todos(consulta, (conversacion_id,))
+            
+            if not mensajes_fallidos:
+                return
+            
+            self.logger.info(f"[REENVIO] Encontrados {len(mensajes_fallidos)} mensajes fallidos para {telefono}")
+            
+            for msg in mensajes_fallidos:
+                msg_id = msg.get("id")
+                mensaje_texto = msg.get("mensaje")
+                raw_json = msg.get("raw_json")
+                
+                # Verificar si fue por error de ventana 24h
+                es_error_ventana = False
+                if raw_json:
+                    try:
+                        import json
+                        if isinstance(raw_json, str):
+                            error_data = json.loads(raw_json)
+                        else:
+                            error_data = raw_json
+                        if isinstance(error_data, dict):
+                            errors = error_data.get("errors", [])
+                            for error in errors if isinstance(errors, list) else []:
+                                if str(error.get("code")) == "131047":
+                                    es_error_ventana = True
+                                    break
+                    except:
+                        pass
+                
+                if not es_error_ventana:
+                    continue
+                
+                # Intentar reenviar
+                self.logger.info(f"[REENVIO] Reenviando mensaje {msg_id} a {telefono}")
+                ok, wa_msg_id = self.whatsapp.enviar_mensaje_chat(telefono, mensaje_texto)
+                
+                if ok:
+                    # Actualizar estado del mensaje original
+                    update_query = """
+                    UPDATE whatsapp_mensajes
+                    SET estado = 'sent', 
+                        wa_message_id = %s,
+                        fecha_envio = NOW()
+                    WHERE id = %s
+                    """
+                    self.modelo.base_datos.ejecutar_consulta(update_query, (wa_msg_id, msg_id))
+                    self.logger.info(f"[REENVIO] Mensaje {msg_id} reenviado exitosamente")
+                else:
+                    self.logger.warning(f"[REENVIO] Fallo al reenviar mensaje {msg_id}")
+                    
+        except Exception as e:
+            self.logger.error(f"[REENVIO] Error al reenviar mensajes fallidos: {e}")
+
+    def _procesar_calificacion_simple(self, telefono, calificacion, wa_message_id=None):
+        """
+        Procesa calificación cuando el cliente responde con un número simple (1-5).
+        Busca si hay una solicitud de calificación pendiente para este teléfono.
+        """
+        try:
+            self.logger.info(f"Procesando posible calificación simple: {calificacion} de {telefono}")
+            
+            from modelos.calificacion_modelo import CalificacionModelo
+            from modelos.evento_modelo import EventoModelo
+            
+            calificacion_modelo = CalificacionModelo()
+            
+            # Buscar si hay solicitud de calificación pendiente para este teléfono
+            pendiente = calificacion_modelo.obtener_evento_pendiente_calificacion(telefono)
+            
+            self.logger.info(f"Solicitud pendiente encontrada: {pendiente}")
+            
+            if not pendiente:
+                # No hay calificación pendiente, no procesar
+                self.logger.info(f"No hay calificación pendiente para {telefono}")
+                return False
+            
+            # Si está en estado 'observaciones_pendientes', no es una calificación nueva
+            if pendiente.get('estado') == 'observaciones_pendientes':
+                return False
+            
+            evento_id = pendiente.get('id_evento')
+            cliente_id = pendiente.get('id_cliente')
+            nombre_evento = pendiente.get('nombre_evento', 'su evento')
+            
+            # Registrar calificación
+            exito, mensaje = calificacion_modelo.registrar_calificacion(
+                evento_id, cliente_id, calificacion, 
+                canal='whatsapp', mensaje_id=wa_message_id
+            )
+            
+            if not exito:
+                self.logger.error(f"Error al registrar calificación simple: {mensaje}")
+                return False
+            
+            # Enviar mensaje de agradecimiento
+            from integraciones.whatsapp import IntegracionWhatsApp
+            whatsapp = IntegracionWhatsApp()
+            
+            estrellas = "⭐" * calificacion
+            
+            # Siempre responder con "Gracias por su calificación"
+            if calificacion >= 4:
+                mensaje_respuesta = f"🎉 ¡Gracias por su calificación {estrellas}!\n\nNos alegra saber que su experiencia en \"{nombre_evento}\" fue muy buena.\n\n¡Esperamos verle pronto en un próximo evento!"
+            else:
+                mensaje_respuesta = f"Gracias por su calificación {estrellas}.\n\nLamentamos que su experiencia no haya sido la mejor. Por favor, cuéntenos qué podríamos mejorar para futuros eventos.\n\n_Escriba sus observaciones a continuación:_"
+            
+            whatsapp.enviar_mensaje(telefono, mensaje_respuesta)
+            
+            self.logger.info(f"Calificación simple {calificacion} registrada para evento {evento_id}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error procesando calificación simple: {e}")
+            return False
+
+    def _procesar_calificacion(self, telefono, texto, wa_message_id=None):
+        """Procesa la respuesta de calificación del cliente (formato interactivo)"""
+        try:
+            # Formato: calif_{evento_id}_{calificacion}
+            partes = texto.split("_")
+            if len(partes) != 3:
+                return False
+            
+            evento_id = int(partes[1])
+            calificacion = int(partes[2])
+            
+            from modelos.calificacion_modelo import CalificacionModelo
+            from modelos.evento_modelo import EventoModelo
+            
+            calificacion_modelo = CalificacionModelo()
+            evento_modelo = EventoModelo()
+            
+            # Obtener evento y cliente
+            evento = evento_modelo.obtener_evento_por_id(evento_id)
+            if not evento:
+                self.logger.warning(f"Evento {evento_id} no encontrado para calificación")
+                return False
+            
+            cliente_id = evento.get('id_cliente')
+            nombre_evento = evento.get('nombre_evento', 'su evento')
+            
+            # Registrar calificación
+            exito, mensaje = calificacion_modelo.registrar_calificacion(
+                evento_id, cliente_id, calificacion, 
+                canal='whatsapp', mensaje_id=wa_message_id
+            )
+            
+            if not exito:
+                self.logger.error(f"Error al registrar calificación: {mensaje}")
+                return False
+            
+            # Enviar mensaje de agradecimiento
+            from integraciones.whatsapp import IntegracionWhatsApp
+            whatsapp = IntegracionWhatsApp()
+            
+            estrellas = "⭐" * calificacion
+            
+            # Siempre responder con "Gracias por su calificación"
+            if calificacion >= 4:
+                mensaje_respuesta = f"🎉 ¡Gracias por su calificación {estrellas}!\n\nNos alegra saber que su experiencia en \"{nombre_evento}\" fue muy buena.\n\n¡Esperamos verle pronto en un próximo evento!"
+            else:
+                mensaje_respuesta = f"Gracias por su calificación {estrellas}.\n\nLamentamos que su experiencia no haya sido la mejor. Por favor, cuéntenos qué podríamos mejorar para futuros eventos.\n\n_Escriba sus observaciones a continuación:_"
+            
+            whatsapp.enviar_mensaje(telefono, mensaje_respuesta)
+            
+            self.logger.info(f"Calificación {calificacion} registrada para evento {evento_id}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error procesando calificación: {e}")
+            return False
+
+    def _procesar_observaciones_calificacion(self, telefono, texto):
+        """Verifica si hay calificación pendiente de observaciones y las agrega"""
+        try:
+            from modelos.calificacion_modelo import CalificacionModelo
+            
+            calificacion_modelo = CalificacionModelo()
+            pendiente = calificacion_modelo.obtener_evento_pendiente_calificacion(telefono)
+            
+            if not pendiente or pendiente.get('estado') != 'observaciones_pendientes':
+                return False
+            
+            evento_id = pendiente.get('id_evento')
+            cliente_id = pendiente.get('id_cliente')
+            nombre_evento = pendiente.get('nombre_evento', 'su evento')
+            
+            # Agregar observaciones
+            exito, mensaje = calificacion_modelo.agregar_observaciones(evento_id, cliente_id, texto)
+            
+            if exito:
+                # Enviar agradecimiento
+                from integraciones.whatsapp import IntegracionWhatsApp
+                whatsapp = IntegracionWhatsApp()
+                mensaje_respuesta = f"✅ ¡Gracias por sus comentarios sobre \"{nombre_evento}\"!\n\nSus observaciones nos ayudan a mejorar nuestro servicio. Tomaremos en cuenta sus sugerencias.\n\n¡Esperamos verle pronto!"
+                whatsapp.enviar_mensaje(telefono, mensaje_respuesta)
+                
+                self.logger.info(f"Observaciones registradas para evento {evento_id}")
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error procesando observaciones de calificación: {e}")
+            return False
 
     def _procesar_bot(self, conversacion, telefono, texto, media_type=None, media_id=None):
         texto_normalizado = texto.lower().strip()
@@ -1230,7 +1500,7 @@ class WhatsAppChatService:
             return
         self._enviar_menu(conversacion)
 
-    def enviar_mensaje_manual(self, conversacion_id, mensaje):
+    def enviar_mensaje_manual(self, conversacion_id, mensaje, _reintento=False):
         self.ultimo_error_envio = None
         conversacion = self.modelo.base_datos.obtener_uno(
             "SELECT * FROM whatsapp_conversaciones WHERE id = %s", (conversacion_id,)
@@ -1239,9 +1509,15 @@ class WhatsAppChatService:
             return False
         permitido, motivo = self._puede_enviar_whatsapp(conversacion.get("telefono"))
         if not permitido:
-            if motivo in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
+            # Si el cliente NUNCA ha escrito, no podemos enviar mensaje normal
+            # Solo podemos enviar plantillas
+            if motivo == "SIN_INTERACCION":
+                self.ultimo_error_envio = "El cliente aún no ha escrito. Envía una plantilla primero para iniciar la conversación."
+                return False
+            # Solo intentar re-engagement UNA vez (evitar bucles)
+            if not _reintento and motivo in ("REENGAGEMENT", "FUERA_VENTANA"):
                 if self._enviar_plantilla_reengagement(conversacion.get("telefono"), conversacion.get("cliente_id")):
-                    return self.enviar_mensaje_manual(conversacion_id, mensaje)
+                    return self.enviar_mensaje_manual(conversacion_id, mensaje, _reintento=True)
             self.ultimo_error_envio = self._mensaje_bloqueo(motivo)
             self._registrar_mensaje(
                 conversacion_id,
@@ -1270,7 +1546,7 @@ class WhatsAppChatService:
         self._registrar_mensaje(conversacion_id, "out", mensaje, estado="fallido", wa_message_id=wa_message_id, origen="humano")
         return False
 
-    def enviar_media_manual(self, conversacion_id, archivo, tipo, caption=None):
+    def enviar_media_manual(self, conversacion_id, archivo, tipo, caption=None, _reintento=False):
         self.ultimo_error_envio = None
         conversacion = self.modelo.base_datos.obtener_uno(
             "SELECT * FROM whatsapp_conversaciones WHERE id = %s", (conversacion_id,)
@@ -1279,9 +1555,14 @@ class WhatsAppChatService:
             return False
         permitido, motivo = self._puede_enviar_whatsapp(conversacion.get("telefono"))
         if not permitido:
-            if motivo in ("REENGAGEMENT", "FUERA_VENTANA", "SIN_INTERACCION"):
+            # Si el cliente NUNCA ha escrito, no podemos enviar media
+            if motivo == "SIN_INTERACCION":
+                self.ultimo_error_envio = "El cliente aún no ha escrito. Envía una plantilla primero para iniciar la conversación."
+                return False
+            # Solo intentar re-engagement UNA vez (evitar bucles)
+            if not _reintento and motivo in ("REENGAGEMENT", "FUERA_VENTANA"):
                 if self._enviar_plantilla_reengagement(conversacion.get("telefono"), conversacion.get("cliente_id")):
-                    return self.enviar_media_manual(conversacion_id, archivo, tipo, caption=caption)
+                    return self.enviar_media_manual(conversacion_id, archivo, tipo, caption=caption, _reintento=True)
             self.ultimo_error_envio = self._mensaje_bloqueo(motivo)
             self._registrar_mensaje(
                 conversacion_id,

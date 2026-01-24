@@ -68,7 +68,56 @@ class WhatsAppChatModelo:
         """
         return self.base_datos.ejecutar_consulta(consulta, (detalle, conversacion_id))
 
+    def _asegurar_columna_no_leidos(self):
+        """Asegura que exista la columna mensajes_no_leidos en whatsapp_conversaciones"""
+        try:
+            consulta = """
+            SELECT COUNT(*) as total
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'whatsapp_conversaciones'
+              AND COLUMN_NAME = 'mensajes_no_leidos'
+            """
+            existe = self.base_datos.obtener_uno(consulta) or {}
+            if int(existe.get("total") or 0) == 0:
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE whatsapp_conversaciones ADD COLUMN mensajes_no_leidos INT DEFAULT 0"
+                )
+        except Exception:
+            pass
+
+    def incrementar_no_leidos(self, conversacion_id):
+        """Incrementa el contador de mensajes no leídos cuando el cliente envía un mensaje"""
+        self._asegurar_columna_no_leidos()
+        consulta = """
+        UPDATE whatsapp_conversaciones
+        SET mensajes_no_leidos = COALESCE(mensajes_no_leidos, 0) + 1
+        WHERE id = %s
+        """
+        return self.base_datos.ejecutar_consulta(consulta, (conversacion_id,))
+
+    def marcar_como_leido(self, conversacion_id):
+        """Resetea el contador de mensajes no leídos cuando se abre la conversación"""
+        self._asegurar_columna_no_leidos()
+        consulta = """
+        UPDATE whatsapp_conversaciones
+        SET mensajes_no_leidos = 0
+        WHERE id = %s
+        """
+        return self.base_datos.ejecutar_consulta(consulta, (conversacion_id,))
+
+    def obtener_total_no_leidos(self):
+        """Obtiene el total de mensajes no leídos de todas las conversaciones"""
+        self._asegurar_columna_no_leidos()
+        consulta = """
+        SELECT COALESCE(SUM(mensajes_no_leidos), 0) as total
+        FROM whatsapp_conversaciones
+        """
+        resultado = self.base_datos.obtener_uno(consulta) or {}
+        return int(resultado.get("total") or 0)
+
     def listar_conversaciones(self):
+        self._asegurar_columna_no_leidos()
         consulta = """
         SELECT c.*,
                u.nombre_completo as nombre_cliente,
@@ -85,11 +134,12 @@ class WhatsAppChatModelo:
                (SELECT direccion FROM whatsapp_mensajes m
                 WHERE m.conversacion_id = c.id
                 ORDER BY m.fecha_creacion DESC
-                LIMIT 1) as ultima_direccion
+                LIMIT 1) as ultima_direccion,
+               COALESCE(c.mensajes_no_leidos, 0) as mensajes_no_leidos
         FROM whatsapp_conversaciones c
         LEFT JOIN clientes cl ON c.cliente_id = cl.id
         LEFT JOIN usuarios u ON cl.usuario_id = u.id
-        ORDER BY c.ultima_interaccion DESC
+        ORDER BY c.mensajes_no_leidos DESC, c.ultima_interaccion DESC
         """
         resultados = self.base_datos.obtener_todos(consulta)
         # Convertir fechas a formato ISO

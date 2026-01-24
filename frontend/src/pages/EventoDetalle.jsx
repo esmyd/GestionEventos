@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2, Eye, Check, Ban } from 'lucide-react';
 import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
+import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 
 const EventoDetalle = () => {
@@ -13,6 +14,7 @@ const EventoDetalle = () => {
   const location = useLocation();
   const { usuario } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
+  const isMobile = useIsMobile();
   const [evento, setEvento] = useState(null);
   const [pagos, setPagos] = useState([]);
   const [productosAdicionales, setProductosAdicionales] = useState([]);
@@ -38,6 +40,7 @@ const EventoDetalle = () => {
   const [errorEliminarEvento, setErrorEliminarEvento] = useState('');
   const [mostrarConfirmReembolso, setMostrarConfirmReembolso] = useState(false);
   const [notificacionesProximas, setNotificacionesProximas] = useState([]);
+  const [proximasEjecuciones, setProximasEjecuciones] = useState([]);
   const [cargandoNotificaciones, setCargandoNotificaciones] = useState(false);
   const [forzandoNotificacion, setForzandoNotificacion] = useState(null);
   const [previewRecordatorio, setPreviewRecordatorio] = useState(null);
@@ -67,6 +70,33 @@ const EventoDetalle = () => {
   const [coordinadores, setCoordinadores] = useState([]);
   const [cargandoCoordinadores, setCargandoCoordinadores] = useState(false);
   const [asignandoCoordinador, setAsignandoCoordinador] = useState(false);
+  
+  // Estados para modal de finalización de evento
+  const [mostrarModalFinalizar, setMostrarModalFinalizar] = useState(false);
+  const [finalizandoEvento, setFinalizandoEvento] = useState(false);
+  const [formFinalizacion, setFormFinalizacion] = useState({
+    observacion_finalizacion: '',
+    tiene_danos: false,
+    descripcion_danos: '',
+    costo_danos: '',
+    cobrar_danos: false,
+  });
+  const [infoFinalizacion, setInfoFinalizacion] = useState(null);
+  const [danosEvento, setDanosEvento] = useState([]);
+  const [enviandoEvaluacion, setEnviandoEvaluacion] = useState(false);
+  const [mostrarModalPagoDanos, setMostrarModalPagoDanos] = useState(false);
+  const [mostrarModalCalificacionManual, setMostrarModalCalificacionManual] = useState(false);
+  const [guardandoCalificacion, setGuardandoCalificacion] = useState(false);
+  const [formCalificacion, setFormCalificacion] = useState({
+    calificacion: 5,
+    observaciones: '',
+  });
+  const [registrandoPagoDanos, setRegistrandoPagoDanos] = useState(false);
+  const [formPagoDanos, setFormPagoDanos] = useState({
+    monto: '',
+    metodo_pago: 'efectivo',
+    observaciones: '',
+  });
 
   const eventoCancelado = evento?.estado === 'cancelado';
   const puedeAgregarProducto = hasPermission(usuario, PERMISSIONS.EVENTOS_AGREGAR_PRODUCTO, [ROLES.ADMIN, ROLES.MANAGER]);
@@ -146,11 +176,39 @@ const EventoDetalle = () => {
       const data = await eventosService.getById(id);
       setEvento(data.evento);
       setError('');
+      
+      // Si el evento está completado, cargar info de finalización
+      if (data.evento?.estado === 'completado') {
+        cargarInfoFinalizacion();
+      }
     } catch (err) {
       setError('Error al cargar el evento');
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cargarInfoFinalizacion = async () => {
+    try {
+      const data = await eventosService.obtenerDanos(id);
+      setInfoFinalizacion(data.info_finalizacion);
+      setDanosEvento(data.danos || []);
+    } catch (err) {
+      console.error('Error al cargar info de finalización:', err);
+    }
+  };
+
+  const enviarNotificacionEvaluacion = async () => {
+    try {
+      setEnviandoEvaluacion(true);
+      await notificacionesNativasService.forzarNotificacion(id, 'solicitud_calificacion');
+      success('Notificación de evaluación enviada al cliente');
+    } catch (err) {
+      const mensaje = err.response?.data?.error || 'Error al enviar notificación de evaluación';
+      showError(mensaje);
+    } finally {
+      setEnviandoEvaluacion(false);
     }
   };
 
@@ -247,9 +305,11 @@ const EventoDetalle = () => {
       setCargandoNotificaciones(true);
       const data = await notificacionesNativasService.getProximasEvento(id);
       setNotificacionesProximas(data.notificaciones || []);
+      setProximasEjecuciones(data.proximas_ejecuciones || []);
     } catch (err) {
       console.error('Error al cargar notificaciones:', err);
       setNotificacionesProximas([]);
+      setProximasEjecuciones([]);
     } finally {
       setCargandoNotificaciones(false);
     }
@@ -719,6 +779,146 @@ const EventoDetalle = () => {
     }
   };
 
+  // Funciones para finalización de evento
+  const abrirModalFinalizar = () => {
+    setFormFinalizacion({
+      observacion_finalizacion: '',
+      tiene_danos: false,
+      descripcion_danos: '',
+      costo_danos: '',
+      cobrar_danos: false,
+    });
+    setMostrarModalFinalizar(true);
+  };
+
+  const cerrarModalFinalizar = () => {
+    setMostrarModalFinalizar(false);
+    setFormFinalizacion({
+      observacion_finalizacion: '',
+      tiene_danos: false,
+      descripcion_danos: '',
+      costo_danos: '',
+      cobrar_danos: false,
+    });
+  };
+
+  const handleFinalizarEvento = async () => {
+    try {
+      setFinalizandoEvento(true);
+      
+      const datosFinalizacion = {
+        observacion_finalizacion: formFinalizacion.observacion_finalizacion,
+        tiene_danos: formFinalizacion.tiene_danos,
+        descripcion_danos: formFinalizacion.descripcion_danos,
+        costo_danos: formFinalizacion.tiene_danos ? parseFloat(formFinalizacion.costo_danos) || 0 : 0,
+        cobrar_danos: formFinalizacion.tiene_danos && formFinalizacion.cobrar_danos,
+      };
+
+      const response = await eventosService.completarEvento(id, datosFinalizacion);
+      
+      if (response?.evento) {
+        setEvento(response.evento);
+      }
+      
+      cerrarModalFinalizar();
+      success('Evento completado exitosamente');
+      
+      // Recargar datos
+      await cargarEvento();
+      await cargarPagos();
+      
+    } catch (err) {
+      const mensaje = err.response?.data?.error || 'Error al finalizar el evento';
+      showError(mensaje);
+    } finally {
+      setFinalizandoEvento(false);
+    }
+  };
+
+  const saldoPendiente = parseFloat(evento?.saldo || 0);
+  const puedeFinalizarEvento = (evento?.estado === 'confirmado' || evento?.estado === 'en_proceso') && saldoPendiente <= 0;
+
+  // Funciones para pago de daños
+  const abrirModalPagoDanos = () => {
+    const costoDanos = parseFloat(evento?.costo_danos || 0);
+    const montoPagado = parseFloat(evento?.monto_pagado_danos || 0);
+    const saldoDanos = costoDanos - montoPagado;
+    setFormPagoDanos({
+      monto: saldoDanos > 0 ? saldoDanos.toFixed(2) : '',
+      metodo_pago: 'efectivo',
+      observaciones: '',
+    });
+    setMostrarModalPagoDanos(true);
+  };
+
+  const cerrarModalPagoDanos = () => {
+    setMostrarModalPagoDanos(false);
+    setFormPagoDanos({ monto: '', metodo_pago: 'efectivo', observaciones: '' });
+  };
+
+  const handleRegistrarPagoDanos = async () => {
+    try {
+      setRegistrandoPagoDanos(true);
+      const monto = parseFloat(formPagoDanos.monto);
+      if (isNaN(monto) || monto <= 0) {
+        showError('Ingrese un monto válido');
+        return;
+      }
+      
+      await eventosService.registrarPagoDanos(
+        id, 
+        monto, 
+        formPagoDanos.metodo_pago, 
+        formPagoDanos.observaciones
+      );
+      
+      cerrarModalPagoDanos();
+      success('Pago de daños registrado exitosamente');
+      await cargarEvento();
+      
+    } catch (err) {
+      const mensaje = err.response?.data?.error || 'Error al registrar pago de daños';
+      showError(mensaje);
+    } finally {
+      setRegistrandoPagoDanos(false);
+    }
+  };
+
+  // Funciones para calificación manual
+  const abrirModalCalificacionManual = () => {
+    setFormCalificacion({
+      calificacion: evento?.calificacion_cliente || 5,
+      observaciones: evento?.observaciones_calificacion || '',
+    });
+    setMostrarModalCalificacionManual(true);
+  };
+
+  const cerrarModalCalificacionManual = () => {
+    setMostrarModalCalificacionManual(false);
+    setFormCalificacion({ calificacion: 5, observaciones: '' });
+  };
+
+  const handleGuardarCalificacion = async () => {
+    try {
+      setGuardandoCalificacion(true);
+      
+      await eventosService.registrarCalificacionManual(id, {
+        calificacion: formCalificacion.calificacion,
+        observaciones: formCalificacion.observaciones,
+      });
+      
+      cerrarModalCalificacionManual();
+      success('Calificación registrada exitosamente');
+      await cargarEvento();
+      
+    } catch (err) {
+      const mensaje = err.response?.data?.error || 'Error al registrar calificación';
+      showError(mensaje);
+    } finally {
+      setGuardandoCalificacion(false);
+    }
+  };
+
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando evento...</div>;
   }
@@ -762,52 +962,128 @@ const EventoDetalle = () => {
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ marginBottom: '2rem' }}>
+      <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
         <button
           onClick={() => navigate('/eventos')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.5rem 1rem',
+            padding: isMobile ? '0.4rem 0.75rem' : '0.5rem 1rem',
             backgroundColor: 'transparent',
             color: '#6366f1',
             border: '1px solid #6366f1',
             borderRadius: '0.375rem',
             cursor: 'pointer',
             marginBottom: '1rem',
+            fontSize: isMobile ? '0.875rem' : '1rem',
           }}
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={isMobile ? 14 : 16} />
           Volver
         </button>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
               {evento.nombre_evento || 'Evento'}
             </h1>
-            <p style={{ color: '#6b7280' }}>Detalle del evento</p>
+            <p style={{ color: '#6b7280', fontSize: isMobile ? '0.875rem' : '1rem' }}>Detalle del evento</p>
           </div>
-          {puedeEliminarEvento && (
-            <button
-              type="button"
-              onClick={() => {
-                setErrorEliminarEvento('');
-                setMostrarModalEliminarEvento(true);
-              }}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                borderRadius: '0.375rem',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: '600',
-              }}
-            >
-              Eliminar evento
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
+            {puedeFinalizarEvento && (
+              <button
+                type="button"
+                onClick={abrirModalFinalizar}
+                style={{
+                  padding: isMobile ? '0.4rem 0.75rem' : '0.5rem 1rem',
+                  backgroundColor: '#8b5cf6',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: isMobile ? '0.875rem' : '1rem',
+                  flex: isMobile ? 1 : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <Check size={16} />
+                Finalizar evento
+              </button>
+            )}
+            {evento?.estado === 'completado' && (
+              <button
+                type="button"
+                onClick={enviarNotificacionEvaluacion}
+                disabled={enviandoEvaluacion}
+                style={{
+                  padding: isMobile ? '0.4rem 0.75rem' : '0.5rem 1rem',
+                  backgroundColor: enviandoEvaluacion ? '#9ca3af' : '#f59e0b',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: enviandoEvaluacion ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  fontSize: isMobile ? '0.875rem' : '1rem',
+                  flex: isMobile ? 1 : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                {enviandoEvaluacion ? 'Enviando...' : '⭐ Solicitar Evaluación'}
+              </button>
+            )}
+            {evento.estado === 'completado' && (
+              <button
+                type="button"
+                onClick={abrirModalCalificacionManual}
+                style={{
+                  padding: isMobile ? '0.4rem 0.75rem' : '0.5rem 1rem',
+                  backgroundColor: evento.calificacion_cliente ? '#10b981' : '#6366f1',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: isMobile ? '0.875rem' : '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  flex: isMobile ? 1 : 'none',
+                }}
+              >
+                {evento.calificacion_cliente ? `✏️ Editar (${evento.calificacion_cliente}⭐)` : '📝 Calificar Manual'}
+              </button>
+            )}
+            {puedeEliminarEvento && (
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorEliminarEvento('');
+                  setMostrarModalEliminarEvento(true);
+                }}
+                style={{
+                  padding: isMobile ? '0.4rem 0.75rem' : '0.5rem 1rem',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: isMobile ? '0.875rem' : '1rem',
+                  flex: isMobile ? 1 : 'none',
+                }}
+              >
+                Eliminar evento
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -825,19 +1101,19 @@ const EventoDetalle = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: isMobile ? '1rem' : '1.5rem', marginBottom: isMobile ? '1.5rem' : '2rem' }}>
         {/* Información del evento */}
         <div
           style={{
             backgroundColor: 'white',
-            padding: '1.5rem',
+            padding: isMobile ? '1rem' : '1.5rem',
             borderRadius: '0.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             border: '1px solid #e5e7eb',
           }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Calendar size={20} color="#6366f1" />
+          <h2 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: '600', marginBottom: isMobile ? '1rem' : '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Calendar size={isMobile ? 18 : 20} color="#6366f1" />
             Información del Evento
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -960,14 +1236,14 @@ const EventoDetalle = () => {
         <div
           style={{
             backgroundColor: 'white',
-            padding: '1.5rem',
+            padding: isMobile ? '1rem' : '1.5rem',
             borderRadius: '0.5rem',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             border: '1px solid #e5e7eb',
           }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Calendar size={20} color="#6366f1" />
+          <h2 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: '600', marginBottom: isMobile ? '1rem' : '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Calendar size={isMobile ? 18 : 20} color="#6366f1" />
             Recordatorios programados
           </h2>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem', color: '#6b7280', fontSize: '0.85rem' }}>
@@ -1150,6 +1426,140 @@ const EventoDetalle = () => {
                   );
                 }
 
+                // Tarjeta de recordatorio de valores pendientes (solo si hay saldo > 0)
+                const saldoPendiente = parseFloat(evento?.saldo || evento?.saldo_pendiente || 0);
+                if (saldoPendiente > 0) {
+                  const valoresPendientes = notificacionesProximas.find(
+                    (n) => n.tipo_notificacion === 'recordatorio_valores_pendientes'
+                  ) || {
+                    tipo_notificacion: 'recordatorio_valores_pendientes',
+                    enviar_email: true,
+                    enviar_whatsapp: true,
+                    total_envios: 0,
+                    ultimo_envio: null,
+                  };
+
+                  tarjetas.push(
+                    <div
+                      key="recordatorio_valores_pendientes"
+                      style={{
+                        border: '1px solid #fbbf24',
+                        borderRadius: '0.5rem',
+                        padding: '0.75rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        backgroundColor: '#fffbeb',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#92400e' }}>Recordatorio de valores pendientes</div>
+                        <div style={{ color: '#b45309', fontSize: '0.85rem' }}>
+                          Saldo pendiente: ${saldoPendiente.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div style={{ color: '#b45309', fontSize: '0.85rem' }}>
+                          Medio: Email + WhatsApp
+                        </div>
+                        <div style={{ color: '#b45309', fontSize: '0.85rem' }}>
+                          Enviados: {valoresPendientes.total_envios || 0}
+                          {valoresPendientes.ultimo_envio
+                            ? ` · Ultimo: ${new Date(valoresPendientes.ultimo_envio).toLocaleDateString()}`
+                            : ''}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          onClick={async (event) => {
+                            event.stopPropagation();
+                            if (!evento?.email) {
+                              showError('Este evento no tiene correo. No se puede enviar email.');
+                              return;
+                            }
+                            try {
+                              setForzandoNotificacion('valores_email');
+                              const resp = await notificacionesNativasService.forzarNotificacion(
+                                id,
+                                'recordatorio_valores_pendientes',
+                                'email'
+                              );
+                              if (resp?.success) {
+                                success('Recordatorio de valores pendientes enviado por email');
+                              } else {
+                                showError(resp?.error || 'No se pudo enviar el recordatorio');
+                              }
+                              await cargarNotificacionesProximas();
+                            } catch (err) {
+                              const mensaje =
+                                err.response?.data?.error || 'No se pudo enviar el recordatorio';
+                              showError(mensaje);
+                            } finally {
+                              setForzandoNotificacion(null);
+                            }
+                          }}
+                          disabled={forzandoNotificacion === 'valores_email' || !evento?.email}
+                          style={{
+                            padding: '0.5rem 0.9rem',
+                            borderRadius: '0.5rem',
+                            border: '1px solid #fbbf24',
+                            background:
+                              forzandoNotificacion === 'valores_email' || !evento?.email ? '#fef3c7' : '#fff',
+                            cursor:
+                              forzandoNotificacion === 'valores_email' || !evento?.email ? 'not-allowed' : 'pointer',
+                            color: '#92400e',
+                            fontWeight: '500',
+                          }}
+                        >
+                          {forzandoNotificacion === 'valores_email' ? 'Enviando...' : 'Forzar email'}
+                        </button>
+                        <button
+                          onClick={async (event) => {
+                            event.stopPropagation();
+                            if (!evento?.telefono) {
+                              showError('Este evento no tiene telefono. No se puede enviar WhatsApp.');
+                              return;
+                            }
+                            try {
+                              setForzandoNotificacion('valores_whatsapp');
+                              const resp = await notificacionesNativasService.forzarNotificacion(
+                                id,
+                                'recordatorio_valores_pendientes',
+                                'whatsapp'
+                              );
+                              if (resp?.success) {
+                                success('Recordatorio de valores pendientes enviado por WhatsApp');
+                              } else {
+                                showError(resp?.error || 'No se pudo enviar el recordatorio');
+                              }
+                              await cargarNotificacionesProximas();
+                            } catch (err) {
+                              const mensaje =
+                                err.response?.data?.error || 'No se pudo enviar el recordatorio';
+                              showError(mensaje);
+                            } finally {
+                              setForzandoNotificacion(null);
+                            }
+                          }}
+                          disabled={forzandoNotificacion === 'valores_whatsapp' || !evento?.telefono}
+                          style={{
+                            padding: '0.5rem 0.9rem',
+                            borderRadius: '0.5rem',
+                            border: '1px solid #fbbf24',
+                            background:
+                              forzandoNotificacion === 'valores_whatsapp' || !evento?.telefono ? '#fef3c7' : '#fff',
+                            cursor:
+                              forzandoNotificacion === 'valores_whatsapp' || !evento?.telefono ? 'not-allowed' : 'pointer',
+                            color: '#92400e',
+                            fontWeight: '500',
+                          }}
+                        >
+                          {forzandoNotificacion === 'valores_whatsapp' ? 'Enviando...' : 'Forzar WhatsApp'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 otros.forEach((notif) => {
                 const fechaEvento = notif.fecha_evento ? new Date(notif.fecha_evento) : null;
                 let fechaEnvio = null;
@@ -1226,6 +1636,100 @@ const EventoDetalle = () => {
 
                 return tarjetas;
               })()}
+            </div>
+          )}
+          
+          {/* Próximas Ejecuciones Automáticas */}
+          {proximasEjecuciones.length > 0 && (
+            <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e5e7eb', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' }}>
+                Cronograma de Notificaciones Automáticas
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {proximasEjecuciones.map((ejecucion, idx) => {
+                  const getEstadoStyle = (estado) => {
+                    switch (estado) {
+                      case 'enviado':
+                        return { bg: '#dcfce7', color: '#166534', icon: '✓' };
+                      case 'hoy':
+                        return { bg: '#fef3c7', color: '#92400e', icon: '⏰' };
+                      case 'pendiente':
+                        return { bg: '#e0e7ff', color: '#3730a3', icon: '📅' };
+                      case 'pasado':
+                        return { bg: '#fee2e2', color: '#991b1b', icon: '⚠️' };
+                      default:
+                        return { bg: '#f3f4f6', color: '#374151', icon: '•' };
+                    }
+                  };
+                  
+                  const getEstadoTexto = (estado, diasRestantes) => {
+                    switch (estado) {
+                      case 'enviado':
+                        return 'Enviado';
+                      case 'hoy':
+                        return 'Se ejecuta hoy';
+                      case 'pendiente':
+                        return diasRestantes === 1 ? 'Mañana' : `En ${diasRestantes} días`;
+                      case 'pasado':
+                        return 'No enviado';
+                      default:
+                        return '';
+                    }
+                  };
+                  
+                  const estilo = getEstadoStyle(ejecucion.estado);
+                  const fechaFormateada = new Date(ejecucion.fecha_ejecucion + 'T00:00:00').toLocaleDateString('es-ES', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                  });
+                  
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.75rem',
+                        backgroundColor: estilo.bg,
+                        borderRadius: '0.5rem',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span style={{ fontSize: '1rem' }}>{estilo.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: '500', color: estilo.color }}>
+                            {ejecucion.nombre}
+                          </div>
+                          <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                            {ejecucion.dias_antes > 0 
+                              ? `${ejecucion.dias_antes} días antes del evento`
+                              : ejecucion.dias_antes === -1 
+                                ? '1 día después del evento'
+                                : 'Día del evento'
+                            }
+                            {' • '}
+                            {[
+                              ejecucion.enviar_email ? 'Email' : null,
+                              ejecucion.enviar_whatsapp ? 'WhatsApp' : null,
+                            ].filter(Boolean).join(' + ')}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: '600', color: estilo.color }}>
+                          {fechaFormateada}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                          {getEstadoTexto(ejecucion.estado, ejecucion.dias_restantes)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -1720,6 +2224,258 @@ const EventoDetalle = () => {
         )}
       </div>
 
+      {/* Información de Finalización - Solo visible si el evento está completado */}
+      {evento.estado === 'completado' && (
+        <div
+          style={{
+            backgroundColor: 'white',
+            padding: isMobile ? '1rem' : '1.5rem',
+            borderRadius: '0.5rem',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e5e7eb',
+            marginTop: '1.5rem',
+          }}
+        >
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#8b5cf6', marginBottom: '1.25rem' }}>
+            <Check size={20} />
+            Información de Finalización
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '1.25rem' }}>
+            {/* Observaciones de finalización */}
+            <div style={{ gridColumn: isMobile ? '1' : '1 / -1' }}>
+              <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.35rem' }}>Observaciones de Finalización</div>
+              <div style={{ 
+                fontWeight: '500', 
+                fontSize: '0.95rem', 
+                backgroundColor: '#f9fafb', 
+                padding: '0.75rem', 
+                borderRadius: '0.375rem',
+                minHeight: '60px',
+              }}>
+                {infoFinalizacion?.observacion_finalizacion || evento.observacion_finalizacion || 'Sin observaciones registradas'}
+              </div>
+            </div>
+
+            {/* Fecha de finalización */}
+            <div>
+              <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.35rem' }}>Fecha de Finalización</div>
+              <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>
+                {infoFinalizacion?.fecha_finalizacion || evento.fecha_finalizacion 
+                  ? new Date(infoFinalizacion?.fecha_finalizacion || evento.fecha_finalizacion).toLocaleString('es-EC')
+                  : 'No registrada'}
+              </div>
+            </div>
+
+            {/* Calificación del cliente */}
+            <div>
+              <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.35rem' }}>Calificación del Cliente</div>
+              {evento.calificacion_cliente ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '1.5rem' }}>
+                    {'⭐'.repeat(evento.calificacion_cliente)}
+                  </span>
+                  <span style={{ 
+                    fontWeight: '600', 
+                    color: evento.calificacion_cliente >= 4 ? '#16a34a' : evento.calificacion_cliente >= 3 ? '#f59e0b' : '#dc2626'
+                  }}>
+                    {evento.calificacion_cliente}/5
+                  </span>
+                </div>
+              ) : (
+                <div style={{ color: '#9ca3af', fontStyle: 'italic' }}>
+                  Pendiente de calificación
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Observaciones de la calificación */}
+          {evento.observaciones_calificacion && (
+            <div style={{ 
+              marginTop: '1rem', 
+              padding: '0.75rem', 
+              backgroundColor: evento.calificacion_cliente < 5 ? '#fef3c7' : '#ecfdf5',
+              borderRadius: '0.375rem',
+              border: `1px solid ${evento.calificacion_cliente < 5 ? '#fcd34d' : '#6ee7b7'}`,
+            }}>
+              <div style={{ color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                💬 Comentarios del cliente
+              </div>
+              <div style={{ fontWeight: '500', fontSize: '0.9rem', color: '#374151' }}>
+                {evento.observaciones_calificacion}
+              </div>
+            </div>
+          )}
+
+          {/* Sección de Daños */}
+          {(infoFinalizacion?.tiene_danos || evento.tiene_danos) && (() => {
+            const costoDanos = parseFloat(evento.costo_danos || 0);
+            const montoPagadoDanos = parseFloat(evento.monto_pagado_danos || 0);
+            const saldoDanos = costoDanos - montoPagadoDanos;
+            const cobrarDanos = evento.cobrar_danos;
+            const danosPagados = evento.danos_pagados;
+            
+            return (
+              <div style={{ 
+                marginTop: '1.5rem', 
+                padding: '1rem', 
+                backgroundColor: danosPagados ? '#ecfdf5' : '#fef2f2', 
+                borderRadius: '0.5rem',
+                border: `1px solid ${danosPagados ? '#6ee7b7' : '#fecaca'}`,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <h3 style={{ 
+                    fontSize: '1rem', 
+                    fontWeight: '600', 
+                    color: danosPagados ? '#16a34a' : '#dc2626', 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}>
+                    {danosPagados ? '✅' : '⚠️'} Registro de Daños
+                    {danosPagados && <span style={{ fontSize: '0.75rem', backgroundColor: '#16a34a', color: 'white', padding: '0.15rem 0.5rem', borderRadius: '9999px' }}>PAGADO</span>}
+                    {cobrarDanos && !danosPagados && <span style={{ fontSize: '0.75rem', backgroundColor: '#f59e0b', color: 'white', padding: '0.15rem 0.5rem', borderRadius: '9999px' }}>PENDIENTE</span>}
+                  </h3>
+                  
+                  {cobrarDanos && !danosPagados && saldoDanos > 0 && (
+                    <button
+                      onClick={abrirModalPagoDanos}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        borderRadius: '0.375rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                      }}
+                    >
+                      💰 Registrar Pago de Daños
+                    </button>
+                  )}
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <div style={{ color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Costo Total</div>
+                    <div style={{ fontWeight: '700', fontSize: '1.25rem', color: '#dc2626' }}>
+                      {formatearMoneda(costoDanos)}
+                    </div>
+                  </div>
+                  
+                  {cobrarDanos && (
+                    <>
+                      <div>
+                        <div style={{ color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Pagado</div>
+                        <div style={{ fontWeight: '700', fontSize: '1.25rem', color: '#16a34a' }}>
+                          {formatearMoneda(montoPagadoDanos)}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Saldo Pendiente</div>
+                        <div style={{ fontWeight: '700', fontSize: '1.25rem', color: saldoDanos > 0 ? '#f59e0b' : '#16a34a' }}>
+                          {formatearMoneda(Math.max(0, saldoDanos))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  <div>
+                    <div style={{ color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.25rem' }}>¿Se cobra al cliente?</div>
+                    <div style={{ 
+                      fontWeight: '600', 
+                      fontSize: '0.95rem',
+                      color: cobrarDanos ? '#16a34a' : '#6b7280',
+                    }}>
+                      {cobrarDanos ? '✓ Sí, se cobra' : '✗ No (asumido por empresa)'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info de pago si ya se pagó */}
+                {danosPagados && evento.fecha_pago_danos && (
+                  <div style={{ 
+                    backgroundColor: 'white', 
+                    padding: '0.75rem', 
+                    borderRadius: '0.375rem', 
+                    marginBottom: '1rem',
+                    border: '1px solid #6ee7b7',
+                  }}>
+                    <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: '0.875rem' }}>
+                      <div>
+                        <span style={{ color: '#6b7280' }}>Fecha de pago: </span>
+                        <span style={{ fontWeight: '500' }}>{new Date(evento.fecha_pago_danos).toLocaleString('es-EC')}</span>
+                      </div>
+                      {evento.metodo_pago_danos && (
+                        <div>
+                          <span style={{ color: '#6b7280' }}>Método: </span>
+                          <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>{evento.metodo_pago_danos}</span>
+                        </div>
+                      )}
+                    </div>
+                    {evento.observaciones_pago_danos && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
+                        <span style={{ color: '#6b7280' }}>Observaciones: </span>
+                        <span>{evento.observaciones_pago_danos}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <div style={{ color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.35rem' }}>Descripción de los Daños</div>
+                  <div style={{ 
+                    fontWeight: '500', 
+                    fontSize: '0.9rem', 
+                    backgroundColor: 'white', 
+                    padding: '0.75rem', 
+                    borderRadius: '0.375rem',
+                    border: `1px solid ${danosPagados ? '#6ee7b7' : '#fecaca'}`,
+                  }}>
+                    {evento.descripcion_danos || 'Sin descripción'}
+                  </div>
+                </div>
+
+                {/* Lista de daños detallados si existen */}
+                {danosEvento.length > 0 && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <div style={{ color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Detalle de Daños Registrados</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {danosEvento.map((dano, idx) => (
+                        <div key={dano.id || idx} style={{ 
+                          backgroundColor: 'white', 
+                          padding: '0.75rem', 
+                          borderRadius: '0.375rem',
+                          border: `1px solid ${danosPagados ? '#6ee7b7' : '#fecaca'}`,
+                          fontSize: '0.875rem',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <span style={{ fontWeight: '500' }}>{dano.item_danado || dano.descripcion}</span>
+                            <span style={{ color: '#dc2626', fontWeight: '600' }}>
+                              {formatearMoneda(parseFloat(dano.costo_total) || 0)}
+                            </span>
+                          </div>
+                          {dano.observaciones && (
+                            <div style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                              {dano.observaciones}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       {/* Pagos */}
       <div
         style={{
@@ -1728,6 +2484,7 @@ const EventoDetalle = () => {
           borderRadius: '0.5rem',
           boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
           border: '1px solid #e5e7eb',
+          marginTop: '1.5rem',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
@@ -2714,6 +3471,545 @@ const EventoDetalle = () => {
                 }}
               >
                 {eliminandoProducto ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para calificación manual */}
+      {mostrarModalCalificacionManual && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+            padding: isMobile ? '1rem' : '0',
+          }}
+          onClick={cerrarModalCalificacionManual}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.75rem',
+              padding: isMobile ? '1.25rem' : '1.5rem',
+              width: '100%',
+              maxWidth: '450px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#6366f1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                ⭐ Registrar Calificación
+              </h2>
+              <button
+                onClick={cerrarModalCalificacionManual}
+                disabled={guardandoCalificacion}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: '#6b7280' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+              <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+                Seleccione la calificación del cliente
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => setFormCalificacion({ ...formCalificacion, calificacion: num })}
+                    style={{
+                      width: '3rem',
+                      height: '3rem',
+                      borderRadius: '0.5rem',
+                      border: formCalificacion.calificacion === num ? '3px solid #f59e0b' : '1px solid #d1d5db',
+                      backgroundColor: formCalificacion.calificacion >= num ? '#fef3c7' : 'white',
+                      cursor: 'pointer',
+                      fontSize: '1.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {formCalificacion.calificacion >= num ? '⭐' : '☆'}
+                  </button>
+                ))}
+              </div>
+              <div style={{ marginTop: '0.5rem', fontWeight: '600', color: '#f59e0b' }}>
+                {formCalificacion.calificacion === 5 && 'Excelente'}
+                {formCalificacion.calificacion === 4 && 'Muy Bueno'}
+                {formCalificacion.calificacion === 3 && 'Bueno'}
+                {formCalificacion.calificacion === 2 && 'Regular'}
+                {formCalificacion.calificacion === 1 && 'Malo'}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                Observaciones del cliente {formCalificacion.calificacion < 5 && <span style={{ color: '#dc2626' }}>*</span>}
+              </label>
+              <textarea
+                value={formCalificacion.observaciones}
+                onChange={(e) => setFormCalificacion({ ...formCalificacion, observaciones: e.target.value })}
+                placeholder={formCalificacion.calificacion < 5 ? 'Ingrese los comentarios del cliente...' : 'Comentarios opcionales...'}
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '0.65rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.9rem',
+                  resize: 'vertical',
+                }}
+              />
+              {formCalificacion.calificacion < 5 && !formCalificacion.observaciones && (
+                <div style={{ color: '#dc2626', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                  Se requieren observaciones para calificaciones menores a 5
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={cerrarModalCalificacionManual}
+                disabled={guardandoCalificacion}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleGuardarCalificacion}
+                disabled={guardandoCalificacion || (formCalificacion.calificacion < 5 && !formCalificacion.observaciones.trim())}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: guardandoCalificacion ? '#9ca3af' : '#6366f1',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: guardandoCalificacion || (formCalificacion.calificacion < 5 && !formCalificacion.observaciones.trim()) ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                {guardandoCalificacion ? 'Guardando...' : '⭐ Guardar Calificación'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para registrar pago de daños */}
+      {mostrarModalPagoDanos && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+            padding: isMobile ? '1rem' : '0',
+          }}
+          onClick={cerrarModalPagoDanos}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.75rem',
+              padding: isMobile ? '1.25rem' : '1.5rem',
+              width: '100%',
+              maxWidth: '450px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                💰 Registrar Pago de Daños
+              </h2>
+              <button
+                onClick={cerrarModalPagoDanos}
+                disabled={registrandoPagoDanos}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: '#6b7280' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fef2f2', borderRadius: '0.5rem', border: '1px solid #fecaca' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span style={{ color: '#6b7280' }}>Costo total de daños:</span>
+                <span style={{ fontWeight: '600', color: '#dc2626' }}>{formatearMoneda(parseFloat(evento?.costo_danos || 0))}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+                <span style={{ color: '#6b7280' }}>Ya pagado:</span>
+                <span style={{ fontWeight: '600', color: '#16a34a' }}>{formatearMoneda(parseFloat(evento?.monto_pagado_danos || 0))}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #fecaca' }}>
+                <span style={{ fontWeight: '500' }}>Saldo pendiente:</span>
+                <span style={{ fontWeight: '700', color: '#f59e0b' }}>
+                  {formatearMoneda(Math.max(0, parseFloat(evento?.costo_danos || 0) - parseFloat(evento?.monto_pagado_danos || 0)))}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Monto a pagar *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formPagoDanos.monto}
+                  onChange={(e) => setFormPagoDanos({ ...formPagoDanos, monto: e.target.value })}
+                  placeholder="0.00"
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '1rem',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Método de pago
+                </label>
+                <select
+                  value={formPagoDanos.metodo_pago}
+                  onChange={(e) => setFormPagoDanos({ ...formPagoDanos, metodo_pago: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  <option value="efectivo">Efectivo</option>
+                  <option value="transferencia">Transferencia</option>
+                  <option value="tarjeta">Tarjeta</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Observaciones (opcional)
+                </label>
+                <textarea
+                  value={formPagoDanos.observaciones}
+                  onChange={(e) => setFormPagoDanos({ ...formPagoDanos, observaciones: e.target.value })}
+                  placeholder="Notas adicionales sobre el pago..."
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.9rem',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={cerrarModalPagoDanos}
+                disabled={registrandoPagoDanos}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleRegistrarPagoDanos}
+                disabled={registrandoPagoDanos || !formPagoDanos.monto}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: registrandoPagoDanos ? '#9ca3af' : '#10b981',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: registrandoPagoDanos ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                {registrandoPagoDanos ? 'Registrando...' : '💰 Registrar Pago'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para finalizar evento con observaciones y daños */}
+      {mostrarModalFinalizar && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+            padding: isMobile ? '1rem' : '0',
+          }}
+          onClick={cerrarModalFinalizar}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.75rem',
+              padding: isMobile ? '1.25rem' : '1.5rem',
+              width: '100%',
+              maxWidth: '560px',
+              maxHeight: isMobile ? '90vh' : '85vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#8b5cf6', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Check size={24} />
+                Finalizar Evento
+              </h2>
+              <button
+                onClick={cerrarModalFinalizar}
+                disabled={finalizandoEvento}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  color: '#6b7280',
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1.25rem', padding: '0.75rem', backgroundColor: '#f3f4f6', borderRadius: '0.5rem' }}>
+              <p style={{ fontSize: '0.875rem', color: '#4b5563' }}>
+                Al finalizar el evento, se marcará como <strong>completado</strong> y se enviará una notificación al cliente solicitando su valoración.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Observación de finalización */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Observaciones de finalización
+                </label>
+                <textarea
+                  value={formFinalizacion.observacion_finalizacion}
+                  onChange={(e) => setFormFinalizacion({ ...formFinalizacion, observacion_finalizacion: e.target.value })}
+                  placeholder="Ingrese observaciones generales sobre cómo se desarrolló el evento..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.9rem',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+
+              {/* Checkbox de daños */}
+              <div style={{ 
+                padding: '1rem', 
+                backgroundColor: formFinalizacion.tiene_danos ? '#fef2f2' : '#f9fafb', 
+                borderRadius: '0.5rem',
+                border: formFinalizacion.tiene_danos ? '1px solid #fecaca' : '1px solid #e5e7eb',
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formFinalizacion.tiene_danos}
+                    onChange={(e) => setFormFinalizacion({ 
+                      ...formFinalizacion, 
+                      tiene_danos: e.target.checked,
+                      descripcion_danos: e.target.checked ? formFinalizacion.descripcion_danos : '',
+                      costo_danos: e.target.checked ? formFinalizacion.costo_danos : '',
+                      cobrar_danos: e.target.checked ? formFinalizacion.cobrar_danos : false,
+                    })}
+                    style={{ width: '18px', height: '18px', accentColor: '#ef4444' }}
+                  />
+                  <span style={{ fontWeight: '600', color: formFinalizacion.tiene_danos ? '#dc2626' : '#374151' }}>
+                    Hubo daños durante el evento
+                  </span>
+                </label>
+
+                {/* Campos de daños (condicionales) */}
+                {formFinalizacion.tiene_danos && (
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontWeight: '500', fontSize: '0.8rem', color: '#6b7280' }}>
+                        Descripción de los daños *
+                      </label>
+                      <textarea
+                        value={formFinalizacion.descripcion_danos}
+                        onChange={(e) => setFormFinalizacion({ ...formFinalizacion, descripcion_danos: e.target.value })}
+                        placeholder="Describa detalladamente los daños ocasionados (ej: Silla rota, mantel manchado, etc.)"
+                        rows={3}
+                        style={{
+                          width: '100%',
+                          padding: '0.6rem',
+                          border: '1px solid #fecaca',
+                          borderRadius: '0.375rem',
+                          fontSize: '0.875rem',
+                          resize: 'vertical',
+                          backgroundColor: 'white',
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: '140px' }}>
+                        <label style={{ display: 'block', marginBottom: '0.35rem', fontWeight: '500', fontSize: '0.8rem', color: '#6b7280' }}>
+                          Costo de los daños ($)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formFinalizacion.costo_danos}
+                          onChange={(e) => setFormFinalizacion({ ...formFinalizacion, costo_danos: e.target.value })}
+                          placeholder="0.00"
+                          style={{
+                            width: '100%',
+                            padding: '0.6rem',
+                            border: '1px solid #fecaca',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.875rem',
+                            backgroundColor: 'white',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Checkbox cobrar al cliente */}
+                    <label style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem', 
+                      cursor: 'pointer',
+                      padding: '0.75rem',
+                      backgroundColor: formFinalizacion.cobrar_danos ? '#dcfce7' : 'white',
+                      borderRadius: '0.375rem',
+                      border: formFinalizacion.cobrar_danos ? '1px solid #86efac' : '1px solid #e5e7eb',
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={formFinalizacion.cobrar_danos}
+                        onChange={(e) => setFormFinalizacion({ ...formFinalizacion, cobrar_danos: e.target.checked })}
+                        style={{ width: '16px', height: '16px', accentColor: '#16a34a' }}
+                      />
+                      <div>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Cobrar al cliente</span>
+                        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.15rem' }}>
+                          Se agregará un cargo adicional al evento por el monto especificado
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Botones */}
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={cerrarModalFinalizar}
+                disabled={finalizandoEvento}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleFinalizarEvento}
+                disabled={finalizandoEvento || (formFinalizacion.tiene_danos && !formFinalizacion.descripcion_danos.trim())}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: finalizandoEvento ? '#9ca3af' : '#8b5cf6',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: finalizandoEvento ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                {finalizandoEvento ? 'Finalizando...' : (
+                  <>
+                    <Check size={18} />
+                    Finalizar evento
+                  </>
+                )}
               </button>
             </div>
           </div>

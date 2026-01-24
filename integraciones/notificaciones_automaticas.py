@@ -60,7 +60,22 @@ class NotificacionesAutomaticas:
         except Exception:
             return False
 
+    # Control de rate limit para plantillas de re-engagement por teléfono
+    _reengagement_enviados = {}  # {telefono: timestamp}
+    _REENGAGEMENT_COOLDOWN = 60  # segundos entre envíos al mismo teléfono
+
     def _enviar_plantilla_reengagement(self, evento, datos):
+        import time
+        
+        telefono = evento.get("telefono")
+        
+        # Verificar si ya se envió recientemente a este teléfono (evitar bucles)
+        ahora = time.time()
+        ultimo_envio = self._reengagement_enviados.get(telefono, 0)
+        if ahora - ultimo_envio < self._REENGAGEMENT_COOLDOWN:
+            self.logger.warning(f"Rate limit: plantilla re-engagement ya enviada a {telefono} hace {int(ahora - ultimo_envio)}s")
+            return False
+        
         config = self.config_general.obtener_configuracion() or {}
         template_id = config.get("whatsapp_reengagement_template_id")
         if not template_id:
@@ -68,7 +83,6 @@ class NotificacionesAutomaticas:
         plantilla = self.templates.obtener_por_id(int(template_id))
         if not plantilla or not plantilla.get("activo"):
             return False
-        telefono = evento.get("telefono")
         datos_template = {
             "nombre_plataforma": self._obtener_nombre_plataforma(),
             "nombre_cliente": evento.get("nombre_cliente") or "Cliente",
@@ -84,6 +98,10 @@ class NotificacionesAutomaticas:
             header_parametros=header_params,
             body_parametros=body_params
         )
+        
+        # Registrar el envío para el rate limit (incluso si falla, para evitar spam)
+        self._reengagement_enviados[telefono] = ahora
+        
         conversacion = self.chat_modelo.obtener_conversacion_por_telefono(telefono)
         if not conversacion:
             conversacion_id = self.chat_modelo.crear_conversacion(telefono, cliente_id=evento.get("id_cliente"))

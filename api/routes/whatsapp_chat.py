@@ -117,3 +117,29 @@ def reset_bot(conversacion_id):
     except Exception as e:
         logger.error(f"Error al reiniciar bot: {str(e)}")
         return jsonify({"error": "Error al reiniciar bot"}), 500
+
+
+@whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/marcar-leido", methods=["POST"])
+@requiere_autenticacion
+@requiere_rol("administrador", "gerente_general", "coordinador")
+def marcar_leido(conversacion_id):
+    """Marca una conversación como leída (resetea el contador de no leídos)"""
+    try:
+        service.modelo.marcar_como_leido(conversacion_id)
+        return jsonify({"message": "Conversación marcada como leída"}), 200
+    except Exception as e:
+        logger.error(f"Error al marcar como leído: {str(e)}")
+        return jsonify({"error": "Error al marcar como leído"}), 500
+
+
+@whatsapp_chat_bp.route("/no-leidos", methods=["GET"])
+@requiere_autenticacion
+@requiere_rol("administrador", "gerente_general", "coordinador")
+def obtener_no_leidos():
+    """Obtiene el total de mensajes no leídos de todas las conversaciones"""
+    try:
+        total = service.modelo.obtener_total_no_leidos()
+        return jsonify({"total": total}), 200
+    except Exception as e:
+        logger.error(f"Error al obtener no leídos: {str(e)}")
+        return jsonify({"error": "Error al obtener no leídos"}), 500

@@ -177,11 +177,20 @@ class WhatsAppMetricasModelo:
             return True
         return not bool(control.get("bloquear_email"))
 
-    def obtener_metricas_globales(self):
+    def obtener_metricas_globales(self, fecha_desde=None, fecha_hasta=None):
         # Contar TODOS los mensajes de WhatsApp desde whatsapp_mensajes (incluyendo sistema)
         # NO contar desde historial_notificaciones para evitar duplicación
         tiene_costo_chat = self._columna_existe("whatsapp_mensajes", "costo_total")
         tiene_costo_email = self._columna_existe("historial_notificaciones", "costo_email")
+        
+        # Filtro de fechas para WhatsApp
+        filtro_wa = ""
+        if fecha_desde and fecha_hasta:
+            filtro_wa = f"WHERE fecha_creacion BETWEEN '{fecha_desde}' AND '{fecha_hasta} 23:59:59'"
+        elif fecha_desde:
+            filtro_wa = f"WHERE fecha_creacion >= '{fecha_desde}'"
+        elif fecha_hasta:
+            filtro_wa = f"WHERE fecha_creacion <= '{fecha_hasta} 23:59:59'"
         
         consulta = """
         SELECT
@@ -193,20 +202,31 @@ class WhatsAppMetricasModelo:
           SUM(CASE WHEN direccion='out' AND origen='campana' THEN 1 ELSE 0 END) as whatsapp_campana
           {costo_whatsapp}
         FROM whatsapp_mensajes
+        {filtro_wa}
         """.format(
-            costo_whatsapp=", SUM(COALESCE(costo_total, 0)) as costo_whatsapp_total" if tiene_costo_chat else ""
+            costo_whatsapp=", SUM(COALESCE(costo_total, 0)) as costo_whatsapp_total" if tiene_costo_chat else "",
+            filtro_wa=filtro_wa
         )
         whatsapp = self.base_datos.obtener_uno(consulta) or {}
         
-        # Email solo desde historial_notificaciones (no hay duplicación aquí)
+        # Filtro de fechas para Email
+        filtro_email = "WHERE enviado = TRUE"
+        if fecha_desde and fecha_hasta:
+            filtro_email = f"WHERE enviado = TRUE AND fecha_envio BETWEEN '{fecha_desde}' AND '{fecha_hasta} 23:59:59'"
+        elif fecha_desde:
+            filtro_email = f"WHERE enviado = TRUE AND fecha_envio >= '{fecha_desde}'"
+        elif fecha_hasta:
+            filtro_email = f"WHERE enviado = TRUE AND fecha_envio <= '{fecha_hasta} 23:59:59'"
+        
         consulta_email = """
         SELECT
           SUM(CASE WHEN canal='email' THEN 1 WHEN canal='ambos' THEN 1 ELSE 0 END) as email_out
           {costo_email}
         FROM historial_notificaciones
-        WHERE enviado = TRUE
+        {filtro_email}
         """.format(
-            costo_email=", SUM(COALESCE(costo_email, 0)) as costo_email_total" if tiene_costo_email else ""
+            costo_email=", SUM(COALESCE(costo_email, 0)) as costo_email_total" if tiene_costo_email else "",
+            filtro_email=filtro_email
         )
         email = self.base_datos.obtener_uno(consulta_email) or {}
         
@@ -232,34 +252,60 @@ class WhatsAppMetricasModelo:
             "costo_email_total": costo_email_total,  # Costo total desde historial_notificaciones
         }
 
-    def obtener_metricas_clientes(self):
+    def obtener_metricas_clientes(self, fecha_desde=None, fecha_hasta=None):
         tiene_costo_chat = self._columna_existe("whatsapp_mensajes", "costo_total")
+        
+        # Filtro de fechas para la subconsulta
+        filtro_fecha = ""
+        if fecha_desde and fecha_hasta:
+            filtro_fecha = f"WHERE wm.fecha_creacion BETWEEN '{fecha_desde}' AND '{fecha_hasta} 23:59:59'"
+        elif fecha_desde:
+            filtro_fecha = f"WHERE wm.fecha_creacion >= '{fecha_desde}'"
+        elif fecha_hasta:
+            filtro_fecha = f"WHERE wm.fecha_creacion <= '{fecha_hasta} 23:59:59'"
+        
         consulta = """
-        SELECT c.id as cliente_id,
-               u.nombre_completo as nombre_cliente,
-               u.email,
-               u.telefono,
-               COALESCE(wc.bloquear_whatsapp, 0) as bloquear_whatsapp,
-               COALESCE(wc.bloquear_email, 0) as bloquear_email,
-               wc.precio_whatsapp,
-               wc.precio_email,
-               SUM(CASE WHEN wm.direccion='out' THEN 1 ELSE 0 END) as whatsapp_out,
-               SUM(CASE WHEN wm.direccion='in' THEN 1 ELSE 0 END) as whatsapp_in,
-               SUM(CASE WHEN wm.direccion='out' AND wm.origen='bot' THEN 1 ELSE 0 END) as whatsapp_bot,
-               SUM(CASE WHEN wm.direccion='out' AND wm.origen='humano' THEN 1 ELSE 0 END) as whatsapp_humano,
-               SUM(CASE WHEN wm.direccion='out' AND (wm.origen='sistema' OR wm.origen='campana') THEN 1 ELSE 0 END) as whatsapp_sistema
-               {costo_chat}
+        SELECT 
+            c.id as cliente_id,
+            u.nombre_completo as nombre_cliente,
+            u.email,
+            u.telefono,
+            COALESCE(wc.bloquear_whatsapp, 0) as bloquear_whatsapp,
+            COALESCE(wc.bloquear_email, 0) as bloquear_email,
+            wc.precio_whatsapp,
+            wc.precio_email,
+            COALESCE(SUM(m.whatsapp_out), 0) as whatsapp_out,
+            COALESCE(SUM(m.whatsapp_in), 0) as whatsapp_in,
+            COALESCE(SUM(m.whatsapp_bot), 0) as whatsapp_bot,
+            COALESCE(SUM(m.whatsapp_humano), 0) as whatsapp_humano,
+            COALESCE(SUM(m.whatsapp_sistema), 0) as whatsapp_sistema
+            {costo_chat}
         FROM clientes c
         JOIN usuarios u ON c.usuario_id = u.id
         LEFT JOIN whatsapp_control_clientes wc ON wc.cliente_id = c.id
-        LEFT JOIN whatsapp_mensajes wm
-          ON REPLACE(REPLACE(REPLACE(u.telefono, '+', ''), ' ', ''), '-', '') =
-             (SELECT telefono FROM whatsapp_conversaciones WHERE id = wm.conversacion_id LIMIT 1)
-        GROUP BY c.id
-        HAVING whatsapp_out > 0 OR whatsapp_in > 0
+        LEFT JOIN (
+            SELECT 
+                wconv.cliente_id,
+                wconv.telefono as conv_telefono,
+                SUM(CASE WHEN wm.direccion='out' THEN 1 ELSE 0 END) as whatsapp_out,
+                SUM(CASE WHEN wm.direccion='in' THEN 1 ELSE 0 END) as whatsapp_in,
+                SUM(CASE WHEN wm.direccion='out' AND wm.origen='bot' THEN 1 ELSE 0 END) as whatsapp_bot,
+                SUM(CASE WHEN wm.direccion='out' AND wm.origen='humano' THEN 1 ELSE 0 END) as whatsapp_humano,
+                SUM(CASE WHEN wm.direccion='out' AND (wm.origen='sistema' OR wm.origen='campana') THEN 1 ELSE 0 END) as whatsapp_sistema
+                {costo_subconsulta}
+            FROM whatsapp_conversaciones wconv
+            JOIN whatsapp_mensajes wm ON wm.conversacion_id = wconv.id
+            {filtro_fecha}
+            GROUP BY wconv.id
+        ) m ON m.cliente_id = c.id 
+            OR REPLACE(REPLACE(REPLACE(u.telefono, '+', ''), ' ', ''), '-', '') = m.conv_telefono
+        GROUP BY c.id, u.nombre_completo, u.email, u.telefono, wc.bloquear_whatsapp, wc.bloquear_email, wc.precio_whatsapp, wc.precio_email
+        HAVING SUM(m.whatsapp_out) > 0 OR SUM(m.whatsapp_in) > 0
         ORDER BY u.nombre_completo
         """.format(
-            costo_chat=", SUM(COALESCE(wm.costo_total, 0)) as costo_whatsapp_total" if tiene_costo_chat else ""
+            costo_chat=", COALESCE(SUM(m.costo_whatsapp_total), 0) as costo_whatsapp_total" if tiene_costo_chat else "",
+            costo_subconsulta=", SUM(COALESCE(wm.costo_total, 0)) as costo_whatsapp_total" if tiene_costo_chat else "",
+            filtro_fecha=filtro_fecha
         )
         return self.base_datos.obtener_todos(consulta)
 

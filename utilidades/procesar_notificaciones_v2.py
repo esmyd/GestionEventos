@@ -1,5 +1,6 @@
 """
 Procesa notificaciones programadas y pendientes (V2)
+También procesa reintentos de mensajes WhatsApp fallidos
 Ejecutar con un scheduler (Task Scheduler/Cron)
 """
 import argparse
@@ -15,15 +16,43 @@ from integraciones.sistema_notificaciones_v2 import SistemaNotificacionesV2
 from modelos.notificacion_modelo_v2 import NotificacionModeloV2
 from integraciones.sistema_notificaciones import SistemaNotificaciones
 from modelos.evento_modelo import EventoModelo
+from utilidades.reintentar_mensajes_whatsapp import ServicioReintentosWhatsApp
+
+
+def procesar_reintentos_whatsapp(limite=50, debug=False):
+    """Procesa reintentos de mensajes WhatsApp fallidos"""
+    try:
+        servicio = ServicioReintentosWhatsApp()
+        resultado = servicio.procesar_reintentos(limite=limite)
+        
+        if resultado['total'] > 0:
+            print(f"[{datetime.now()}] Reintentos WhatsApp: {resultado['exitosos']} exitosos, "
+                  f"{resultado['fallidos']} fallidos, {resultado['no_reintentables']} no reintentables")
+        elif debug:
+            print(f"[{datetime.now()}] No hay mensajes WhatsApp pendientes de reintento")
+        
+        return resultado
+    except Exception as e:
+        print(f"[{datetime.now()}] Error procesando reintentos WhatsApp: {e}")
+        return {'total': 0, 'exitosos': 0, 'fallidos': 0, 'no_reintentables': 0}
 
 
 def main():
     parser = argparse.ArgumentParser(description="Procesar notificaciones pendientes")
     parser.add_argument("--limite", type=int, default=100, help="Maximo de notificaciones a procesar")
     parser.add_argument("--debug", action="store_true", help="Mostrar detalle de eventos programados")
+    parser.add_argument("--solo-reintentos", action="store_true", help="Solo procesar reintentos de WhatsApp")
+    parser.add_argument("--sin-reintentos", action="store_true", help="No procesar reintentos de WhatsApp")
     args = parser.parse_args()
 
     print(f"[{datetime.now()}] Iniciando procesamiento de notificaciones...")
+    
+    # Si solo quiere procesar reintentos
+    if args.solo_reintentos:
+        resultado_reintentos = procesar_reintentos_whatsapp(args.limite, args.debug)
+        print(f"[{datetime.now()}] Procesamiento de reintentos finalizado.")
+        return
+    
     modelo = NotificacionModeloV2()
     sistema_v2 = SistemaNotificacionesV2()
 
@@ -52,6 +81,13 @@ def main():
         except Exception as e:
             print(f"[{datetime.now()}] Error al actualizar estados por fecha: {e}")
         print(f"[{datetime.now()}] Fallback completado. Total enviadas: {total}")
+        
+        # Procesar reintentos de WhatsApp (a menos que se haya desactivado)
+        if not args.sin_reintentos:
+            print(f"[{datetime.now()}] Procesando reintentos de WhatsApp...")
+            procesar_reintentos_whatsapp(args.limite, args.debug)
+        
+        print(f"[{datetime.now()}] Procesamiento completo finalizado.")
         return
 
     if args.debug:
@@ -70,7 +106,14 @@ def main():
         EventoModelo().actualizar_eventos_finalizados()
     except Exception as e:
         print(f"[{datetime.now()}] Error al actualizar estados por fecha: {e}")
-    print(f"[{datetime.now()}] Procesamiento finalizado. Enviadas: {enviados}, Errores: {errores}")
+    print(f"[{datetime.now()}] Notificaciones procesadas. Enviadas: {enviados}, Errores: {errores}")
+    
+    # Procesar reintentos de WhatsApp (a menos que se haya desactivado)
+    if not args.sin_reintentos:
+        print(f"[{datetime.now()}] Procesando reintentos de WhatsApp...")
+        resultado_reintentos = procesar_reintentos_whatsapp(args.limite, args.debug)
+    
+    print(f"[{datetime.now()}] Procesamiento completo finalizado.")
 
 
 if __name__ == "__main__":

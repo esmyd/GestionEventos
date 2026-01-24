@@ -17,8 +17,10 @@ modelo = WhatsAppMetricasModelo()
 @requiere_rol("administrador", "gerente_general")
 def resumen():
     try:
+        fecha_desde = request.args.get("fecha_desde")
+        fecha_hasta = request.args.get("fecha_hasta")
         config = modelo.obtener_config()
-        resumen = modelo.obtener_metricas_globales()
+        resumen = modelo.obtener_metricas_globales(fecha_desde=fecha_desde, fecha_hasta=fecha_hasta)
         return jsonify({"config": config, "resumen": resumen}), 200
     except Exception as e:
         logger.error(f"Error al obtener resumen métricas: {str(e)}")
@@ -30,16 +32,18 @@ def resumen():
 @requiere_rol("administrador", "gerente_general")
 def clientes():
     try:
-        clientes = modelo.obtener_metricas_clientes()
+        fecha_desde = request.args.get("fecha_desde")
+        fecha_hasta = request.args.get("fecha_hasta")
+        clientes = modelo.obtener_metricas_clientes(fecha_desde=fecha_desde, fecha_hasta=fecha_hasta)
         email = modelo.obtener_email_por_cliente()
         email_map = {row.get("cliente_id"): row for row in email or []}
         config = modelo.obtener_config()
         for row in clientes or []:
             extra = email_map.get(row.get("cliente_id"), {})
             row["email_out"] = int(extra.get("email_out") or 0)
-            # whatsapp_sistema ya viene calculado desde whatsapp_mensajes (origen='sistema' o 'campana')
-            # NO usar whatsapp_sistema desde historial_notificaciones para evitar duplicación
             row["whatsapp_sistema"] = int(row.get("whatsapp_sistema") or 0)
+            row["whatsapp_bot"] = int(row.get("whatsapp_bot") or 0)
+            row["whatsapp_humano"] = int(row.get("whatsapp_humano") or 0)
             
             precio_whatsapp = row.get("precio_whatsapp")
             precio_email = row.get("precio_email")
@@ -48,12 +52,13 @@ def clientes():
             if precio_email is None:
                 precio_email = config.get("precio_email") or 0
             
-            # Costo total de WhatsApp desde whatsapp_mensajes (ya incluye chat + sistema)
+            # Costo total de WhatsApp desde whatsapp_mensajes
             costo_whatsapp_total = row.get("costo_whatsapp_total") or 0
+            whatsapp_out = int(row.get("whatsapp_out") or 0)
             
             # Si no hay costo almacenado, calcular basado en cantidad
             if costo_whatsapp_total == 0:
-                costo_whatsapp_total = float(precio_whatsapp) * float(whatsapp_out_total)
+                costo_whatsapp_total = float(precio_whatsapp) * float(whatsapp_out)
             
             costo_email_total = extra.get("costo_email_total")
             if costo_email_total is None:

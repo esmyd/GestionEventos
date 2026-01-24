@@ -1,0 +1,743 @@
+[2026-01-24 17:22:34] [INFO] Forzar envio solicitado para evento 31 tipo solicitud_calificacion
+[2026-01-24 17:22:34] [INFO] [CALIFICACION] Creando solicitud para evento 31, cliente 1
+[2026-01-24 17:22:34] [INFO] [CALIFICACION] Tabla existe: True
+[2026-01-24 17:22:34] [INFO] [CALIFICACION] Nueva solicitud creada con ID: 1, rows affected: 1
+[2026-01-24 17:22:34] [INFO] [CALIFICACION] Verificación después de INSERT: {'id': 1, 'estado': 'pendiente'}
+[2026-01-24 17:22:34] [INFO] Solicitud de calificación creada con ID: 1 para evento 31, cliente 1
+[2026-01-24 17:22:35] [INFO] Solicitud de calificación enviada a 593988492339 para evento 31
+[2026-01-24 17:22:35] [INFO] Solicitud de calificación enviada para evento 31
+[2026-01-24 17:22:36] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSRTE3NTY1RDY4QjIxRjc4QjE3AA==', 'status': 'sent', 'timestamp': '1769293357', 'recipient_id': '593988492339', 'conversation': {'id': 'c246583c45abc8432d0f2ac394e79a70', 'expiration_timestamp': '1769293357', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:22:37] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSRTE3NTY1RDY4QjIxRjc4QjE3AA==', 'status': 'delivered', 'timestamp': '1769293357', 'recipient_id': '593988492339', 'conversation': {'id': 'c246583c45abc8432d0f2ac394e79a70', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:22:37] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSRTE3NTY1RDY4QjIxRjc4QjE3AA==', 'status': 'delivered', 'timestamp': '1769293357', 'recipient_id': '593988492339', 'conversation': {'id': 'c246583c45abc8432d0f2ac394e79a70', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:22:49] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSRTE3NTY1RDY4QjIxRjc4QjE3AA==', 'status': 'read', 'timestamp': '1769293369', 'recipient_id': '593988492339', 'conversation': {'id': 'c246583c45abc8432d0f2ac394e79a70', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:22:51] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Gregorio Osorio'}, 'wa_id': '593988492339'}], 'messages': [{'from': '593988492339', 'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAEhgWM0VCMEYwMTNFQzM1Qjg4RTVBQTM4QgA=', 'timestamp': '1769293371', 'text': {'body': '5'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:22:51] [INFO] Procesando posible calificación simple: 5 de 593988492339
+[2026-01-24 17:22:51] [INFO] [CALIFICACION] Buscando para teléfono: 593988492339
+[2026-01-24 17:22:51] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:22:51] [INFO] [CALIFICACION] Teléfono limpio: 593988492339
+[2026-01-24 17:22:51] [INFO] [CALIFICACION] Solicitudes pendientes en BD: [{'id': 1, 'id_evento': 31, 'id_cliente': 1, 'estado': 'pendiente', 'tel_usuario': '593988492339'}]
+[2026-01-24 17:22:51] [INFO] [CALIFICACION] Resultado búsqueda: {'id_evento': 31, 'id_cliente': 1, 'estado': 'pendiente', 'nombre_evento': 'Concierto - ', 'telefono_usuario': '593988492339'}
+[2026-01-24 17:22:51] [INFO] Solicitud pendiente encontrada: {'id_evento': 31, 'id_cliente': 1, 'estado': 'pendiente', 'nombre_evento': 'Concierto - ', 'telefono_usuario': '593988492339'}
+[2026-01-24 17:22:51] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:22:52] [INFO] WhatsApp enviado OK a 593988492339
+[2026-01-24 17:22:52] [INFO] Calificación simple 5 registrada para evento 31
+[2026-01-24 17:22:53] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSNzZERDM1OEE5MEI2QzMyRkNGAA==', 'status': 'sent', 'timestamp': '1769293373', 'recipient_id': '593988492339', 'conversation': {'id': '59132579316d00b30ee680172ca8c6be', 'expiration_timestamp': '1769293373', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:22:54] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSNzZERDM1OEE5MEI2QzMyRkNGAA==', 'status': 'delivered', 'timestamp': '1769293374', 'recipient_id': '593988492339', 'conversation': {'id': '59132579316d00b30ee680172ca8c6be', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:22:54] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSNzZERDM1OEE5MEI2QzMyRkNGAA==', 'status': 'read', 'timestamp': '1769293374', 'recipient_id': '593988492339', 'conversation': {'id': '59132579316d00b30ee680172ca8c6be', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:23:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:23:19] [INFO] Forzar envio solicitado para evento 32 tipo solicitud_calificacion
+[2026-01-24 17:23:19] [INFO] [CALIFICACION] Creando solicitud para evento 32, cliente 1
+[2026-01-24 17:23:19] [INFO] [CALIFICACION] Tabla existe: True
+[2026-01-24 17:23:19] [INFO] [CALIFICACION] Nueva solicitud creada con ID: 2, rows affected: 1
+[2026-01-24 17:23:19] [INFO] [CALIFICACION] Verificación después de INSERT: {'id': 2, 'estado': 'pendiente'}
+[2026-01-24 17:23:19] [INFO] Solicitud de calificación creada con ID: 2 para evento 32, cliente 1
+[2026-01-24 17:23:20] [INFO] Solicitud de calificación enviada a 593988492339 para evento 32
+[2026-01-24 17:23:20] [INFO] Solicitud de calificación enviada para evento 32
+[2026-01-24 17:23:22] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSMTg0NjA1ODM3ODI1MDBCREFEAA==', 'status': 'sent', 'timestamp': '1769293402', 'recipient_id': '593988492339', 'conversation': {'id': '5fa55ed0f4942ad02036f83ecc0273f4', 'expiration_timestamp': '1769293402', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:22] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSMTg0NjA1ODM3ODI1MDBCREFEAA==', 'status': 'delivered', 'timestamp': '1769293402', 'recipient_id': '593988492339', 'conversation': {'id': '5fa55ed0f4942ad02036f83ecc0273f4', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:22] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSMTg0NjA1ODM3ODI1MDBCREFEAA==', 'status': 'delivered', 'timestamp': '1769293402', 'recipient_id': '593988492339', 'conversation': {'id': '5fa55ed0f4942ad02036f83ecc0273f4', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:25] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSMTg0NjA1ODM3ODI1MDBCREFEAA==', 'status': 'read', 'timestamp': '1769293404', 'recipient_id': '593988492339', 'conversation': {'id': '5fa55ed0f4942ad02036f83ecc0273f4', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:34] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Gregorio Osorio'}, 'wa_id': '593988492339'}], 'messages': [{'from': '593988492339', 'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAEhgWM0VCMEIzNDNEODc2RTU4NDhFNUZDOAA=', 'timestamp': '1769293414', 'text': {'body': '3'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:34] [INFO] Procesando posible calificación simple: 3 de 593988492339
+[2026-01-24 17:23:34] [INFO] [CALIFICACION] Buscando para teléfono: 593988492339
+[2026-01-24 17:23:34] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:23:34] [INFO] [CALIFICACION] Teléfono limpio: 593988492339
+[2026-01-24 17:23:34] [INFO] [CALIFICACION] Solicitudes pendientes en BD: [{'id': 2, 'id_evento': 32, 'id_cliente': 1, 'estado': 'pendiente', 'tel_usuario': '593988492339'}]
+[2026-01-24 17:23:34] [INFO] [CALIFICACION] Resultado búsqueda: {'id_evento': 32, 'id_cliente': 1, 'estado': 'pendiente', 'nombre_evento': 'Compromiso - 2', 'telefono_usuario': '593988492339'}
+[2026-01-24 17:23:34] [INFO] Solicitud pendiente encontrada: {'id_evento': 32, 'id_cliente': 1, 'estado': 'pendiente', 'nombre_evento': 'Compromiso - 2', 'telefono_usuario': '593988492339'}
+[2026-01-24 17:23:34] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:23:35] [INFO] WhatsApp enviado OK a 593988492339
+[2026-01-24 17:23:35] [INFO] Calificación simple 3 registrada para evento 32
+[2026-01-24 17:23:36] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSQkZBQjhDOUM4OUQ3MTA3ODE1AA==', 'status': 'sent', 'timestamp': '1769293416', 'recipient_id': '593988492339', 'conversation': {'id': 'f389bd777f707eedb416a214d55ee32c', 'expiration_timestamp': '1769293416', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:36] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSQkZBQjhDOUM4OUQ3MTA3ODE1AA==', 'status': 'delivered', 'timestamp': '1769293416', 'recipient_id': '593988492339', 'conversation': {'id': 'f389bd777f707eedb416a214d55ee32c', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:37] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSQkZBQjhDOUM4OUQ3MTA3ODE1AA==', 'status': 'read', 'timestamp': '1769293417', 'recipient_id': '593988492339', 'conversation': {'id': 'f389bd777f707eedb416a214d55ee32c', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:59] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Gregorio Osorio'}, 'wa_id': '593988492339'}], 'messages': [{'from': '593988492339', 'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAEhgWM0VCMDVBNUM3QTAxNTc1RkJGM0FBMgA=', 'timestamp': '1769293439', 'text': {'body': 'los animadores no estaba animados'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:23:59] [INFO] [CALIFICACION] Buscando para teléfono: 593988492339
+[2026-01-24 17:23:59] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:23:59] [INFO] [CALIFICACION] Teléfono limpio: 593988492339
+[2026-01-24 17:23:59] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:23:59] [INFO] [CALIFICACION] Resultado búsqueda: {'id_evento': 32, 'id_cliente': 1, 'estado': 'observaciones_pendientes', 'nombre_evento': 'Compromiso - 2', 'telefono_usuario': '593988492339'}
+[2026-01-24 17:23:59] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:24:00] [INFO] WhatsApp enviado OK a 593988492339
+[2026-01-24 17:24:00] [INFO] Observaciones registradas para evento 32
+[2026-01-24 17:24:01] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSQzMwMzUyMkVEQzhDQ0Y2RjcyAA==', 'status': 'sent', 'timestamp': '1769293441', 'recipient_id': '593988492339', 'conversation': {'id': 'bfcb4281062282baec91fbd4e13f1aac', 'expiration_timestamp': '1769293441', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:24:02] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSQzMwMzUyMkVEQzhDQ0Y2RjcyAA==', 'status': 'read', 'timestamp': '1769293442', 'recipient_id': '593988492339', 'conversation': {'id': 'bfcb4281062282baec91fbd4e13f1aac', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:24:02] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSQzMwMzUyMkVEQzhDQ0Y2RjcyAA==', 'status': 'delivered', 'timestamp': '1769293441', 'recipient_id': '593988492339', 'conversation': {'id': 'bfcb4281062282baec91fbd4e13f1aac', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:24:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:24:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:25:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:25:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:25:59] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:25:59] [INFO] Intento enviar notificación 'evento_creado' para evento 33 (force=False, canal=ambos)
+[2026-01-24 17:25:59] [INFO] Email activo para notificación 'evento_creado' en evento 33
+[2026-01-24 17:25:59] [INFO] Destinatarios adicionales para 'evento_creado': 0
+[2026-01-24 17:25:59] [INFO] Email cliente para evento 33: lilibeth.morales.castro@gmail.com
+[2026-01-24 17:25:59] [INFO] Enviando email a lilibeth.morales.castro@gmail.com para evento 33
+[2026-01-24 17:25:59] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:26:00] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:26:00] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:26:00] [INFO] Tamaño del mensaje: 4424 bytes
+[2026-01-24 17:26:01] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:26:02] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:26:02] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Evento Creado - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:26:02] [INFO] Resultado email cliente lilibeth.morales.castro@gmail.com: OK
+[2026-01-24 17:26:02] [INFO] WhatsApp activo para notificación 'evento_creado' en evento 33
+[2026-01-24 17:26:03] [INFO] Mensaje de notificación 'evento_creado' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 17:26:03] [INFO] Notificación 'evento_creado' enviada para evento 33 por ambos
+[2026-01-24 17:26:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:26:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:26:04] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSREExMEY2Nzk2NUM3Mjc3MUVCAA==', 'status': 'failed', 'timestamp': '1769293564', 'recipient_id': '593993988865', 'errors': [{'code': 131047, 'title': 'Re-engagement message', 'message': 'Re-engagement message', 'error_data': {'details': 'Message failed to send because more than 24 hours have passed since the customer last replied to this number.'}, 'href': 'https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/'}]}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:26:05] [WARNING] WhatsApp fuera de ventana 24h (re-engagement) para wa_id=wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSREExMEY2Nzk2NUM3Mjc3MUVCAA==: Message failed to send because more than 24 hours have passed since the customer last replied to this number.
+[2026-01-24 17:27:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:27:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:28:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:28:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:28:27] [INFO] Forzar envio solicitado para evento 33 tipo recordatorio_evento
+[2026-01-24 17:28:27] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:28:27] [INFO] Intento enviar notificación 'recordatorio_evento' para evento 33 (force=True, canal=whatsapp)
+[2026-01-24 17:28:27] [INFO] WhatsApp activo para notificación 'recordatorio_evento' en evento 33
+[2026-01-24 17:28:28] [INFO] Mensaje de notificación 'recordatorio_evento' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 17:28:28] [INFO] Notificación 'recordatorio_evento' enviada para evento 33 por whatsapp
+[2026-01-24 17:28:28] [INFO] Forzar envio resultado para evento 33 tipo recordatorio_evento: enviado
+[2026-01-24 17:28:29] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRjMyNEJGQjYyRjcxNTU4MjI3AA==', 'status': 'failed', 'timestamp': '1769293709', 'recipient_id': '593993988865', 'errors': [{'code': 131047, 'title': 'Re-engagement message', 'message': 'Re-engagement message', 'error_data': {'details': 'Message failed to send because more than 24 hours have passed since the customer last replied to this number.'}, 'href': 'https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/'}]}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:28:29] [WARNING] WhatsApp fuera de ventana 24h (re-engagement) para wa_id=wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRjMyNEJGQjYyRjcxNTU4MjI3AA==: Message failed to send because more than 24 hours have passed since the customer last replied to this number.
+[2026-01-24 17:28:48] [INFO] Forzar envio solicitado para evento 33 tipo recordatorio_valores_pendientes
+[2026-01-24 17:28:48] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:28:48] [INFO] Intento enviar notificación 'recordatorio_valores_pendientes' para evento 33 (force=True, canal=whatsapp)
+[2026-01-24 17:28:48] [INFO] WhatsApp activo para notificación 'recordatorio_valores_pendientes' en evento 33
+[2026-01-24 17:28:49] [INFO] Mensaje de notificación 'recordatorio_valores_pendientes' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 17:28:49] [INFO] Notificación 'recordatorio_valores_pendientes' enviada para evento 33 por whatsapp
+[2026-01-24 17:28:49] [INFO] Forzar envio resultado para evento 33 tipo recordatorio_valores_pendientes: enviado
+[2026-01-24 17:28:50] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRjM0RDIxMDdGNjA2MDI3MzA3AA==', 'status': 'failed', 'timestamp': '1769293730', 'recipient_id': '593993988865', 'errors': [{'code': 131047, 'title': 'Re-engagement message', 'message': 'Re-engagement message', 'error_data': {'details': 'Message failed to send because more than 24 hours have passed since the customer last replied to this number.'}, 'href': 'https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/'}]}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:28:50] [WARNING] WhatsApp fuera de ventana 24h (re-engagement) para wa_id=wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRjM0RDIxMDdGNjA2MDI3MzA3AA==: Message failed to send because more than 24 hours have passed since the customer last replied to this number.
+[2026-01-24 17:29:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:29:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:29:36] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUMxRjI0RjM5NTU4QUVBREJEREMwODZGNDAwRkFBRTAA', 'timestamp': '1769293776', 'text': {'body': 'Holaaa'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:29:36] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:29:36] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:29:36] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:29:36] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:29:36] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:29:38] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzVBMEJFNjY0MkFGNkJFQUUwAA==', 'status': 'sent', 'timestamp': '1769293778', 'recipient_id': '593993988865', 'conversation': {'id': '8674c26ff85840d55695a86aad836a27', 'expiration_timestamp': '1769293778', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:29:38] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzVBMEJFNjY0MkFGNkJFQUUwAA==', 'status': 'read', 'timestamp': '1769293778', 'recipient_id': '593993988865', 'conversation': {'id': '8674c26ff85840d55695a86aad836a27', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:30:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:30:04] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:30:24] [INFO] Forzar envio solicitado para evento 33 tipo recordatorio_evento
+[2026-01-24 17:30:24] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:30:24] [INFO] Intento enviar notificación 'recordatorio_evento' para evento 33 (force=True, canal=whatsapp)
+[2026-01-24 17:30:24] [INFO] WhatsApp activo para notificación 'recordatorio_evento' en evento 33
+[2026-01-24 17:30:25] [INFO] Mensaje de notificación 'recordatorio_evento' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 17:30:25] [INFO] Notificación 'recordatorio_evento' enviada para evento 33 por whatsapp
+[2026-01-24 17:30:25] [INFO] Forzar envio resultado para evento 33 tipo recordatorio_evento: enviado
+[2026-01-24 17:30:26] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjRFMDUxRjlENEFGM0E5MDlEAA==', 'status': 'sent', 'timestamp': '1769293826', 'recipient_id': '593993988865', 'conversation': {'id': 'dcfc73932868dc0b5e9d38dd8e0fffd6', 'expiration_timestamp': '1769293826', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:30:29] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjRFMDUxRjlENEFGM0E5MDlEAA==', 'status': 'delivered', 'timestamp': '1769293827', 'recipient_id': '593993988865', 'conversation': {'id': 'dcfc73932868dc0b5e9d38dd8e0fffd6', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:30:31] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjRFMDUxRjlENEFGM0E5MDlEAA==', 'status': 'read', 'timestamp': '1769293831', 'recipient_id': '593993988865', 'conversation': {'id': 'dcfc73932868dc0b5e9d38dd8e0fffd6', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:30:44] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkI2OTZCRTBBMTcxNkM0RkJCAA==', 'status': 'sent', 'timestamp': '1769293844', 'recipient_id': '593993988865', 'conversation': {'id': '0360da987eba9b6534e0fb3a78703907', 'expiration_timestamp': '1769293844', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:30:45] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkI2OTZCRTBBMTcxNkM0RkJCAA==', 'status': 'delivered', 'timestamp': '1769293845', 'recipient_id': '593993988865', 'conversation': {'id': '0360da987eba9b6534e0fb3a78703907', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:30:50] [INFO] ==================================================
+[2026-01-24 17:30:50] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-24 17:30:50] [INFO] ==================================================
+[2026-01-24 17:30:50] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-24 17:30:50] [INFO] Endpoints disponibles:
+[2026-01-24 17:30:50] [INFO]   - POST /api/auth/login
+[2026-01-24 17:30:50] [INFO]   - GET  /api/health
+[2026-01-24 17:30:50] [INFO]   - GET  /api/usuarios
+[2026-01-24 17:30:50] [INFO]   - GET  /api/clientes
+[2026-01-24 17:30:50] [INFO]   - GET  /api/productos
+[2026-01-24 17:30:50] [INFO]   - GET  /api/eventos
+[2026-01-24 17:30:50] [INFO]   - GET  /api/pagos
+[2026-01-24 17:30:50] [INFO]   - GET  /api/reportes/metricas
+[2026-01-24 17:30:50] [INFO]   ... y muchos más
+[2026-01-24 17:31:03] [INFO] ==================================================
+[2026-01-24 17:31:03] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-24 17:31:03] [INFO] ==================================================
+[2026-01-24 17:31:03] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-24 17:31:03] [INFO] Endpoints disponibles:
+[2026-01-24 17:31:03] [INFO]   - POST /api/auth/login
+[2026-01-24 17:31:03] [INFO]   - GET  /api/health
+[2026-01-24 17:31:03] [INFO]   - GET  /api/usuarios
+[2026-01-24 17:31:03] [INFO]   - GET  /api/clientes
+[2026-01-24 17:31:03] [INFO]   - GET  /api/productos
+[2026-01-24 17:31:03] [INFO]   - GET  /api/eventos
+[2026-01-24 17:31:03] [INFO]   - GET  /api/pagos
+[2026-01-24 17:31:03] [INFO]   - GET  /api/reportes/metricas
+[2026-01-24 17:31:03] [INFO]   ... y muchos más
+[2026-01-24 17:31:04] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:31:04] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:31:07] [DEBUG] Token generado para usuario: admin
+[2026-01-24 17:31:07] [INFO] Login exitoso para usuario: admin
+[2026-01-24 17:32:04] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:32:04] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:33:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:33:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:34:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:34:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:35:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:35:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:36:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:36:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:37:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:37:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:37:27] [INFO] Forzar envio solicitado para evento 33 tipo recordatorio_evento
+[2026-01-24 17:37:27] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:37:27] [INFO] Intento enviar notificación 'recordatorio_evento' para evento 33 (force=True, canal=whatsapp)
+[2026-01-24 17:37:27] [INFO] WhatsApp activo para notificación 'recordatorio_evento' en evento 33
+[2026-01-24 17:37:28] [INFO] Mensaje de notificación 'recordatorio_evento' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 17:37:28] [INFO] Notificación 'recordatorio_evento' enviada para evento 33 por whatsapp
+[2026-01-24 17:37:28] [INFO] Forzar envio resultado para evento 33 tipo recordatorio_evento: enviado
+[2026-01-24 17:37:29] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMkUzQzIzMDZBRkNGN0QzMjdFAA==', 'status': 'sent', 'timestamp': '1769294249', 'recipient_id': '593993988865', 'conversation': {'id': '804d5de2e0ae6d4d96ddae8fe0be6820', 'expiration_timestamp': '1769294249', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:37:31] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMkUzQzIzMDZBRkNGN0QzMjdFAA==', 'status': 'delivered', 'timestamp': '1769294251', 'recipient_id': '593993988865', 'conversation': {'id': '804d5de2e0ae6d4d96ddae8fe0be6820', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:37:35] [INFO] Forzar envio solicitado para evento 33 tipo recordatorio_evento
+[2026-01-24 17:37:35] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:37:35] [INFO] Intento enviar notificación 'recordatorio_evento' para evento 33 (force=True, canal=email)
+[2026-01-24 17:37:35] [INFO] Email activo para notificación 'recordatorio_evento' en evento 33
+[2026-01-24 17:37:35] [INFO] Destinatarios adicionales para 'recordatorio_evento': 0
+[2026-01-24 17:37:35] [INFO] Email cliente para evento 33: lilibeth.morales.castro@gmail.com
+[2026-01-24 17:37:35] [INFO] Enviando email a lilibeth.morales.castro@gmail.com para evento 33
+[2026-01-24 17:37:35] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:37:35] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:37:35] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:37:35] [INFO] Tamaño del mensaje: 2679 bytes
+[2026-01-24 17:37:37] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:37:37] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:37:37] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Recordatorio del evento - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:37:37] [INFO] Resultado email cliente lilibeth.morales.castro@gmail.com: OK
+[2026-01-24 17:37:37] [INFO] Notificación 'recordatorio_evento' enviada para evento 33 por email
+[2026-01-24 17:37:37] [INFO] Forzar envio resultado para evento 33 tipo recordatorio_evento: enviado
+[2026-01-24 17:38:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:38:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:39:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:39:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:40:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:40:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:41:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:41:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:42:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:42:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:43:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:43:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:43:36] [INFO] Iniciando registro de pago - Evento ID: 33, Monto: $100.00, Tipo: abono
+[2026-01-24 17:43:36] [DEBUG] Validación de pago - Total actual: $0.00, Monto a agregar: $100.00, Precio total evento: $1160.00
+[2026-01-24 17:43:36] [INFO] Pago registrado exitosamente - ID: 62, Evento: 33, Monto: $100.00, Tipo: abono
+[2026-01-24 17:43:36] [DEBUG] Pago obtenido por ID: 62
+[2026-01-24 17:44:01] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkI2OTZCRTBBMTcxNkM0RkJCAA==', 'status': 'read', 'timestamp': '1769294641', 'recipient_id': '593993988865', 'conversation': {'id': '0360da987eba9b6534e0fb3a78703907', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:44:01] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMkUzQzIzMDZBRkNGN0QzMjdFAA==', 'status': 'read', 'timestamp': '1769294641', 'recipient_id': '593993988865', 'conversation': {'id': '804d5de2e0ae6d4d96ddae8fe0be6820', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:44:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:44:03] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:44:04] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:44:05] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:44:05] [INFO] Tamaño del mensaje: 774 bytes
+[2026-01-24 17:44:06] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:44:06] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:44:06] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Abono Recibido - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:44:06] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:44:07] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:44:07] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:44:08] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjI0MTcxQUJEOTdBRERBQUVEAA==', 'status': 'sent', 'timestamp': '1769294648', 'recipient_id': '593993988865', 'conversation': {'id': '1309b4deca381027b05fdb315489d2fe', 'expiration_timestamp': '1769294648', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:44:08] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjI0MTcxQUJEOTdBRERBQUVEAA==', 'status': 'read', 'timestamp': '1769294648', 'recipient_id': '593993988865', 'conversation': {'id': '1309b4deca381027b05fdb315489d2fe', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:44:57] [DEBUG] Pago obtenido por ID: 62
+[2026-01-24 17:44:57] [DEBUG] Pago obtenido por ID: 62
+[2026-01-24 17:44:57] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:44:57] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:44:58] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:44:58] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:44:58] [INFO] Tamaño del mensaje: 4594 bytes
+[2026-01-24 17:44:59] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:44:59] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:44:59] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Actualización de Estado - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:44:59] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:45:00] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:45:00] [INFO] Estado del evento 33 cambiado a 'en_proceso' por aprobación de pago
+[2026-01-24 17:45:00] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:45:00] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:45:01] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:45:01] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:45:01] [INFO] Tamaño del mensaje: 5162 bytes
+[2026-01-24 17:45:01] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQjNGQUM1QUVDNjJFRkE3NDg5AA==', 'status': 'sent', 'timestamp': '1769294701', 'recipient_id': '593993988865', 'conversation': {'id': '21815f98903d5ecb244d4c861564f80b', 'expiration_timestamp': '1769294701', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:45:02] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:45:02] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:45:02] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Abono Recibido - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:45:03] [INFO] Mensaje de pago 'abono' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 17:45:03] [DEBUG] Notificación enviada para pago evento 33, Tipo: abono
+[2026-01-24 17:45:03] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQjNGQUM1QUVDNjJFRkE3NDg5AA==', 'status': 'delivered', 'timestamp': '1769294703', 'recipient_id': '593993988865', 'conversation': {'id': '21815f98903d5ecb244d4c861564f80b', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:45:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:45:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:45:04] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjMxM0JDNkU4Q0ExMkUxMTUxAA==', 'status': 'sent', 'timestamp': '1769294704', 'recipient_id': '593993988865', 'conversation': {'id': 'c717ef790920b7a61d6ee017972bbab8', 'expiration_timestamp': '1769294704', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:45:04] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjMxM0JDNkU4Q0ExMkUxMTUxAA==', 'status': 'delivered', 'timestamp': '1769294704', 'recipient_id': '593993988865', 'conversation': {'id': 'c717ef790920b7a61d6ee017972bbab8', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:45:18] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQjNGQUM1QUVDNjJFRkE3NDg5AA==', 'status': 'read', 'timestamp': '1769294718', 'recipient_id': '593993988865', 'conversation': {'id': '21815f98903d5ecb244d4c861564f80b', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:45:18] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNjMxM0JDNkU4Q0ExMkUxMTUxAA==', 'status': 'read', 'timestamp': '1769294718', 'recipient_id': '593993988865', 'conversation': {'id': 'c717ef790920b7a61d6ee017972bbab8', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:46:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:46:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:46:35] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUNCNkIzNTRFNTlBNjk4Njc2N0VCQ0I2OEJBRTYyNUQA', 'timestamp': '1769294795', 'text': {'body': 'Pagar'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:46:35] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:46:35] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:46:35] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:46:35] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:46:35] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:46:37] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRDM3NzdEQzk5QTEwRENBQTQ2AA==', 'status': 'sent', 'timestamp': '1769294797', 'recipient_id': '593993988865', 'conversation': {'id': '047a31e412320a7334fccbffd1df0fd2', 'expiration_timestamp': '1769294797', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:46:38] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRDM3NzdEQzk5QTEwRENBQTQ2AA==', 'status': 'read', 'timestamp': '1769294798', 'recipient_id': '593993988865', 'conversation': {'id': '047a31e412320a7334fccbffd1df0fd2', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:46:56] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM0Q0I3QTMyNkU5ODI2RTQ5Mzg4NkI3NzQ0NzAzRjYA', 'timestamp': '1769294815', 'text': {'body': '1060'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:46:56] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:46:56] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:46:56] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:46:56] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:46:56] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:46:58] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzQ1QjQ3REQzM0ZCRkVBOUNCAA==', 'status': 'sent', 'timestamp': '1769294818', 'recipient_id': '593993988865', 'conversation': {'id': '8a741dd3983061dd025b67e81aad318d', 'expiration_timestamp': '1769294818', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:46:58] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzQ1QjQ3REQzM0ZCRkVBOUNCAA==', 'status': 'read', 'timestamp': '1769294818', 'recipient_id': '593993988865', 'conversation': {'id': '8a741dd3983061dd025b67e81aad318d', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:47:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:47:05] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'context': {'from': '593994281769', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzQ1QjQ3REQzM0ZCRkVBOUNCAA=='}, 'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM4NDhDRDFBQkU5MDQ0RjExNzRBNUQ3NDUzQUYyNzYA', 'timestamp': '1769294825', 'type': 'interactive', 'interactive': {'type': 'list_reply', 'list_reply': {'id': 'pago:metodo:transferencia', 'title': 'Transferencia'}}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:05] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:47:05] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:47:05] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:47:05] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:47:05] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:47:07] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOUYyMjc1NURFQzk3OTI5RTIyAA==', 'status': 'sent', 'timestamp': '1769294827', 'recipient_id': '593993988865', 'conversation': {'id': '0a0ede3ac67d985caa51dc328d9bac5d', 'expiration_timestamp': '1769294827', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:07] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOUYyMjc1NURFQzk3OTI5RTIyAA==', 'status': 'read', 'timestamp': '1769294827', 'recipient_id': '593993988865', 'conversation': {'id': '0a0ede3ac67d985caa51dc328d9bac5d', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:33] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM4OTlCNjYzNTI2N0M0MjZDODgzMkY5MEJCRjE0Q0MA', 'timestamp': '1769294852', 'text': {'body': '2026-01-25'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:33] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:47:33] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:47:33] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:47:33] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:47:33] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:47:34] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNzFFMEExQzhBMERGOEJDM0ZEAA==', 'status': 'sent', 'timestamp': '1769294855', 'recipient_id': '593993988865', 'conversation': {'id': '467247b0ca549a929bcca444752aabb0', 'expiration_timestamp': '1769294855', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:35] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNzFFMEExQzhBMERGOEJDM0ZEAA==', 'status': 'read', 'timestamp': '1769294855', 'recipient_id': '593993988865', 'conversation': {'id': '467247b0ca549a929bcca444752aabb0', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:43] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'context': {'from': '593994281769', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSNzFFMEExQzhBMERGOEJDM0ZEAA=='}, 'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUMxOTY3RkYxQTc4NzAwRTY5QkI1MEE3QzY0NjNEMDcA', 'timestamp': '1769294862', 'type': 'interactive', 'interactive': {'type': 'button_reply', 'button_reply': {'id': 'pago:referencia:omitir', 'title': 'Omitir'}}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:43] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:47:43] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:47:43] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:47:43] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:47:43] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:47:45] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkYyRjY0Q0I5MTBCMkUxOTQ2AA==', 'status': 'sent', 'timestamp': '1769294865', 'recipient_id': '593993988865', 'conversation': {'id': '3d1a498e9a8b969a875a6d6bde542ad0', 'expiration_timestamp': '1769294865', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:46] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkYyRjY0Q0I5MTBCMkUxOTQ2AA==', 'status': 'read', 'timestamp': '1769294866', 'recipient_id': '593993988865', 'conversation': {'id': '3d1a498e9a8b969a875a6d6bde542ad0', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:51] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM0NUEzQ0JCQTg0OEY2OTBFM0JCNTEwNDE2NUNEOTIA', 'timestamp': '1769294870', 'text': {'body': 'Hfufhfi'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:51] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:47:51] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:47:51] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:47:51] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:47:51] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:47:53] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQTM4QUEyMkNFNzhERjBDNTgxAA==', 'status': 'sent', 'timestamp': '1769294873', 'recipient_id': '593993988865', 'conversation': {'id': '9c61210260181e6dd9ae8a0dde9afd5c', 'expiration_timestamp': '1769294873', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:47:53] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQTM4QUEyMkNFNzhERjBDNTgxAA==', 'status': 'read', 'timestamp': '1769294873', 'recipient_id': '593993988865', 'conversation': {'id': '9c61210260181e6dd9ae8a0dde9afd5c', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:48:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:48:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:48:10] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'context': {'from': '593994281769', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQTM4QUEyMkNFNzhERjBDNTgxAA=='}, 'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUMwNTM5QkVEMzBCOUNFMjNCMDMyQTk2QjA3ODMwREUA', 'timestamp': '1769294890', 'type': 'interactive', 'interactive': {'type': 'button_reply', 'button_reply': {'id': 'pago:confirmar', 'title': 'Confirmar'}}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:48:10] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:48:10] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:48:10] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:48:10] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:48:10] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 17:48:10] [INFO] Iniciando registro de pago - Evento ID: 33, Monto: $1060.00, Tipo: abono
+[2026-01-24 17:48:10] [DEBUG] Validación de pago - Total actual: $100.00, Monto a agregar: $1060.00, Precio total evento: $1160.00
+[2026-01-24 17:48:10] [INFO] Pago registrado exitosamente - ID: 63, Evento: 33, Monto: $1060.00, Tipo: abono
+[2026-01-24 17:48:15] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOUIwRUNGQjY5QkU4MDZDQkM4AA==', 'status': 'sent', 'timestamp': '1769294895', 'recipient_id': '593993988865', 'conversation': {'id': 'f418264ab1f06fe8b4c8ea888569c8d1', 'expiration_timestamp': '1769294895', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:48:16] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOUIwRUNGQjY5QkU4MDZDQkM4AA==', 'status': 'read', 'timestamp': '1769294896', 'recipient_id': '593993988865', 'conversation': {'id': 'f418264ab1f06fe8b4c8ea888569c8d1', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:48:57] [DEBUG] Pago obtenido por ID: 63
+[2026-01-24 17:48:57] [DEBUG] Pago obtenido por ID: 63
+[2026-01-24 17:48:57] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:48:57] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:48:57] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:48:58] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:48:58] [INFO] Tamaño del mensaje: 4594 bytes
+[2026-01-24 17:48:59] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:48:59] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:48:59] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Actualización de Estado - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:48:59] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:49:00] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:49:00] [INFO] Estado del evento 33 cambiado a 'confirmado' por pago completo
+[2026-01-24 17:49:00] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:49:00] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:49:00] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:49:00] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:49:00] [INFO] Tamaño del mensaje: 4890 bytes
+[2026-01-24 17:49:01] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRjM4MjVCQUM0RDBGODM1RUMwAA==', 'status': 'sent', 'timestamp': '1769294941', 'recipient_id': '593993988865', 'conversation': {'id': 'b83a9d82a97b1b8da588ecaf3ae0613f', 'expiration_timestamp': '1769294941', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:49:01] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:49:01] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:49:01] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Pago Completo - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:49:02] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRjM4MjVCQUM0RDBGODM1RUMwAA==', 'status': 'delivered', 'timestamp': '1769294942', 'recipient_id': '593993988865', 'conversation': {'id': 'b83a9d82a97b1b8da588ecaf3ae0613f', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:49:02] [INFO] Mensaje de pago 'pago_completo' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 17:49:02] [DEBUG] Notificación enviada para pago evento 33, Tipo: pago_completo
+[2026-01-24 17:49:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:49:03] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:49:03] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMTIxNUY2M0E4M0RERkQ1MDYzAA==', 'status': 'sent', 'timestamp': '1769294943', 'recipient_id': '593993988865', 'conversation': {'id': 'dde86f3d7b3ec51a6112b336199dafdc', 'expiration_timestamp': '1769294943', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:49:04] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMTIxNUY2M0E4M0RERkQ1MDYzAA==', 'status': 'delivered', 'timestamp': '1769294944', 'recipient_id': '593993988865', 'conversation': {'id': 'dde86f3d7b3ec51a6112b336199dafdc', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:49:04] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:49:04] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:49:04] [INFO] Tamaño del mensaje: 753 bytes
+[2026-01-24 17:49:05] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:49:05] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:49:05] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Pago Completo - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:49:05] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:49:06] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:49:06] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:49:07] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMkRDMjc1NEEwNEM1QThCQkFDAA==', 'status': 'sent', 'timestamp': '1769294947', 'recipient_id': '593993988865', 'conversation': {'id': 'cb0b93d9db7edb01f2f3807e0735c854', 'expiration_timestamp': '1769294947', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:49:07] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMkRDMjc1NEEwNEM1QThCQkFDAA==', 'status': 'delivered', 'timestamp': '1769294947', 'recipient_id': '593993988865', 'conversation': {'id': 'cb0b93d9db7edb01f2f3807e0735c854', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:50:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:50:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:51:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:51:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:51:09] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:51:09] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 17:51:09] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 17:51:10] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 17:51:10] [INFO] Tamaño del mensaje: 4594 bytes
+[2026-01-24 17:51:11] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 17:51:11] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 17:51:11] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Actualización de Estado - Brisas de Lirio (Cap: 50)
+[2026-01-24 17:51:11] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:51:12] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:51:13] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRTAyQkE5OTkzNDZCNjQ3OTlFAA==', 'status': 'sent', 'timestamp': '1769295073', 'recipient_id': '593993988865', 'conversation': {'id': '1ecd5d06bc10e5a318a35941b87e92e6', 'expiration_timestamp': '1769295073', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:51:14] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRTAyQkE5OTkzNDZCNjQ3OTlFAA==', 'status': 'delivered', 'timestamp': '1769295074', 'recipient_id': '593993988865', 'conversation': {'id': '1ecd5d06bc10e5a318a35941b87e92e6', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:51:46] [INFO] Pago de daños registrado para evento 33: $150.0 (efectivo)
+[2026-01-24 17:51:59] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMTIxNUY2M0E4M0RERkQ1MDYzAA==', 'status': 'read', 'timestamp': '1769295118', 'recipient_id': '593993988865', 'conversation': {'id': 'dde86f3d7b3ec51a6112b336199dafdc', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:51:59] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMkRDMjc1NEEwNEM1QThCQkFDAA==', 'status': 'read', 'timestamp': '1769295118', 'recipient_id': '593993988865', 'conversation': {'id': 'cb0b93d9db7edb01f2f3807e0735c854', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:51:59] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRjM4MjVCQUM0RDBGODM1RUMwAA==', 'status': 'read', 'timestamp': '1769295118', 'recipient_id': '593993988865', 'conversation': {'id': 'b83a9d82a97b1b8da588ecaf3ae0613f', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:51:59] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRTAyQkE5OTkzNDZCNjQ3OTlFAA==', 'status': 'read', 'timestamp': '1769295118', 'recipient_id': '593993988865', 'conversation': {'id': '1ecd5d06bc10e5a318a35941b87e92e6', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:52:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:52:09] [INFO] Forzar envio solicitado para evento 33 tipo solicitud_calificacion
+[2026-01-24 17:52:09] [INFO] [CALIFICACION] Creando solicitud para evento 33, cliente 8
+[2026-01-24 17:52:09] [INFO] [CALIFICACION] Tabla existe: True
+[2026-01-24 17:52:09] [INFO] [CALIFICACION] Nueva solicitud creada con ID: 3, rows affected: 1
+[2026-01-24 17:52:09] [INFO] [CALIFICACION] Verificación después de INSERT: {'id': 3, 'estado': 'pendiente'}
+[2026-01-24 17:52:09] [INFO] Solicitud de calificación creada con ID: 3 para evento 33, cliente 8
+[2026-01-24 17:52:09] [INFO] Solicitud de calificación enviada a 593993988865 para evento 33
+[2026-01-24 17:52:09] [INFO] Solicitud de calificación enviada para evento 33
+[2026-01-24 17:52:10] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRTBBRTgxNTAwOTgxMkU3NzEwAA==', 'status': 'sent', 'timestamp': '1769295130', 'recipient_id': '593993988865', 'conversation': {'id': 'def928cd85f68519bf7b1ddc7ffb9f7e', 'expiration_timestamp': '1769295131', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:11] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRTBBRTgxNTAwOTgxMkU3NzEwAA==', 'status': 'read', 'timestamp': '1769295131', 'recipient_id': '593993988865', 'conversation': {'id': 'def928cd85f68519bf7b1ddc7ffb9f7e', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:29] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM4RkM0N0MxRDcxRDc5NEM3ODg5NkNCNjRBOThBM0EA', 'timestamp': '1769295148', 'text': {'body': '5'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:29] [INFO] Procesando posible calificación simple: 5 de 593993988865
+[2026-01-24 17:52:29] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:52:29] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:52:29] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:52:29] [INFO] [CALIFICACION] Solicitudes pendientes en BD: [{'id': 3, 'id_evento': 33, 'id_cliente': 8, 'estado': 'pendiente', 'tel_usuario': '593993988865'}]
+[2026-01-24 17:52:29] [INFO] [CALIFICACION] Resultado búsqueda: {'id_evento': 33, 'id_cliente': 8, 'estado': 'pendiente', 'nombre_evento': 'Graduación - Gabriela Hermana', 'telefono_usuario': '593993988865'}
+[2026-01-24 17:52:29] [INFO] Solicitud pendiente encontrada: {'id_evento': 33, 'id_cliente': 8, 'estado': 'pendiente', 'nombre_evento': 'Graduación - Gabriela Hermana', 'telefono_usuario': '593993988865'}
+[2026-01-24 17:52:29] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:52:30] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:52:30] [INFO] Calificación simple 5 registrada para evento 33
+[2026-01-24 17:52:31] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSREVDMUQ2N0EwMTk0MDJFMTNFAA==', 'status': 'sent', 'timestamp': '1769295151', 'recipient_id': '593993988865', 'conversation': {'id': '73b8db4c461fc194cddfc52daa7bad2b', 'expiration_timestamp': '1769295151', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:31] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSREVDMUQ2N0EwMTk0MDJFMTNFAA==', 'status': 'read', 'timestamp': '1769295151', 'recipient_id': '593993988865', 'conversation': {'id': '73b8db4c461fc194cddfc52daa7bad2b', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:39] [INFO] Forzar envio solicitado para evento 33 tipo solicitud_calificacion
+[2026-01-24 17:52:39] [INFO] [CALIFICACION] Creando solicitud para evento 33, cliente 8
+[2026-01-24 17:52:39] [INFO] [CALIFICACION] Tabla existe: True
+[2026-01-24 17:52:39] [INFO] [CALIFICACION] Solicitud existente encontrada: {'id': 3, 'estado': 'calificado'}
+[2026-01-24 17:52:39] [INFO] [CALIFICACION] Solicitud actualizada a pendiente, ID: 3
+[2026-01-24 17:52:39] [INFO] Solicitud de calificación creada con ID: 3 para evento 33, cliente 8
+[2026-01-24 17:52:40] [INFO] Solicitud de calificación enviada a 593993988865 para evento 33
+[2026-01-24 17:52:40] [INFO] Solicitud de calificación enviada para evento 33
+[2026-01-24 17:52:41] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzg1NkJCOEQyN0I5Q0JGMUQ4AA==', 'status': 'sent', 'timestamp': '1769295161', 'recipient_id': '593993988865', 'conversation': {'id': '00b7e606a1f264b59e8f31f6e3e7c140', 'expiration_timestamp': '1769295161', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:41] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzg1NkJCOEQyN0I5Q0JGMUQ4AA==', 'status': 'read', 'timestamp': '1769295162', 'recipient_id': '593993988865', 'conversation': {'id': '00b7e606a1f264b59e8f31f6e3e7c140', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:48] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUMwNUQ0RTBFNkRFQzY3NUExOEYyRDM2QUUyRDRCOUEA', 'timestamp': '1769295168', 'text': {'body': '1'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:48] [INFO] Procesando posible calificación simple: 1 de 593993988865
+[2026-01-24 17:52:48] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:52:48] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:52:48] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:52:48] [INFO] [CALIFICACION] Solicitudes pendientes en BD: [{'id': 3, 'id_evento': 33, 'id_cliente': 8, 'estado': 'pendiente', 'tel_usuario': '593993988865'}]
+[2026-01-24 17:52:48] [INFO] [CALIFICACION] Resultado búsqueda: {'id_evento': 33, 'id_cliente': 8, 'estado': 'pendiente', 'nombre_evento': 'Graduación - Gabriela Hermana', 'telefono_usuario': '593993988865'}
+[2026-01-24 17:52:48] [INFO] Solicitud pendiente encontrada: {'id_evento': 33, 'id_cliente': 8, 'estado': 'pendiente', 'nombre_evento': 'Graduación - Gabriela Hermana', 'telefono_usuario': '593993988865'}
+[2026-01-24 17:52:48] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:52:49] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:52:49] [INFO] Calificación simple 1 registrada para evento 33
+[2026-01-24 17:52:50] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRUE1MjJBQ0FDMzFBQTBCMzE1AA==', 'status': 'sent', 'timestamp': '1769295170', 'recipient_id': '593993988865', 'conversation': {'id': '77c292fa5ab2e63c067a2d8365f7c55c', 'expiration_timestamp': '1769295170', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:52:50] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRUE1MjJBQ0FDMzFBQTBCMzE1AA==', 'status': 'read', 'timestamp': '1769295170', 'recipient_id': '593993988865', 'conversation': {'id': '77c292fa5ab2e63c067a2d8365f7c55c', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:53:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:53:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:53:22] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM4NEQ1Nzc5OTAxNjc0ODQyQjExMkE0NjZDRUUxQTAA', 'timestamp': '1769295201', 'text': {'body': 'Todo esperando que boten a viviana'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:53:22] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 17:53:22] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 17:53:22] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 17:53:22] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 17:53:22] [INFO] [CALIFICACION] Resultado búsqueda: {'id_evento': 33, 'id_cliente': 8, 'estado': 'observaciones_pendientes', 'nombre_evento': 'Graduación - Gabriela Hermana', 'telefono_usuario': '593993988865'}
+[2026-01-24 17:53:22] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 17:53:23] [INFO] WhatsApp enviado OK a 593993988865
+[2026-01-24 17:53:23] [INFO] Observaciones registradas para evento 33
+[2026-01-24 17:53:23] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRDVFNDYwMDBGNzZEMDREQTg4AA==', 'status': 'sent', 'timestamp': '1769295204', 'recipient_id': '593993988865', 'conversation': {'id': 'b1db2dd3d738aee8f41a8b726e76d95c', 'expiration_timestamp': '1769295204', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:53:24] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRDVFNDYwMDBGNzZEMDREQTg4AA==', 'status': 'delivered', 'timestamp': '1769295204', 'recipient_id': '593993988865', 'conversation': {'id': 'b1db2dd3d738aee8f41a8b726e76d95c', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 17:54:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:54:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:55:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:55:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:56:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:56:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:57:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:57:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:58:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:58:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 17:59:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 17:59:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:00:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:00:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:00:56] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:00:56] [INFO] Intento enviar notificación 'evento_creado' para evento 34 (force=False, canal=ambos)
+[2026-01-24 18:00:56] [INFO] Email activo para notificación 'evento_creado' en evento 34
+[2026-01-24 18:00:56] [INFO] Destinatarios adicionales para 'evento_creado': 0
+[2026-01-24 18:00:56] [INFO] Email cliente para evento 34: gregorioenrique14@gmail.com
+[2026-01-24 18:00:56] [INFO] Enviando email a gregorioenrique14@gmail.com para evento 34
+[2026-01-24 18:00:56] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 18:00:57] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 18:00:57] [INFO] Enviando correo a gregorioenrique14@gmail.com
+[2026-01-24 18:00:57] [INFO] Tamaño del mensaje: 4430 bytes
+[2026-01-24 18:00:58] [INFO] Correo aceptado por servidor SMTP para gregorioenrique14@gmail.com
+[2026-01-24 18:00:58] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 18:00:58] [INFO] Correo enviado exitosamente a gregorioenrique14@gmail.com: Evento Creado - Brisas de Lirio (Cap: 50)
+[2026-01-24 18:00:58] [INFO] Resultado email cliente gregorioenrique14@gmail.com: OK
+[2026-01-24 18:00:58] [INFO] WhatsApp activo para notificación 'evento_creado' en evento 34
+[2026-01-24 18:00:59] [ERROR] Error HTTP WhatsApp: 401 {"error":{"message":"Error validating access token: Session has expired on Saturday, 24-Jan-26 15:00:00 PST. The current time is Saturday, 24-Jan-26 15:00:59 PST.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"ABYTT2ANHl1IZ1CCrWvJtUh"}}
+[2026-01-24 18:00:59] [INFO] Mensaje de notificación 'evento_creado' registrado en whatsapp_mensajes (conversacion_id=14, ok=False)
+[2026-01-24 18:00:59] [INFO] Notificación 'evento_creado' enviada para evento 34 por email
+[2026-01-24 18:01:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:01:03] [INFO] Procesando 1 mensajes pendientes de reintento
+[2026-01-24 18:01:04] [ERROR] Error HTTP WhatsApp: 401 {"error":{"message":"Error validating access token: Session has expired on Saturday, 24-Jan-26 15:00:00 PST. The current time is Saturday, 24-Jan-26 15:01:05 PST.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"AogXkFleGq6gNpR7Y-cptLR"}}
+[2026-01-24 18:01:04] [WARNING] Mensaje 450 falló en reintento 1: {"error":{"message":"Error validating access token: Session has expired on Saturday, 24-Jan-26 15:00:00 PST. The current time is Saturday, 24-Jan-26 15:01:05 PST.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"AogXkFleGq6gNpR7Y-cptLR"}}
+[2026-01-24 18:01:04] [INFO] Reintentos procesados: {'total': 1, 'exitosos': 0, 'fallidos': 1, 'no_reintentables': 0}
+[2026-01-24 18:01:41] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSMjJENjgyOUYyQTA0QjM4NTI1AA==', 'status': 'delivered', 'timestamp': '1769270116', 'recipient_id': '593988492339', 'conversation': {'id': '2734ea015f06cbbd6abcdf9ef0d6fcb3', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:01:42] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSOUZBQTc4QkVFQTRGNTcyOTc5AA==', 'status': 'failed', 'timestamp': '1769271198', 'recipient_id': '593988492339', 'errors': [{'code': 131042, 'title': 'Business eligibility payment issue', 'message': 'Business eligibility payment issue', 'error_data': {'details': 'Message failed to send because there were one or more errors related to your payment method.'}, 'href': 'https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/'}]}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:02:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:02:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:02:15] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:02:15] [INFO] Intento enviar notificación 'evento_creado' para evento 35 (force=False, canal=ambos)
+[2026-01-24 18:02:15] [INFO] Email activo para notificación 'evento_creado' en evento 35
+[2026-01-24 18:02:15] [INFO] Destinatarios adicionales para 'evento_creado': 0
+[2026-01-24 18:02:15] [INFO] Email cliente para evento 35: gregorioenrique14@gmail.com
+[2026-01-24 18:02:15] [INFO] Enviando email a gregorioenrique14@gmail.com para evento 35
+[2026-01-24 18:02:15] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 18:02:16] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 18:02:16] [INFO] Enviando correo a gregorioenrique14@gmail.com
+[2026-01-24 18:02:16] [INFO] Tamaño del mensaje: 4442 bytes
+[2026-01-24 18:02:17] [INFO] Correo aceptado por servidor SMTP para gregorioenrique14@gmail.com
+[2026-01-24 18:02:18] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 18:02:18] [INFO] Correo enviado exitosamente a gregorioenrique14@gmail.com: Evento Creado - Brisas de Lirio (Cap: 50)
+[2026-01-24 18:02:18] [INFO] Resultado email cliente gregorioenrique14@gmail.com: OK
+[2026-01-24 18:02:18] [INFO] WhatsApp activo para notificación 'evento_creado' en evento 35
+[2026-01-24 18:02:18] [WARNING] No hay teléfono para el evento 35
+[2026-01-24 18:02:18] [INFO] Notificación 'evento_creado' enviada para evento 35 por email
+[2026-01-24 18:03:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:03:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:03:09] [ERROR] Error HTTP WhatsApp: 401 {"error":{"message":"Error validating access token: Session has expired on Saturday, 24-Jan-26 15:00:00 PST. The current time is Saturday, 24-Jan-26 15:03:10 PST.","type":"OAuthException","code":190,"error_subcode":463,"fbtrace_id":"A8zKbcCsEb8FKXbx3XkQVdX"}}
+[2026-01-24 18:04:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:04:03] [INFO] Procesando 1 mensajes pendientes de reintento
+[2026-01-24 18:04:04] [INFO] Mensaje 451 reenviado exitosamente después de 1 intentos
+[2026-01-24 18:04:04] [INFO] Reintentos procesados: {'total': 1, 'exitosos': 1, 'fallidos': 0, 'no_reintentables': 0}
+[2026-01-24 18:04:05] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkNDQTA3NjdCRTI2QTgyN0YwAA==', 'status': 'sent', 'timestamp': '1769295846', 'recipient_id': '593993988865', 'conversation': {'id': '18c4341f479b599fa32c17204113d84f', 'expiration_timestamp': '1769295846', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:04:06] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkNDQTA3NjdCRTI2QTgyN0YwAA==', 'status': 'delivered', 'timestamp': '1769295846', 'recipient_id': '593993988865', 'conversation': {'id': '18c4341f479b599fa32c17204113d84f', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:05:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:05:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:05:15] [INFO] Iniciando registro de pago - Evento ID: 33, Monto: $1160.00, Tipo: reembolso
+[2026-01-24 18:05:16] [INFO] Pago registrado exitosamente - ID: 64, Evento: 33, Monto: $1160.00, Tipo: reembolso
+[2026-01-24 18:05:16] [DEBUG] Pago obtenido por ID: 64
+[2026-01-24 18:05:30] [DEBUG] Pago obtenido por ID: 64
+[2026-01-24 18:05:30] [DEBUG] Pago obtenido por ID: 64
+[2026-01-24 18:05:30] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:05:30] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 18:05:31] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 18:05:31] [INFO] Enviando correo a lilibeth.morales.castro@gmail.com
+[2026-01-24 18:05:31] [INFO] Tamaño del mensaje: 4882 bytes
+[2026-01-24 18:05:36] [INFO] Correo aceptado por servidor SMTP para lilibeth.morales.castro@gmail.com
+[2026-01-24 18:05:36] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 18:05:36] [INFO] Correo enviado exitosamente a lilibeth.morales.castro@gmail.com: Pago Completo - Brisas de Lirio (Cap: 50)
+[2026-01-24 18:05:37] [INFO] Mensaje de pago 'pago_completo' registrado en whatsapp_mensajes (conversacion_id=15, ok=True)
+[2026-01-24 18:05:37] [DEBUG] Notificación enviada para pago evento 33, Tipo: pago_completo
+[2026-01-24 18:05:38] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOUY3QTA1QTU4RDAzQzY1NDQ1AA==', 'status': 'sent', 'timestamp': '1769295938', 'recipient_id': '593993988865', 'conversation': {'id': '2c7d804cd6b79bfa0aabb37328c49649', 'expiration_timestamp': '1769295938', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:05:39] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOUY3QTA1QTU4RDAzQzY1NDQ1AA==', 'status': 'delivered', 'timestamp': '1769295939', 'recipient_id': '593993988865', 'conversation': {'id': '2c7d804cd6b79bfa0aabb37328c49649', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:06:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:06:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:07:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:07:03] [INFO] Procesando 1 mensajes pendientes de reintento
+[2026-01-24 18:07:04] [INFO] Mensaje 450 reenviado exitosamente después de 2 intentos
+[2026-01-24 18:07:04] [INFO] Reintentos procesados: {'total': 1, 'exitosos': 1, 'fallidos': 0, 'no_reintentables': 0}
+[2026-01-24 18:07:06] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSNERFOUFBNTAxQ0MxNjcxNjA3AA==', 'status': 'sent', 'timestamp': '1769296026', 'recipient_id': '593988492339', 'conversation': {'id': '57683682666b701cb4cdfdc4a2bc51a7', 'expiration_timestamp': '1769296026', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:07:07] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSNERFOUFBNTAxQ0MxNjcxNjA3AA==', 'status': 'delivered', 'timestamp': '1769296026', 'recipient_id': '593988492339', 'conversation': {'id': '57683682666b701cb4cdfdc4a2bc51a7', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:08:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:08:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:08:18] [ERROR] Error al descargar reporte de pagos: 1054 (42S22): Unknown column 'p.referencia' in 'field list'
+[2026-01-24 18:09:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:09:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:10:02] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:10:02] [INFO] Conectando a SMTP mail.siglotecnologico.com:465
+[2026-01-24 18:10:02] [INFO] Autenticando SMTP como wpgo@siglotecnologico.com
+[2026-01-24 18:10:02] [INFO] Enviando correo a gregorioenrique14@gmail.com
+[2026-01-24 18:10:02] [INFO] Tamaño del mensaje: 4592 bytes
+[2026-01-24 18:10:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:10:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:10:04] [INFO] Correo aceptado por servidor SMTP para gregorioenrique14@gmail.com
+[2026-01-24 18:10:04] [INFO] Conexion SMTP cerrada correctamente
+[2026-01-24 18:10:04] [INFO] Correo enviado exitosamente a gregorioenrique14@gmail.com: Actualización de Estado - Brisas de Lirio (Cap: 50)
+[2026-01-24 18:10:04] [INFO] Enviando WhatsApp con phone_number_id=705223012665674 api_version=v22.0
+[2026-01-24 18:10:05] [INFO] WhatsApp enviado OK a 593988492339
+[2026-01-24 18:10:06] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSMTBFOTRDMjM1RjVEMDJCNkI4AA==', 'status': 'sent', 'timestamp': '1769296206', 'recipient_id': '593988492339', 'conversation': {'id': '48191d09b84824a2f0c4d8961f4c07bb', 'expiration_timestamp': '1769296206', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:10:06] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSMTBFOTRDMjM1RjVEMDJCNkI4AA==', 'status': 'delivered', 'timestamp': '1769296206', 'recipient_id': '593988492339', 'conversation': {'id': '48191d09b84824a2f0c4d8961f4c07bb', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:11:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:11:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:12:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:12:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:13:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:13:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:14:03] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOUY3QTA1QTU4RDAzQzY1NDQ1AA==', 'status': 'read', 'timestamp': '1769296443', 'recipient_id': '593993988865', 'conversation': {'id': '2c7d804cd6b79bfa0aabb37328c49649', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:03] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSQkNDQTA3NjdCRTI2QTgyN0YwAA==', 'status': 'read', 'timestamp': '1769296443', 'recipient_id': '593993988865', 'conversation': {'id': '18c4341f479b599fa32c17204113d84f', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:03] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSRDVFNDYwMDBGNzZEMDREQTg4AA==', 'status': 'read', 'timestamp': '1769296443', 'recipient_id': '593993988865', 'conversation': {'id': 'b1db2dd3d738aee8f41a8b726e76d95c', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:14:04] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:14:06] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM5MkEzMDRCMzc0REJGNDRGRDdCNDQ1NEMzRDAwRTAA', 'timestamp': '1769296446', 'text': {'body': 'Holis'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:06] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 18:14:06] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 18:14:06] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 18:14:06] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 18:14:06] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 18:14:08] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzExNkNGMDMxRjhDNzE1M0RCAA==', 'status': 'sent', 'timestamp': '1769296448', 'recipient_id': '593993988865', 'conversation': {'id': '5eb63c27565cecfae3d5ed983ba7884f', 'expiration_timestamp': '1769296448', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:08] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzExNkNGMDMxRjhDNzE1M0RCAA==', 'status': 'read', 'timestamp': '1769296448', 'recipient_id': '593993988865', 'conversation': {'id': '5eb63c27565cecfae3d5ed983ba7884f', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:25] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'context': {'from': '593994281769', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSMzExNkNGMDMxRjhDNzE1M0RCAA=='}, 'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUNCNDJCODI1MkQ4REI2QUY0NTIxODY5OTJCRTJCOEMA', 'timestamp': '1769296464', 'type': 'interactive', 'interactive': {'type': 'list_reply', 'list_reply': {'id': 'menu:evento', 'title': 'Consultar mi evento'}}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:25] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 18:14:25] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 18:14:25] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 18:14:25] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 18:14:25] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 18:14:26] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOEJGRjk3QzFDMjNFMTMxMzVFAA==', 'status': 'sent', 'timestamp': '1769296467', 'recipient_id': '593993988865', 'conversation': {'id': 'c58d4336cf04561c02a16c0cbd199109', 'expiration_timestamp': '1769296467', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:27] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOEJGRjk3QzFDMjNFMTMxMzVFAA==', 'status': 'read', 'timestamp': '1769296467', 'recipient_id': '593993988865', 'conversation': {'id': 'c58d4336cf04561c02a16c0cbd199109', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:59] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'contacts': [{'profile': {'name': 'Beth'}, 'wa_id': '593993988865'}], 'messages': [{'from': '593993988865', 'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAEhggQUM1Qzc1MzUwRTVENjExRDVBMUQwNzlEN0IwRDUwMDQA', 'timestamp': '1769296499', 'text': {'body': 'Holis'}, 'type': 'text'}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:14:59] [INFO] [CALIFICACION] Buscando para teléfono: 593993988865
+[2026-01-24 18:14:59] [INFO] [CALIFICACION] Tabla calificaciones_eventos existe: True
+[2026-01-24 18:14:59] [INFO] [CALIFICACION] Teléfono limpio: 593993988865
+[2026-01-24 18:14:59] [INFO] [CALIFICACION] Solicitudes pendientes en BD: []
+[2026-01-24 18:14:59] [INFO] [CALIFICACION] Resultado búsqueda: None
+[2026-01-24 18:15:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:15:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:15:19] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOTU5N0VEMkQ5NEFEMkQ4MzlCAA==', 'status': 'sent', 'timestamp': '1769296519', 'recipient_id': '593993988865', 'conversation': {'id': '8a2aaa2f3cd2ac112a14954d306b0294', 'expiration_timestamp': '1769296519', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:15:19] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTkzOTg4ODY1FQIAERgSOTU5N0VEMkQ5NEFEMkQ4MzlCAA==', 'status': 'read', 'timestamp': '1769296519', 'recipient_id': '593993988865', 'conversation': {'id': '8a2aaa2f3cd2ac112a14954d306b0294', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:16:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:16:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:16:35] [INFO] Forzar envio solicitado para evento 34 tipo recordatorio_evento
+[2026-01-24 18:16:35] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:16:35] [INFO] Intento enviar notificación 'recordatorio_evento' para evento 34 (force=True, canal=whatsapp)
+[2026-01-24 18:16:35] [INFO] WhatsApp activo para notificación 'recordatorio_evento' en evento 34
+[2026-01-24 18:16:35] [WARNING] WhatsApp bloqueado o desactivado, no se envio
+[2026-01-24 18:16:35] [WARNING] No se pudo enviar notificación 'recordatorio_evento' para evento 34
+[2026-01-24 18:16:35] [INFO] Forzar envio resultado para evento 34 tipo recordatorio_evento: fallido
+[2026-01-24 18:17:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:17:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:18:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:18:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:19:04] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:19:04] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:20:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:20:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:21:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:21:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:21:15] [DEBUG] Token generado para usuario: gerente
+[2026-01-24 18:21:15] [INFO] Login exitoso para usuario: gerente
+[2026-01-24 18:22:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:22:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:22:55] [DEBUG] Token generado para usuario: coordinador1
+[2026-01-24 18:22:55] [INFO] Login exitoso para usuario: coordinador1
+[2026-01-24 18:23:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:23:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:23:12] [DEBUG] Token generado para usuario: cliente1
+[2026-01-24 18:23:12] [INFO] Login exitoso para usuario: cliente1
+[2026-01-24 18:24:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:24:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:25:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:25:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:26:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:26:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:27:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:27:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:28:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:28:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:29:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:29:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:30:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:30:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:31:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:31:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:32:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:32:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:33:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:33:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:34:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:34:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:34:12] [DEBUG] Token generado para usuario: admin
+[2026-01-24 18:34:12] [INFO] Login exitoso para usuario: admin
+[2026-01-24 18:35:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:35:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:36:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:36:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:37:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:37:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:38:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:38:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:39:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:39:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:40:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:40:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:41:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:41:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:42:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:42:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:43:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:43:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:44:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:44:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:45:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:45:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:46:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:46:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:47:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:47:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:48:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:48:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:49:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:49:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:50:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:50:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:51:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:51:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:51:50] [INFO] ==================================================
+[2026-01-24 18:51:50] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-24 18:51:50] [INFO] ==================================================
+[2026-01-24 18:51:50] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-24 18:51:50] [INFO] Endpoints disponibles:
+[2026-01-24 18:51:50] [INFO]   - POST /api/auth/login
+[2026-01-24 18:51:50] [INFO]   - GET  /api/health
+[2026-01-24 18:51:50] [INFO]   - GET  /api/usuarios
+[2026-01-24 18:51:50] [INFO]   - GET  /api/clientes
+[2026-01-24 18:51:50] [INFO]   - GET  /api/productos
+[2026-01-24 18:51:50] [INFO]   - GET  /api/eventos
+[2026-01-24 18:51:50] [INFO]   - GET  /api/pagos
+[2026-01-24 18:51:50] [INFO]   - GET  /api/reportes/metricas
+[2026-01-24 18:51:50] [INFO]   ... y muchos más
+[2026-01-24 18:51:51] [INFO] ==================================================
+[2026-01-24 18:51:51] [INFO] Iniciando servidor API Lirios Eventos
+[2026-01-24 18:51:51] [INFO] ==================================================
+[2026-01-24 18:51:51] [INFO] Servidor API iniciado en http://0.0.0.0:5000
+[2026-01-24 18:51:51] [INFO] Endpoints disponibles:
+[2026-01-24 18:51:51] [INFO]   - POST /api/auth/login
+[2026-01-24 18:51:51] [INFO]   - GET  /api/health
+[2026-01-24 18:51:51] [INFO]   - GET  /api/usuarios
+[2026-01-24 18:51:51] [INFO]   - GET  /api/clientes
+[2026-01-24 18:51:51] [INFO]   - GET  /api/productos
+[2026-01-24 18:51:51] [INFO]   - GET  /api/eventos
+[2026-01-24 18:51:51] [INFO]   - GET  /api/pagos
+[2026-01-24 18:51:51] [INFO]   - GET  /api/reportes/metricas
+[2026-01-24 18:51:51] [INFO]   ... y muchos más
+[2026-01-24 18:52:01] [INFO] Forzar envio solicitado para evento 32 tipo recordatorio_evento
+[2026-01-24 18:52:01] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:52:01] [INFO] Intento enviar notificación 'recordatorio_evento' para evento 32 (force=True, canal=whatsapp)
+[2026-01-24 18:52:01] [INFO] WhatsApp activo para notificación 'recordatorio_evento' en evento 32
+[2026-01-24 18:52:01] [WARNING] WhatsApp bloqueado o desactivado, no se envio
+[2026-01-24 18:52:01] [WARNING] No se pudo enviar notificación 'recordatorio_evento' para evento 32
+[2026-01-24 18:52:01] [INFO] Forzar envio resultado para evento 32 tipo recordatorio_evento: fallido
+[2026-01-24 18:52:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:52:03] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:52:23] [INFO] Forzar envio solicitado para evento 34 tipo recordatorio_evento
+[2026-01-24 18:52:23] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:52:23] [INFO] Intento enviar notificación 'recordatorio_evento' para evento 34 (force=True, canal=whatsapp)
+[2026-01-24 18:52:23] [INFO] WhatsApp activo para notificación 'recordatorio_evento' en evento 34
+[2026-01-24 18:52:24] [INFO] Mensaje de notificación 'recordatorio_evento' registrado en whatsapp_mensajes (conversacion_id=14, ok=True)
+[2026-01-24 18:52:24] [INFO] Notificación 'recordatorio_evento' enviada para evento 34 por whatsapp
+[2026-01-24 18:52:24] [INFO] Forzar envio resultado para evento 34 tipo recordatorio_evento: enviado
+[2026-01-24 18:52:26] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSNUNFNTU4REY4MzlDODJCN0NDAA==', 'status': 'sent', 'timestamp': '1769298746', 'recipient_id': '593988492339', 'conversation': {'id': '633fdf2ae89c665adce09478c8d2c881', 'expiration_timestamp': '1769298746', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:52:27] [INFO] WhatsApp webhook recibido: {'object': 'whatsapp_business_account', 'entry': [{'id': '1729700257921557', 'changes': [{'value': {'messaging_product': 'whatsapp', 'metadata': {'display_phone_number': '593994281769', 'phone_number_id': '705223012665674'}, 'statuses': [{'id': 'wamid.HBgMNTkzOTg4NDkyMzM5FQIAERgSNUNFNTU4REY4MzlDODJCN0NDAA==', 'status': 'delivered', 'timestamp': '1769298746', 'recipient_id': '593988492339', 'conversation': {'id': '633fdf2ae89c665adce09478c8d2c881', 'origin': {'type': 'service'}}, 'pricing': {'billable': False, 'pricing_model': 'PMP', 'category': 'service', 'type': 'free_customer_service'}}]}, 'field': 'messages'}]}]}
+[2026-01-24 18:53:04] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:53:04] [INFO] No hay mensajes pendientes de reintento
+[2026-01-24 18:54:03] [INFO] Configuración de email cargada: wpgo@siglotecnologico.com via mail.siglotecnologico.com:465
+[2026-01-24 18:54:04] [INFO] No hay mensajes pendientes de reintento

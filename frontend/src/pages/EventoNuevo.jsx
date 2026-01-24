@@ -400,7 +400,9 @@ const EventoNuevo = () => {
   // Validar fecha (debe ser >= hoy)
   const validarFecha = (fecha) => {
     if (!fecha) return true; // Permitir vacío si no es requerido
-    const fechaEvento = new Date(fecha);
+    // Parsear la fecha manualmente para evitar problemas de zona horaria
+    const [year, month, day] = fecha.split('-').map(Number);
+    const fechaEvento = new Date(year, month - 1, day); // month es 0-indexed
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     fechaEvento.setHours(0, 0, 0, 0);

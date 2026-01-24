@@ -1189,7 +1189,7 @@ const Inicio = () => {
               >
                 <option value="">Selecciona un salón</option>
                 {salones.map((salon) => (
-                  <option key={salon.id_salon || salon.id} value={salon.id_salon || salon.id}>
+                  <option key={salon.id_salon || salon.id} value={String(salon.id_salon || salon.id)}>
                     {salon.nombre} ({salon.capacidad || 'Cap. N/A'}) - {formatearMoneda(salon.precio_base || salon.precio)}
                   </option>
                 ))}
