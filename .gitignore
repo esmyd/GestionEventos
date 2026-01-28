@@ -1,6 +1,6 @@
 # Archivos de entorno (contienen información sensible)
 .env
-
+documentos/
 # Python
 __pycache__/
 *.py[cod]
@@ -36,4 +36,5 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 

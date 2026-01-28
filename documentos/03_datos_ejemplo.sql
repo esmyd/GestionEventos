@@ -35,9 +35,9 @@ SET @cliente1_id = (SELECT id FROM usuarios WHERE nombre_usuario = 'admin' LIMIT
 
 -- Crear usuarios cliente si no existen
 INSERT IGNORE INTO usuarios (nombre_usuario, contrasena, nombre_completo, email, telefono, rol, activo) VALUES
-('cliente1', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Carlos Rodríguez', 'carlos.rodriguez@email.com', '3333333333', 'cliente', TRUE),
-('cliente2', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Ana Martínez', 'ana.martinez@email.com', '4444444444', 'cliente', TRUE),
-('cliente3', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Luis Fernández', 'luis.fernandez@email.com', '5555555555', 'cliente', TRUE);
+('cliente1', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Carlos Rodríguez', 'carlos.rodriguez@email.com', '3333333333', 'cliente', TRUE),
+('cliente2', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Ana Martínez', 'ana.martinez@email.com', '4444444444', 'cliente', TRUE),
+('cliente3', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Luis Fernández', 'luis.fernandez@email.com', '5555555555', 'cliente', TRUE);
 
 -- Crear clientes asociados a usuarios
 INSERT INTO clientes (usuario_id, documento_identidad, direccion) 
@@ -185,7 +185,7 @@ INSERT INTO configuracion_notificaciones (
     TRUE, TRUE, FALSE, 0,
     'Estimado/a Administrador,
 
-Se ha creado un nuevo evento en el sistema:
+Se ha registrado un nuevo evento en el sistema. Detalles:
 
 - Evento: {nombre_evento}
 - Cliente: {nombre_cliente}
@@ -194,11 +194,15 @@ Se ha creado un nuevo evento en el sistema:
 - Hora: {hora_inicio}
 - Total: ${total}
 
-Por favor, revise los detalles del evento en el sistema.
+Puede revisar y completar la informacion en el panel.
 
 Saludos,
 Sistema Lirios Eventos',
-    'Nuevo evento creado: {nombre_evento} - Cliente: {nombre_cliente} - Fecha: {fecha_evento}'
+    'Lirios Eventos: nuevo evento registrado.
+Evento: {nombre_evento}
+Cliente: {nombre_cliente}
+Fecha: {fecha_evento}
+Hora: {hora_inicio}'
 ),
 (
     'abono_recibido',
@@ -207,18 +211,18 @@ Sistema Lirios Eventos',
     TRUE, TRUE, TRUE, 0,
     'Estimado/a {nombre_cliente},
 
-Le confirmamos que hemos recibido su abono de ${monto} para el evento "{nombre_evento}".
+Hemos registrado su abono de ${monto} para el evento "{nombre_evento}".
 
 Detalles del pago:
 - Fecha: {fecha_pago}
-- Método: {metodo_pago}
+- Metodo: {metodo_pago}
 - Saldo pendiente: ${saldo_pendiente}
 
 Gracias por su confianza.
 
 Saludos,
 Lirios Eventos',
-    '✓ Confirmamos recepción de su abono de ${monto} para el evento "{nombre_evento}". Saldo pendiente: ${saldo_pendiente}'
+    'Lirios Eventos: hemos registrado su abono de ${monto} para "{nombre_evento}". Saldo pendiente: ${saldo_pendiente}. Si necesita apoyo, estamos atentos.'
 ),
 (
     'pago_completo',
@@ -227,15 +231,15 @@ Lirios Eventos',
     TRUE, TRUE, TRUE, 0,
     'Estimado/a {nombre_cliente},
 
-¡Excelente noticia! Hemos recibido el pago completo para el evento "{nombre_evento}".
+Confirmamos el pago total de su evento "{nombre_evento}".
 
-Su evento está completamente confirmado y listo para la fecha programada: {fecha_evento}.
+Su evento queda confirmado para {fecha_evento} a las {hora_inicio}.
 
-Nos vemos pronto.
+Si necesita algun ajuste adicional, estamos a su disposicion.
 
 Saludos,
 Lirios Eventos',
-    '✓ ¡Pago completo recibido! Su evento "{nombre_evento}" está confirmado para {fecha_evento}. ¡Nos vemos pronto!'
+    'Lirios Eventos: pago completo recibido. Evento "{nombre_evento}" confirmado para {fecha_evento} {hora_inicio}.'
 ),
 (
     'recordatorio_7_dias',
@@ -244,13 +248,13 @@ Lirios Eventos',
     TRUE, TRUE, TRUE, 7,
     'Estimado/a {nombre_cliente},
 
-Este es un recordatorio de que su evento "{nombre_evento}" está programado para el {fecha_evento} a las {hora_inicio}.
+Le recordamos que su evento "{nombre_evento}" esta programado para el {fecha_evento} a las {hora_inicio}.
 
-Faltan 7 días para su evento. Si tiene alguna pregunta o necesita hacer algún ajuste, no dude en contactarnos.
+Faltan 7 dias. Si requiere ajustes o coordinacion adicional, responda este mensaje.
 
 Saludos,
 Lirios Eventos',
-    '📅 Recordatorio: Su evento "{nombre_evento}" es en 7 días ({fecha_evento} a las {hora_inicio}). ¡Estamos listos para hacerlo especial!'
+    'Lirios Eventos: recordatorio 7 dias. Evento "{nombre_evento}" el {fecha_evento} a las {hora_inicio}.'
 ),
 (
     'recordatorio_1_dia',
@@ -259,17 +263,15 @@ Lirios Eventos',
     TRUE, TRUE, TRUE, 1,
     'Estimado/a {nombre_cliente},
 
-¡Mañana es el gran día!
+Manana es su evento "{nombre_evento}".
 
-Su evento "{nombre_evento}" está programado para mañana, {fecha_evento} a las {hora_inicio}.
+Fecha y hora: {fecha_evento} a las {hora_inicio}.
 
-Todo está listo. Si tiene alguna última pregunta, estamos a su disposición.
-
-¡Nos vemos mañana!
+Todo esta listo. Si necesita algo de ultimo momento, estamos atentos.
 
 Saludos,
 Lirios Eventos',
-    '🎉 ¡Mañana es el gran día! Su evento "{nombre_evento}" es mañana ({fecha_evento} a las {hora_inicio}). ¡Todo está listo!'
+    'Lirios Eventos: recordatorio 1 dia. Evento "{nombre_evento}" manana {fecha_evento} a las {hora_inicio}.'
 ),
 (
     'solicitud_calificacion',
@@ -278,17 +280,15 @@ Lirios Eventos',
     TRUE, TRUE, TRUE, -1,
     'Estimado/a {nombre_cliente},
 
-Esperamos que su evento "{nombre_evento}" haya sido todo un éxito.
+Esperamos que su evento "{nombre_evento}" haya sido un exito.
 
-Su opinión es muy importante para nosotros. Nos encantaría conocer su experiencia y cómo podemos mejorar.
-
-Por favor, comparta su calificación y comentarios con nosotros.
+Su opinion es muy importante para nosotros. Cuando tenga un momento, comparta su calificacion y comentarios.
 
 Gracias por confiar en Lirios Eventos.
 
 Saludos,
 Lirios Eventos',
-    '🙏 Esperamos que su evento "{nombre_evento}" haya sido exitoso. Su opinión es importante. ¿Podría compartir su experiencia?'
+    'Lirios Eventos: gracias por su evento "{nombre_evento}". Su calificacion nos ayuda a mejorar.'
 )
 ON DUPLICATE KEY UPDATE nombre=nombre;
 
@@ -343,6 +343,66 @@ INSERT INTO tipos_evento (nombre, descripcion, categoria, activo) VALUES
 ('Pedida de Mano', 'Celebración de pedida de mano', 'social', TRUE),
 ('Otro', 'Otro tipo de evento', 'otro', TRUE)
 ON DUPLICATE KEY UPDATE nombre=nombre;
+
+-- ============================================================================
+-- CONFIGURACIÓN GENERAL (DEMO CONTACTO/ESTABLECIMIENTO)
+-- ============================================================================
+
+INSERT INTO configuracion_general (
+  nombre_plataforma,
+  login_titulo,
+  login_subtitulo,
+  login_boton_texto,
+  login_left_titulo,
+  login_left_texto,
+  login_left_items,
+  login_left_imagen,
+  login_acento_color,
+  login_fondo_color,
+  whatsapp_reengagement_template_id,
+  contacto_nombre,
+  contacto_email,
+  contacto_telefono,
+  contacto_whatsapp,
+  establecimiento_direccion,
+  establecimiento_horario
+) VALUES (
+  'Lirios Eventos',
+  'Bienvenido a Lirios Eventos',
+  'Gestiona tus eventos de forma profesional',
+  'Iniciar Sesión',
+  'Experiencias memorables',
+  'Organizamos eventos con excelencia y cuidado en cada detalle.',
+  'Atención personalizada\nCoordinación completa\nSoporte 24/7',
+  'https://images.unsplash.com/photo-1527529482837-4698179dc6ce',
+  '#6366f1',
+  '#111827',
+  NULL,
+  'Equipo Lirios Eventos',
+  'contacto@lirioseventos.com',
+  '+593 99 888 2233',
+  '+593 99 888 2233',
+  'Av. Principal 123, Quito, Ecuador',
+  'Lunes a Domingo · 09:00 - 20:00'
+)
+ON DUPLICATE KEY UPDATE
+  nombre_plataforma = VALUES(nombre_plataforma),
+  login_titulo = VALUES(login_titulo),
+  login_subtitulo = VALUES(login_subtitulo),
+  login_boton_texto = VALUES(login_boton_texto),
+  login_left_titulo = VALUES(login_left_titulo),
+  login_left_texto = VALUES(login_left_texto),
+  login_left_items = VALUES(login_left_items),
+  login_left_imagen = VALUES(login_left_imagen),
+  login_acento_color = VALUES(login_acento_color),
+  login_fondo_color = VALUES(login_fondo_color),
+  whatsapp_reengagement_template_id = VALUES(whatsapp_reengagement_template_id),
+  contacto_nombre = VALUES(contacto_nombre),
+  contacto_email = VALUES(contacto_email),
+  contacto_telefono = VALUES(contacto_telefono),
+  contacto_whatsapp = VALUES(contacto_whatsapp),
+  establecimiento_direccion = VALUES(establecimiento_direccion),
+  establecimiento_horario = VALUES(establecimiento_horario);
 
 -- ============================================================================
 -- FIN DEL ARCHIVO DE DATOS DE EJEMPLO

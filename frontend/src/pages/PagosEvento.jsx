@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { pagosService, eventosService } from '../services/api';
+import { pagosService, eventosService, cuentasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
-import { ArrowLeft, Search, DollarSign, Eye, X, Save, FileText } from 'lucide-react';
+import { ArrowLeft, Search, DollarSign, Eye, X, Save, FileText, Landmark } from 'lucide-react';
 import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 
 const PagosEvento = () => {
@@ -33,7 +33,11 @@ const PagosEvento = () => {
   const [mostrarModalRegistrar, setMostrarModalRegistrar] = useState(false);
   const [mostrarModalDetalle, setMostrarModalDetalle] = useState(false);
   const [mostrarConfirmReembolso, setMostrarConfirmReembolso] = useState(false);
+  const [mostrarModalAprobar, setMostrarModalAprobar] = useState(false);
   const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
+  const [pagoParaAprobar, setPagoParaAprobar] = useState(null);
+  const [cuentas, setCuentas] = useState([]);
+  const [cuentaAprobacion, setCuentaAprobacion] = useState('');
   const [actualizandoEstado, setActualizandoEstado] = useState(false);
 
   // Estados para formulario
@@ -80,8 +84,18 @@ const PagosEvento = () => {
     if (id) {
       cargarEvento();
       cargarPagos();
+      cargarCuentas();
     }
   }, [id]);
+
+  const cargarCuentas = async () => {
+    try {
+      const data = await cuentasService.getAll();
+      setCuentas(data.cuentas || []);
+    } catch (err) {
+      console.error('Error al cargar cuentas:', err);
+    }
+  };
 
   const cargarEvento = async () => {
     try {
@@ -149,13 +163,12 @@ const PagosEvento = () => {
     if (!fecha) return '-';
     try {
       const fechaObj = parseFechaLocal(fecha);
-      return fechaObj.toLocaleString('es-CO', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const year = fechaObj.getFullYear();
+      const month = String(fechaObj.getMonth() + 1).padStart(2, '0');
+      const day = String(fechaObj.getDate()).padStart(2, '0');
+      const hours = String(fechaObj.getHours()).padStart(2, '0');
+      const minutes = String(fechaObj.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
     } catch {
       return fecha;
     }
@@ -168,6 +181,37 @@ const PagosEvento = () => {
 
   const normalizarTexto = (valor) => (valor || '').toString().toLowerCase();
   const totalPagadoNeto = Math.max(0, totalPagado - totalReembolsosEvento);
+
+  // Calcular saldo pendiente
+  const calcularSaldoPendiente = () => {
+    if (!evento) return 0;
+    const totalEvento = parseFloat(evento.total || 0);
+    return Math.max(0, totalEvento - totalPagadoNeto);
+  };
+
+  // Determinar tipo de pago automáticamente según el monto
+  const determinarTipoPago = (monto) => {
+    if (!monto || parseFloat(monto) <= 0) return 'abono';
+    const montoNum = parseFloat(monto);
+    const saldoPendiente = calcularSaldoPendiente();
+    // Si el monto cubre el saldo pendiente o más, es pago completo
+    if (montoNum >= saldoPendiente && saldoPendiente > 0) {
+      return 'pago_completo';
+    }
+    return 'abono';
+  };
+
+  // Manejar cambio de monto con tipo de pago automático
+  const handleMontoChange = (e) => {
+    const nuevoMonto = e.target.value;
+    // Solo actualizar tipo automáticamente si no es reembolso
+    if (formData.tipo_pago !== 'reembolso') {
+      const nuevoTipo = determinarTipoPago(nuevoMonto);
+      setFormData({ ...formData, monto: nuevoMonto, tipo_pago: nuevoTipo });
+    } else {
+      setFormData({ ...formData, monto: nuevoMonto });
+    }
+  };
 
   const obtenerLabelEstadoPago = (estado) => {
     switch (estado) {
@@ -344,6 +388,42 @@ const PagosEvento = () => {
     }
   };
 
+  // Funciones para aprobar pago con cuenta
+  const abrirModalAprobar = (pago) => {
+    setPagoParaAprobar(pago);
+    setCuentaAprobacion(pago.cuenta_id || '');
+    setMostrarModalAprobar(true);
+  };
+
+  const cerrarModalAprobar = () => {
+    setMostrarModalAprobar(false);
+    setPagoParaAprobar(null);
+    setCuentaAprobacion('');
+  };
+
+  const confirmarAprobarPago = async () => {
+    if (!pagoParaAprobar || !cuentaAprobacion) {
+      showError('Debe seleccionar una cuenta destino');
+      return;
+    }
+    try {
+      setActualizandoEstado(true);
+      // Primero actualizar la cuenta
+      await pagosService.updateCuenta(pagoParaAprobar.id, parseInt(cuentaAprobacion));
+      // Luego aprobar el pago
+      await pagosService.updateEstado(pagoParaAprobar.id, 'aprobado');
+      await cargarPagos();
+      cerrarModalAprobar();
+      cerrarModalDetalle();
+      success('Pago aprobado correctamente');
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'No se pudo aprobar el pago';
+      showError(errorMessage);
+    } finally {
+      setActualizandoEstado(false);
+    }
+  };
+
   const registrarPago = async (confirmado = false) => {
     setErrorFormulario('');
 
@@ -397,11 +477,6 @@ const PagosEvento = () => {
     await registrarPago(false);
   };
 
-  const calcularSaldoPendiente = () => {
-    if (!evento) return 0;
-    const totalEvento = parseFloat(evento.total || 0);
-    return Math.max(0, totalEvento - totalPagadoNeto);
-  };
   const tieneSaldoPendiente = calcularSaldoPendiente() > 0;
   const eventoCancelado = evento?.estado === 'cancelado';
 
@@ -967,6 +1042,9 @@ const PagosEvento = () => {
                     Método
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Cuenta
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Estado
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
@@ -989,7 +1067,7 @@ const PagosEvento = () => {
               <tbody>
                 {pagosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan="10" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                    <td colSpan="11" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
                       No hay pagos que coincidan con los filtros
                     </td>
                   </tr>
@@ -1027,6 +1105,9 @@ const PagosEvento = () => {
                         </span>
                       </td>
                       <td style={{ padding: '1rem' }}>{pago.metodo_pago || '-'}</td>
+                      <td style={{ padding: '1rem', fontSize: '0.8rem', color: '#4f46e5', fontWeight: '500' }}>
+                        {pago.nombre_cuenta || '-'}
+                      </td>
                       <td style={{ padding: '1rem' }}>
                         <span
                           style={{
@@ -1210,24 +1291,37 @@ const PagosEvento = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                      Tipo de Pago <span style={{ color: '#ef4444' }}>*</span>
+                      Tipo de Pago <span style={{ color: '#6b7280', fontWeight: '400', fontSize: '0.8rem' }}>(automático)</span>
                     </label>
-                    <select
-                      value={formData.tipo_pago}
-                      onChange={(e) => setFormData({ ...formData, tipo_pago: e.target.value })}
-                      required
+                    <div
                       style={{
                         width: '100%',
                         padding: '0.75rem',
                         border: '1px solid #d1d5db',
                         borderRadius: '0.375rem',
                         fontSize: '1rem',
+                        backgroundColor: formData.tipo_pago === 'reembolso' ? '#fef2f2' : formData.tipo_pago === 'pago_completo' ? '#f0fdf4' : '#eff6ff',
+                        color: formData.tipo_pago === 'reembolso' ? '#dc2626' : formData.tipo_pago === 'pago_completo' ? '#16a34a' : '#2563eb',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
-                      <option value="abono">Abono</option>
-                      <option value="pago_completo">Pago Completo</option>
-                      <option value="reembolso">Reembolso</option>
-                    </select>
+                      <span>
+                        {formData.tipo_pago === 'abono' ? 'Abono' : formData.tipo_pago === 'pago_completo' ? 'Pago Completo' : 'Reembolso'}
+                      </span>
+                      {formData.tipo_pago !== 'reembolso' && (
+                        <span style={{ fontSize: '0.7rem', color: '#6b7280', fontWeight: '400' }}>
+                          Saldo: {formatearMoneda(calcularSaldoPendiente())}
+                        </span>
+                      )}
+                    </div>
+                    {formData.tipo_pago === 'pago_completo' && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#16a34a' }}>
+                        El monto cubre el saldo pendiente del evento.
+                      </div>
+                    )}
                     {formData.tipo_pago === 'reembolso' && (
                       <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#ef4444' }}>
                         Este reembolso se descontará del total pagado y requiere confirmación.
@@ -1271,7 +1365,7 @@ const PagosEvento = () => {
                       step="0.01"
                       min="0.01"
                       value={formData.monto}
-                      onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+                      onChange={handleMontoChange}
                       required
                       style={{
                         width: '100%',
@@ -1506,6 +1600,15 @@ const PagosEvento = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    Cuenta Destino
+                  </label>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500', color: '#4f46e5' }}>
+                    {pagoSeleccionado.nombre_cuenta || 'Sin asignar'}
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
                     Estado del Pago
                   </label>
                   <span
@@ -1593,7 +1696,7 @@ const PagosEvento = () => {
                     Rechazar
                   </button>
                   <button
-                    onClick={() => cambiarEstadoPago(pagoSeleccionado, 'aprobado')}
+                    onClick={() => abrirModalAprobar(pagoSeleccionado)}
                     disabled={actualizandoEstado || !puedeAprobar}
                     style={{
                       padding: '0.75rem 1.5rem',
@@ -1705,6 +1808,117 @@ const PagosEvento = () => {
                 }}
               >
                 Confirmar reembolso
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Aprobar Pago con Cuenta */}
+      {mostrarModalAprobar && pagoParaAprobar && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '1rem',
+          }}
+          onClick={cerrarModalAprobar}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.5rem',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '520px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>
+              Aprobar pago
+            </h2>
+            <div style={{ color: '#374151', marginBottom: '0.5rem' }}>
+              Vas a aprobar el pago de {formatearMoneda(pagoParaAprobar.monto || 0)}.
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1rem' }}>
+              Método: {pagoParaAprobar.metodo_pago || '-'} · Fecha: {formatearFechaHora(pagoParaAprobar.fecha_pago)}
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                <Landmark size={18} color="#4f46e5" />
+                Cuenta Destino <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <select
+                value={cuentaAprobacion}
+                onChange={(e) => setCuentaAprobacion(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.9rem',
+                  backgroundColor: 'white',
+                }}
+              >
+                <option value="">Seleccionar cuenta...</option>
+                {cuentas.map((cuenta) => (
+                  <option key={cuenta.id} value={cuenta.id}>
+                    {cuenta.nombre} {cuenta.numero_cuenta ? `- ${cuenta.numero_cuenta}` : ''}
+                  </option>
+                ))}
+              </select>
+              {!cuentaAprobacion && (
+                <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.25rem' }}>
+                  Seleccione la cuenta donde se registrará este pago
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button
+                type="button"
+                onClick={cerrarModalAprobar}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarAprobarPago}
+                disabled={actualizandoEstado || !cuentaAprobacion}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  backgroundColor: (actualizandoEstado || !cuentaAprobacion) ? '#9ca3af' : '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  cursor: (actualizandoEstado || !cuentaAprobacion) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {actualizandoEstado ? 'Aprobando...' : 'Confirmar'}
               </button>
             </div>
           </div>

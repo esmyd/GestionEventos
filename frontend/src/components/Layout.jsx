@@ -12,6 +12,7 @@ import {
   FolderTree,
   FileText,
   CreditCard,
+  Landmark,
   Warehouse,
   Building,
   BarChart3,
@@ -58,6 +59,7 @@ const Layout = () => {
       { path: '/reportes', icon: BarChart3, label: 'Reportes', moduleKey: MODULES.REPORTES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/eventos', icon: Calendar, label: 'Eventos', moduleKey: MODULES.EVENTOS, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
       { path: '/pagos', icon: CreditCard, label: 'Pagos', moduleKey: MODULES.PAGOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/cuentas', icon: Landmark, label: 'Cuentas', moduleKey: MODULES.CUENTAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/salones', icon: Building, label: 'Salones', moduleKey: MODULES.SALONES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/notificaciones-nativas', icon: Bell, label: 'Notificaciones', moduleKey: MODULES.NOTIFICACIONES_NATIVAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/calendario', icon: CalendarDays, label: 'Calendario', moduleKey: MODULES.CALENDARIO, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
@@ -88,6 +90,7 @@ const Layout = () => {
     '/calendario',
     '/eventos',
     '/pagos',
+    '/cuentas',
     '/salones',
     '/configuraciones/whatsapp-chat'
   ];

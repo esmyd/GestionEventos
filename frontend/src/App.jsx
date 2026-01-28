@@ -18,6 +18,7 @@ import Categorias from './pages/Categorias';
 import Planes from './pages/Planes';
 import Pagos from './pages/Pagos';
 import PagosEvento from './pages/PagosEvento';
+import Cuentas from './pages/Cuentas';
 import Inventario from './pages/Inventario';
 import Salones from './pages/Salones';
 import Reportes from './pages/Reportes';
@@ -227,6 +228,16 @@ function AppRoutes() {
           element={
             <RoleProtectedRoute moduleKey={MODULES.PAGOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <PagosEvento />
+            </RoleProtectedRoute>
+          }
+        />
+
+        {/* Cuentas - Solo admin y gerente */}
+        <Route
+          path="cuentas"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.CUENTAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+              <Cuentas />
             </RoleProtectedRoute>
           }
         />

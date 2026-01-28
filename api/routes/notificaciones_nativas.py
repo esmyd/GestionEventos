@@ -255,6 +255,30 @@ def forzar_notificacion_evento(evento_id):
                 error=error if not exito else None
             )
             
+            # Registrar también en whatsapp_mensajes para el conteo y chat
+            if exito:
+                from modelos.whatsapp_chat_modelo import WhatsAppChatModelo
+                chat_modelo = WhatsAppChatModelo()
+                
+                # Obtener o crear conversación
+                conversacion = chat_modelo.obtener_conversacion_por_telefono(telefono)
+                if not conversacion:
+                    conversacion_id = chat_modelo.crear_conversacion(telefono, cliente_id=cliente_id)
+                else:
+                    conversacion_id = conversacion.get('id')
+                
+                # Registrar el mensaje enviado
+                if conversacion_id:
+                    chat_modelo.registrar_mensaje(
+                        conversacion_id=conversacion_id,
+                        direccion='out',
+                        mensaje=mensaje_enviado,
+                        estado='sent',
+                        wa_message_id=wa_message_id,
+                        origen='notificacion'
+                    )
+                    logger.info(f"Mensaje de calificación registrado en whatsapp_mensajes (conversacion_id={conversacion_id})")
+            
             if exito:
                 logger.info(f"Solicitud de calificación enviada para evento {evento_id}")
                 return jsonify({"message": "Solicitud de calificación enviada", "success": True}), 200

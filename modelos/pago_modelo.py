@@ -15,6 +15,7 @@ class PagoModelo:
         self.logger = obtener_logger()
         self._pagos_columnas_cache = None
         self._asegurar_columna_estado_pago()
+        self._asegurar_columna_cuenta_id()
 
     def _pagos_tiene_columna(self, nombre):
         if self._pagos_columnas_cache is None:
@@ -38,6 +39,20 @@ class PagoModelo:
             self._pagos_tiene_columna("estado_pago")
         except Exception as e:
             self.logger.warning(f"No se pudo crear la columna estado_pago en pagos: {e}")
+    
+    def _asegurar_columna_cuenta_id(self):
+        """Asegura que exista la columna cuenta_id para relacionar pagos con cuentas"""
+        if self._pagos_tiene_columna("cuenta_id"):
+            return
+        try:
+            self.base_datos.ejecutar_consulta(
+                "ALTER TABLE pagos ADD COLUMN cuenta_id INT NULL AFTER metodo_pago"
+            )
+            self._pagos_columnas_cache = None
+            self._pagos_tiene_columna("cuenta_id")
+            self.logger.info("Columna cuenta_id agregada a tabla pagos")
+        except Exception as e:
+            self.logger.warning(f"No se pudo crear la columna cuenta_id en pagos: {e}")
     
     def crear_pago(self, datos_pago):
         """Crea un nuevo pago o abono
@@ -107,6 +122,7 @@ class PagoModelo:
         # Origen: 'web' para aplicación web, 'desktop' para aplicación de escritorio
         origen = datos_pago.get('origen', 'desktop')  # Por defecto 'desktop' para compatibilidad
         metodo_pago = datos_pago.get('metodo_pago')
+        cuenta_id = datos_pago.get('cuenta_id')
         estado_pago = 'en_revision'
         if not self._pagos_tiene_columna("estado_pago"):
             estado_pago = 'aprobado'
@@ -137,6 +153,9 @@ class PagoModelo:
         if self._pagos_tiene_columna("origen"):
             columnas.append("origen")
             valores.append(origen)
+        if self._pagos_tiene_columna("cuenta_id") and cuenta_id:
+            columnas.append("cuenta_id")
+            valores.append(cuenta_id)
 
         placeholders = ", ".join(["%s"] * len(columnas))
         consulta = f"INSERT INTO pagos ({', '.join(columnas)}) VALUES ({placeholders})"
@@ -212,13 +231,30 @@ class PagoModelo:
     def obtener_pagos_por_evento(self, evento_id):
         """Obtiene todos los pagos de un evento"""
         consulta = """
-        SELECT p.*, u.nombre_completo as nombre_registro
+        SELECT p.*, u.nombre_completo as nombre_registro,
+               c.nombre as nombre_cuenta, c.tipo as tipo_cuenta
         FROM pagos p
         LEFT JOIN usuarios u ON p.usuario_registro_id = u.id
+        LEFT JOIN cuentas c ON p.cuenta_id = c.id
         WHERE p.id_evento = %s
         ORDER BY p.id DESC
         """
         return self.base_datos.obtener_todos(consulta, (evento_id,))
+    
+    def obtener_pagos_por_cuenta(self, cuenta_id, limite=100):
+        """Obtiene todos los pagos de una cuenta específica"""
+        consulta = """
+        SELECT p.*, u.nombre_completo as nombre_registro,
+               e.nombre_evento, c.nombre as nombre_cuenta
+        FROM pagos p
+        LEFT JOIN usuarios u ON p.usuario_registro_id = u.id
+        LEFT JOIN eventos e ON p.id_evento = e.id_evento
+        LEFT JOIN cuentas c ON p.cuenta_id = c.id
+        WHERE p.cuenta_id = %s
+        ORDER BY p.id DESC
+        LIMIT %s
+        """
+        return self.base_datos.obtener_todos(consulta, (cuenta_id, limite))
     
     def obtener_total_pagado_evento(self, evento_id):
         """Calcula el total pagado de un evento"""
@@ -287,6 +323,13 @@ class PagoModelo:
             return False
         consulta = "UPDATE pagos SET estado_pago = %s WHERE id = %s"
         return self.base_datos.ejecutar_consulta(consulta, (nuevo_estado, pago_id))
+    
+    def actualizar_cuenta_pago(self, pago_id, cuenta_id):
+        """Actualiza la cuenta asociada a un pago"""
+        if not self._pagos_tiene_columna("cuenta_id"):
+            return False
+        consulta = "UPDATE pagos SET cuenta_id = %s WHERE id = %s"
+        return self.base_datos.ejecutar_consulta(consulta, (cuenta_id, pago_id))
 
     def _enviar_notificacion_pago(self, evento, monto, tipo_pago, metodo_pago, fecha_pago):
         # Determinar tipo de pago

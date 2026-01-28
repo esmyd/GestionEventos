@@ -501,6 +501,11 @@ export const pagosService = {
     return response.data;
   },
 
+  updateCuenta: async (id, cuenta_id) => {
+    const response = await api.put(`/pagos/${id}/cuenta`, { cuenta_id });
+    return response.data;
+  },
+
   getTotalEvento: async (eventoId) => {
     const response = await api.get(`/pagos/evento/${eventoId}/total`);
     return response.data;
@@ -609,6 +614,11 @@ export const reportesService = {
 
   getResumenFinanciero: async () => {
     const response = await api.get('/reportes/resumen-financiero');
+    return response.data;
+  },
+
+  getPagosPorCuenta: async (params = {}) => {
+    const response = await api.get('/reportes/pagos-por-cuenta', { params });
     return response.data;
   },
 
@@ -835,6 +845,111 @@ export const whatsappTemplatesService = {
   },
   send: async (payload) => {
     const response = await api.post('/whatsapp_templates/enviar', payload);
+    return response.data;
+  },
+};
+
+// Servicios de cuentas
+export const cuentasService = {
+  getAll: async (incluirInactivas = false) => {
+    const params = { incluir_inactivas: incluirInactivas };
+    const response = await api.get('/cuentas', { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await api.get(`/cuentas/${id}`);
+    return response.data;
+  },
+
+  create: async (cuentaData) => {
+    const response = await api.post('/cuentas', cuentaData);
+    return response.data;
+  },
+
+  update: async (id, cuentaData) => {
+    const response = await api.put(`/cuentas/${id}`, cuentaData);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/cuentas/${id}`);
+    return response.data;
+  },
+
+  activar: async (id) => {
+    const response = await api.post(`/cuentas/${id}/activar`);
+    return response.data;
+  },
+
+  getTipos: async () => {
+    const response = await api.get('/cuentas/tipos');
+    return response.data;
+  },
+
+  getEstadisticas: async () => {
+    const response = await api.get('/cuentas/estadisticas');
+    return response.data;
+  },
+};
+
+// Servicios de opciones de productos
+export const productoOpcionesService = {
+  // Opciones de un producto
+  getOpcionesProducto: async (productoId) => {
+    const response = await api.get(`/producto-opciones/productos/${productoId}/opciones`);
+    return response.data;
+  },
+
+  crearOpcion: async (productoId, opcionData) => {
+    const response = await api.post(`/producto-opciones/productos/${productoId}/opciones`, opcionData);
+    return response.data;
+  },
+
+  getOpcion: async (opcionId) => {
+    const response = await api.get(`/producto-opciones/opciones/${opcionId}`);
+    return response.data;
+  },
+
+  actualizarOpcion: async (opcionId, opcionData) => {
+    const response = await api.put(`/producto-opciones/opciones/${opcionId}`, opcionData);
+    return response.data;
+  },
+
+  eliminarOpcion: async (opcionId, permanente = false) => {
+    const response = await api.delete(`/producto-opciones/opciones/${opcionId}?permanente=${permanente}`);
+    return response.data;
+  },
+
+  // Selecciones de eventos
+  getSeleccionesEvento: async (eventoId) => {
+    const response = await api.get(`/producto-opciones/eventos/${eventoId}/selecciones`);
+    return response.data;
+  },
+
+  getOpcionesPendientes: async (eventoId) => {
+    const response = await api.get(`/producto-opciones/eventos/${eventoId}/opciones-pendientes`);
+    return response.data;
+  },
+
+  getResumenConfirmaciones: async (eventoId) => {
+    const response = await api.get(`/producto-opciones/eventos/${eventoId}/resumen-confirmaciones`);
+    return response.data;
+  },
+
+  guardarSeleccion: async (eventoId, seleccionData) => {
+    const response = await api.post(`/producto-opciones/eventos/${eventoId}/selecciones`, seleccionData);
+    return response.data;
+  },
+
+  eliminarSeleccion: async (seleccionId) => {
+    const response = await api.delete(`/producto-opciones/selecciones/${seleccionId}`);
+    return response.data;
+  },
+
+  // Productos con opciones
+  getProductosConOpciones: async () => {
+    const response = await api.get('/producto-opciones/productos-con-opciones');
     return response.data;
   },
 };

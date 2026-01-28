@@ -431,6 +431,90 @@ def resumen_financiero():
         return jsonify({'error': 'Error al obtener resumen financiero'}), 500
 
 
+@reportes_bp.route('/pagos-por-cuenta', methods=['GET'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general')
+def pagos_por_cuenta():
+    """Obtiene resumen de pagos agrupados por cuenta destino"""
+    try:
+        fecha_desde = request.args.get('fecha_desde')
+        fecha_hasta = request.args.get('fecha_hasta')
+        
+        # Verificar si existe la columna cuenta_id en pagos
+        if not _columna_existe('pagos', 'cuenta_id'):
+            return jsonify({
+                'pagos_por_cuenta': [],
+                'total_general': 0,
+                'mensaje': 'La columna cuenta_id no existe en la tabla pagos'
+            }), 200
+        
+        # Construir consulta
+        consulta = """
+        SELECT 
+            c.id as cuenta_id,
+            c.nombre as nombre_cuenta,
+            c.tipo as tipo_cuenta,
+            c.numero_cuenta,
+            COUNT(p.id) as total_pagos,
+            COALESCE(SUM(CASE WHEN p.tipo_pago != 'reembolso' THEN p.monto ELSE 0 END), 0) as total_ingresos,
+            COALESCE(SUM(CASE WHEN p.tipo_pago = 'reembolso' THEN p.monto ELSE 0 END), 0) as total_reembolsos,
+            COALESCE(SUM(CASE WHEN p.tipo_pago != 'reembolso' THEN p.monto ELSE -p.monto END), 0) as total_neto
+        FROM cuentas c
+        LEFT JOIN pagos p ON c.id = p.cuenta_id
+        """
+        
+        condiciones = ["c.activo = 1"]
+        parametros = []
+        
+        # Filtrar por estado aprobado si existe la columna
+        if _columna_existe('pagos', 'estado_pago'):
+            condiciones.append("(p.estado_pago = 'aprobado' OR p.estado_pago IS NULL OR p.id IS NULL)")
+        
+        if fecha_desde:
+            condiciones.append("(p.fecha_pago >= %s OR p.id IS NULL)")
+            parametros.append(fecha_desde)
+        
+        if fecha_hasta:
+            condiciones.append("(p.fecha_pago <= %s OR p.id IS NULL)")
+            parametros.append(fecha_hasta)
+        
+        if condiciones:
+            consulta += " WHERE " + " AND ".join(condiciones)
+        
+        consulta += " GROUP BY c.id, c.nombre, c.tipo, c.numero_cuenta ORDER BY total_neto DESC"
+        
+        resultados = base_datos.obtener_todos(consulta, tuple(parametros) if parametros else None)
+        
+        # Calcular totales
+        total_general = sum(float(r.get('total_neto', 0) or 0) for r in resultados)
+        total_ingresos = sum(float(r.get('total_ingresos', 0) or 0) for r in resultados)
+        total_reembolsos = sum(float(r.get('total_reembolsos', 0) or 0) for r in resultados)
+        
+        # Convertir a formato serializable
+        pagos_cuenta = []
+        for r in resultados:
+            pagos_cuenta.append({
+                'cuenta_id': r.get('cuenta_id'),
+                'nombre_cuenta': r.get('nombre_cuenta'),
+                'tipo_cuenta': r.get('tipo_cuenta'),
+                'numero_cuenta': r.get('numero_cuenta'),
+                'total_pagos': int(r.get('total_pagos', 0) or 0),
+                'total_ingresos': float(r.get('total_ingresos', 0) or 0),
+                'total_reembolsos': float(r.get('total_reembolsos', 0) or 0),
+                'total_neto': float(r.get('total_neto', 0) or 0),
+            })
+        
+        return jsonify({
+            'pagos_por_cuenta': pagos_cuenta,
+            'total_general': float(total_general),
+            'total_ingresos': float(total_ingresos),
+            'total_reembolsos': float(total_reembolsos),
+        }), 200
+    except Exception as e:
+        logger.error(f"Error al obtener pagos por cuenta: {str(e)}")
+        return jsonify({'error': 'Error al obtener pagos por cuenta'}), 500
+
+
 # ============================================================================
 # ENDPOINTS DE DESCARGA DE REPORTES
 # ============================================================================
@@ -709,26 +793,56 @@ def descargar_pagos():
         fecha_desde = request.args.get('fecha_desde')
         fecha_hasta = request.args.get('fecha_hasta')
         
-        consulta = """
-        SELECT 
-            p.id,
-            p.id_evento,
-            e.nombre_evento,
-            c.nombre_completo as cliente_nombre,
-            p.monto,
-            p.tipo_pago,
-            p.metodo_pago,
-            p.referencia,
-            p.fecha_pago,
-            p.observaciones,
-            u.nombre_completo as registrado_por
-        FROM pagos p
-        LEFT JOIN eventos e ON p.id_evento = e.id_evento
-        LEFT JOIN clientes cl ON e.id_cliente = cl.id
-        LEFT JOIN usuarios c ON cl.usuario_id = c.id
-        LEFT JOIN usuarios u ON p.usuario_id = u.id
-        WHERE 1=1
-        """
+        # Verificar si existe la columna cuenta_id
+        tiene_cuenta = _columna_existe('pagos', 'cuenta_id')
+        
+        if tiene_cuenta:
+            consulta = """
+            SELECT 
+                p.id,
+                p.id_evento,
+                e.nombre_evento,
+                c.nombre_completo as cliente_nombre,
+                p.monto,
+                p.tipo_pago,
+                p.metodo_pago,
+                cu.nombre as cuenta_destino,
+                cu.tipo as tipo_cuenta,
+                cu.numero_cuenta,
+                p.numero_referencia as referencia,
+                p.fecha_pago,
+                p.estado_pago,
+                p.observaciones,
+                u.nombre_completo as registrado_por
+            FROM pagos p
+            LEFT JOIN eventos e ON p.id_evento = e.id_evento
+            LEFT JOIN clientes cl ON e.id_cliente = cl.id
+            LEFT JOIN usuarios c ON cl.usuario_id = c.id
+            LEFT JOIN usuarios u ON p.usuario_registro_id = u.id
+            LEFT JOIN cuentas cu ON p.cuenta_id = cu.id
+            WHERE 1=1
+            """
+        else:
+            consulta = """
+            SELECT 
+                p.id,
+                p.id_evento,
+                e.nombre_evento,
+                c.nombre_completo as cliente_nombre,
+                p.monto,
+                p.tipo_pago,
+                p.metodo_pago,
+                p.numero_referencia as referencia,
+                p.fecha_pago,
+                p.observaciones,
+                u.nombre_completo as registrado_por
+            FROM pagos p
+            LEFT JOIN eventos e ON p.id_evento = e.id_evento
+            LEFT JOIN clientes cl ON e.id_cliente = cl.id
+            LEFT JOIN usuarios c ON cl.usuario_id = c.id
+            LEFT JOIN usuarios u ON p.usuario_registro_id = u.id
+            WHERE 1=1
+            """
         params = []
         
         if fecha_desde:
@@ -742,11 +856,19 @@ def descargar_pagos():
         
         pagos = base_datos.obtener_todos(consulta, tuple(params) if params else None) or []
         
-        columnas = [
-            'id', 'id_evento', 'nombre_evento', 'cliente_nombre',
-            'monto', 'tipo_pago', 'metodo_pago', 'referencia',
-            'fecha_pago', 'observaciones', 'registrado_por'
-        ]
+        if tiene_cuenta:
+            columnas = [
+                'id', 'id_evento', 'nombre_evento', 'cliente_nombre',
+                'monto', 'tipo_pago', 'metodo_pago', 'cuenta_destino',
+                'tipo_cuenta', 'numero_cuenta', 'referencia',
+                'fecha_pago', 'estado_pago', 'observaciones', 'registrado_por'
+            ]
+        else:
+            columnas = [
+                'id', 'id_evento', 'nombre_evento', 'cliente_nombre',
+                'monto', 'tipo_pago', 'metodo_pago', 'referencia',
+                'fecha_pago', 'observaciones', 'registrado_por'
+            ]
         
         fecha_str = datetime.now().strftime('%Y%m%d_%H%M%S')
         return _generar_csv(pagos, columnas, f'reporte_pagos_{fecha_str}.csv')

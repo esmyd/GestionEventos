@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { eventosService, pagosService, planesService, productosService, usuariosService, notificacionesNativasService } from '../services/api';
+import { eventosService, pagosService, planesService, productosService, usuariosService, notificacionesNativasService, cuentasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2, Eye, Check, Ban } from 'lucide-react';
+import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2, Eye, Check, Ban, Landmark } from 'lucide-react';
 import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
+import EventoConfirmaciones from '../components/EventoConfirmaciones';
 
 const EventoDetalle = () => {
   const { id } = useParams();
@@ -34,6 +35,8 @@ const EventoDetalle = () => {
   const [mostrarModalPagoDetalle, setMostrarModalPagoDetalle] = useState(false);
   const [pagoDetalle, setPagoDetalle] = useState(null);
   const [confirmacionPago, setConfirmacionPago] = useState(null);
+  const [cuentas, setCuentas] = useState([]);
+  const [cuentaAprobacion, setCuentaAprobacion] = useState('');
   const [mostrarModalProducto, setMostrarModalProducto] = useState(false);
   const [mostrarModalEliminarEvento, setMostrarModalEliminarEvento] = useState(false);
   const [eliminandoEvento, setEliminandoEvento] = useState(false);
@@ -99,6 +102,9 @@ const EventoDetalle = () => {
   });
 
   const eventoCancelado = evento?.estado === 'cancelado';
+  const eventoCompletado = evento?.estado === 'completado';
+  const eventoFinalizado = eventoCancelado || eventoCompletado; // No permite ediciones
+  const saldoPendiente = parseFloat(evento?.saldo || 0);
   const puedeAgregarProducto = hasPermission(usuario, PERMISSIONS.EVENTOS_AGREGAR_PRODUCTO, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeActualizarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_ACTUALIZAR_SERVICIOS, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeDescartarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_DESCARTAR_SERVICIO, [ROLES.ADMIN, ROLES.MANAGER]);
@@ -113,6 +119,29 @@ const EventoDetalle = () => {
   const puedeAprobarPago = hasPermission(usuario, PERMISSIONS.PAGOS_APROBAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeAnularPago = hasPermission(usuario, PERMISSIONS.PAGOS_ANULAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const saldoPorReembolsar = Math.max(0, (parseFloat(totalPagado) || 0) - (parseFloat(totalReembolsos) || 0));
+
+  // Determinar tipo de pago automáticamente según el monto
+  const determinarTipoPago = (monto) => {
+    if (!monto || parseFloat(monto) <= 0) return 'abono';
+    const montoNum = parseFloat(monto);
+    // Si el monto cubre el saldo pendiente o más, es pago completo
+    if (montoNum >= saldoPendiente && saldoPendiente > 0) {
+      return 'pago_completo';
+    }
+    return 'abono';
+  };
+
+  // Manejar cambio de monto con tipo de pago automático
+  const handleMontoChangePago = (e) => {
+    const nuevoMonto = e.target.value;
+    // Solo actualizar tipo automáticamente si no es reembolso
+    if (formPago.tipo_pago !== 'reembolso') {
+      const nuevoTipo = determinarTipoPago(nuevoMonto);
+      setFormPago({ ...formPago, monto: nuevoMonto, tipo_pago: nuevoTipo });
+    } else {
+      setFormPago({ ...formPago, monto: nuevoMonto });
+    }
+  };
 
   const progresoServicios = useMemo(() => {
     if (eventoCancelado) return 0;
@@ -132,8 +161,18 @@ const EventoDetalle = () => {
       cargarProductos();
       cargarServiciosEvento();
       cargarNotificacionesProximas();
+      cargarCuentas();
     }
   }, [id]);
+
+  const cargarCuentas = async () => {
+    try {
+      const data = await cuentasService.getAll();
+      setCuentas(data.cuentas || []);
+    } catch (err) {
+      console.error('Error al cargar cuentas:', err);
+    }
+  };
 
   useEffect(() => {
     if (!puedeAsignarCoordinador) return;
@@ -635,13 +674,12 @@ const EventoDetalle = () => {
     if (!fecha) return '-';
     try {
       const fechaObj = parseFechaLocal(fecha);
-      return fechaObj.toLocaleString('es-CO', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const year = fechaObj.getFullYear();
+      const month = String(fechaObj.getMonth() + 1).padStart(2, '0');
+      const day = String(fechaObj.getDate()).padStart(2, '0');
+      const hours = String(fechaObj.getHours()).padStart(2, '0');
+      const minutes = String(fechaObj.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
     } catch {
       return fecha;
     }
@@ -691,12 +729,25 @@ const EventoDetalle = () => {
   const solicitarConfirmacionEstadoPago = (pago, nuevoEstado) => {
     if (!pago) return;
     setConfirmacionPago({ pago, nuevoEstado });
+    // Inicializar cuenta seleccionada con la cuenta actual del pago
+    setCuentaAprobacion(pago.cuenta_id || '');
   };
 
   const confirmarCambioEstadoPago = async () => {
     if (!confirmacionPago) return;
     const { pago, nuevoEstado } = confirmacionPago;
+    
+    // Si se está aprobando y se seleccionó una cuenta, actualizar la cuenta primero
+    if (nuevoEstado === 'aprobado' && cuentaAprobacion) {
+      try {
+        await pagosService.updateCuenta(pago.id, parseInt(cuentaAprobacion));
+      } catch (err) {
+        console.error('Error al actualizar cuenta del pago:', err);
+      }
+    }
+    
     setConfirmacionPago(null);
+    setCuentaAprobacion('');
     await cambiarEstadoPago(pago, nuevoEstado);
   };
 
@@ -835,7 +886,6 @@ const EventoDetalle = () => {
     }
   };
 
-  const saldoPendiente = parseFloat(evento?.saldo || 0);
   const puedeFinalizarEvento = (evento?.estado === 'confirmado' || evento?.estado === 'en_proceso') && saldoPendiente <= 0;
 
   // Funciones para pago de daños
@@ -1903,18 +1953,18 @@ const EventoDetalle = () => {
               Servicios del evento
             </h2>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {puedeCrearServicioPersonalizado && !eventoCancelado && (
+              {puedeCrearServicioPersonalizado && !eventoFinalizado && (
                 <button
                   type="button"
                   onClick={() => setMostrarModalServicioPersonalizado(true)}
-                  disabled={eventoCancelado}
+                  disabled={eventoFinalizado}
                   style={{
                     padding: '0.5rem 0.75rem',
-                    backgroundColor: eventoCancelado ? '#9ca3af' : '#10b981',
+                    backgroundColor: eventoFinalizado ? '#9ca3af' : '#10b981',
                     color: 'white',
                     borderRadius: '0.375rem',
                     border: 'none',
-                    cursor: eventoCancelado ? 'not-allowed' : 'pointer',
+                    cursor: eventoFinalizado ? 'not-allowed' : 'pointer',
                     fontWeight: '500',
                     fontSize: '0.8rem',
                   }}
@@ -1922,18 +1972,18 @@ const EventoDetalle = () => {
                   + Agregar servicio
                 </button>
               )}
-              {puedeGenerarServicios && evento?.plan_id && (
+              {puedeGenerarServicios && evento?.plan_id && !eventoFinalizado && (
                 <button
                   type="button"
                   onClick={handleGenerarServicios}
-                  disabled={eventoCancelado || generandoServicios}
+                  disabled={eventoFinalizado || generandoServicios}
                   style={{
                     padding: '0.5rem 0.75rem',
-                    backgroundColor: eventoCancelado ? '#9ca3af' : '#6366f1',
+                    backgroundColor: eventoFinalizado ? '#9ca3af' : '#6366f1',
                     color: 'white',
                     borderRadius: '0.375rem',
                     border: 'none',
-                    cursor: eventoCancelado || generandoServicios ? 'not-allowed' : 'pointer',
+                    cursor: eventoFinalizado || generandoServicios ? 'not-allowed' : 'pointer',
                     fontWeight: '500',
                     fontSize: '0.8rem',
                   }}
@@ -1985,9 +2035,9 @@ const EventoDetalle = () => {
                   <input
                     type="checkbox"
                     checked={!!servicio.completado}
-                    disabled={!puedeActualizarServicios || eventoCancelado || actualizandoServicioId === servicio.id}
+                    disabled={!puedeActualizarServicios || eventoFinalizado || actualizandoServicioId === servicio.id}
                     onChange={(e) => handleActualizarServicio(servicio.id, e.target.checked)}
-                    style={{ width: '1rem', height: '1rem', cursor: puedeActualizarServicios && !eventoCancelado ? 'pointer' : 'default' }}
+                    style={{ width: '1rem', height: '1rem', cursor: puedeActualizarServicios && !eventoFinalizado ? 'pointer' : 'default' }}
                   />
                   <span style={{ fontSize: '0.9rem', color: servicio.completado ? '#10b981' : '#374151', flex: 1 }}>
                     {servicio.nombre}
@@ -1999,7 +2049,7 @@ const EventoDetalle = () => {
                   </span>
                   <div style={{ display: 'flex', gap: '0.25rem' }}>
                     {/* Botón eliminar solo para servicios personalizados */}
-                    {servicio.plan_servicio_id === null && puedeCrearServicioPersonalizado && !eventoCancelado && (
+                    {servicio.plan_servicio_id === null && puedeCrearServicioPersonalizado && !eventoFinalizado && (
                       <button
                         type="button"
                         onClick={() => handleEliminarServicioPersonalizado(servicio.id)}
@@ -2019,7 +2069,7 @@ const EventoDetalle = () => {
                       </button>
                     )}
                     {/* Botón descartar solo para servicios del plan */}
-                    {servicio.plan_servicio_id !== null && puedeDescartarServicios && !eventoCancelado && (
+                    {servicio.plan_servicio_id !== null && puedeDescartarServicios && !eventoFinalizado && (
                       <button
                         type="button"
                         onClick={() => handleDescartarServicio(servicio.id, true)}
@@ -2066,7 +2116,7 @@ const EventoDetalle = () => {
                         <span style={{ fontSize: '0.85rem', color: '#9ca3af', textDecoration: 'line-through' }}>
                           {servicio.nombre}
                         </span>
-                        {puedeDescartarServicios && !eventoCancelado && (
+                        {puedeDescartarServicios && !eventoFinalizado && (
                           <button
                             type="button"
                             onClick={() => handleDescartarServicio(servicio.id, false)}
@@ -2120,6 +2170,15 @@ const EventoDetalle = () => {
         ) : null}
       </div>
 
+      {/* Confirmaciones de Opciones del Cliente */}
+      {evento?.id_evento && (
+        <EventoConfirmaciones
+          eventoId={evento.id_evento}
+          puedeEditar={puedeAgregarProducto && !eventoFinalizado}
+          compacto={true}
+        />
+      )}
+
       {/* Productos Adicionales */}
       <div
         style={{
@@ -2136,18 +2195,18 @@ const EventoDetalle = () => {
             <Package size={20} color="#6366f1" />
             Productos Adicionales
           </h2>
-          {puedeAgregarProducto && (
+          {puedeAgregarProducto && !eventoFinalizado && (
             <button
               type="button"
               onClick={abrirAdicionalesEvento}
-              disabled={eventoCancelado}
+              disabled={eventoFinalizado}
               style={{
                 padding: '0.5rem 1rem',
-                backgroundColor: eventoCancelado ? '#9ca3af' : '#6366f1',
+                backgroundColor: eventoFinalizado ? '#9ca3af' : '#6366f1',
                 color: 'white',
                 borderRadius: '0.375rem',
                 border: 'none',
-                cursor: eventoCancelado ? 'not-allowed' : 'pointer',
+                cursor: eventoFinalizado ? 'not-allowed' : 'pointer',
                 fontWeight: '500',
               }}
             >
@@ -2187,7 +2246,7 @@ const EventoDetalle = () => {
                       {formatearMoneda(parseFloat(producto.subtotal || 0))}
                     </td>
                     <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                      {puedeEliminarProducto && (
+                      {puedeEliminarProducto && !eventoFinalizado && (
                         <button
                           type="button"
                           onClick={() => abrirModalEliminarProducto(producto)}
@@ -2491,32 +2550,35 @@ const EventoDetalle = () => {
           <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Pagos</h2>
           {puedeRegistrarPago && (
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => {
-                  setFormPago((prev) => ({ ...prev, tipo_pago: 'abono' }));
-                  setMostrarModalPago(true);
-                }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.625rem 1.25rem',
-                  backgroundColor: '#10b981',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = '#059669')}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = '#10b981')}
-              >
-                <DollarSign size={16} />
-                Registrar Pago
-              </button>
-              {puedeReembolsar && (
+              {/* Solo mostrar botón de pago si hay saldo pendiente y el evento no está finalizado */}
+              {saldoPendiente > 0 && !eventoFinalizado && (
+                <button
+                  onClick={() => {
+                    setFormPago((prev) => ({ ...prev, tipo_pago: 'abono' }));
+                    setMostrarModalPago(true);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.625rem 1.25rem',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.target.style.backgroundColor = '#059669')}
+                  onMouseLeave={(e) => (e.target.style.backgroundColor = '#10b981')}
+                >
+                  <DollarSign size={16} />
+                  Registrar Pago
+                </button>
+              )}
+              {puedeReembolsar && !eventoFinalizado && (
                 <button
                   onClick={() => {
                     if (saldoPorReembolsar <= 0) {
@@ -2571,6 +2633,9 @@ const EventoDetalle = () => {
                     Método
                   </th>
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Cuenta
+                  </th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Estado
                   </th>
                   <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
@@ -2597,6 +2662,9 @@ const EventoDetalle = () => {
                     <td style={{ padding: '0.75rem', fontSize: '0.85rem' }}>{formatearFechaHora(pago.fecha_pago)}</td>
                     <td style={{ padding: '0.75rem' }}>{pago.tipo_pago || '-'}</td>
                     <td style={{ padding: '0.75rem' }}>{pago.metodo_pago || '-'}</td>
+                    <td style={{ padding: '0.75rem', fontSize: '0.8rem', color: '#4f46e5', fontWeight: '500' }}>
+                      {pago.nombre_cuenta || '-'}
+                    </td>
                     <td style={{ padding: '0.75rem' }}>
                       <span
                         style={{
@@ -2775,6 +2843,8 @@ const EventoDetalle = () => {
               padding: '2rem',
               width: '100%',
               maxWidth: '500px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
             }}
             onClick={(e) => e.stopPropagation()}
@@ -2826,7 +2896,7 @@ const EventoDetalle = () => {
                     min="0"
                     required
                     value={formPago.monto}
-                    onChange={(e) => setFormPago({ ...formPago, monto: e.target.value })}
+                    onChange={handleMontoChangePago}
                     style={{
                       width: '100%',
                       padding: '0.75rem',
@@ -2839,24 +2909,37 @@ const EventoDetalle = () => {
 
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500', color: '#374151' }}>
-                    Tipo de Pago *
+                    Tipo de Pago <span style={{ color: '#6b7280', fontWeight: '400', fontSize: '0.75rem' }}>(automático)</span>
                   </label>
-                  <select
-                    required
-                    value={formPago.tipo_pago}
-                    onChange={(e) => setFormPago({ ...formPago, tipo_pago: e.target.value })}
+                  <div
                     style={{
                       width: '100%',
                       padding: '0.75rem',
                       border: '1px solid #d1d5db',
                       borderRadius: '0.375rem',
                       fontSize: '1rem',
+                      backgroundColor: formPago.tipo_pago === 'reembolso' ? '#fef2f2' : formPago.tipo_pago === 'pago_completo' ? '#f0fdf4' : '#eff6ff',
+                      color: formPago.tipo_pago === 'reembolso' ? '#dc2626' : formPago.tipo_pago === 'pago_completo' ? '#16a34a' : '#2563eb',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
                     }}
                   >
-                    <option value="abono">Abono</option>
-                    <option value="pago_completo">Pago Completo</option>
-                    <option value="reembolso">Reembolso</option>
-                  </select>
+                    <span>
+                      {formPago.tipo_pago === 'abono' ? 'Abono' : formPago.tipo_pago === 'pago_completo' ? 'Pago Completo' : 'Reembolso'}
+                    </span>
+                    {formPago.tipo_pago !== 'reembolso' && (
+                      <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '400' }}>
+                        Saldo: ${saldoPendiente.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
+                      </span>
+                    )}
+                  </div>
+                  {formPago.tipo_pago === 'pago_completo' && (
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#16a34a' }}>
+                      El monto cubre el saldo pendiente del evento.
+                    </div>
+                  )}
                   {formPago.tipo_pago === 'reembolso' && (
                     <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#ef4444' }}>
                       Este reembolso se descontará del total pagado y requiere confirmación.
@@ -3083,11 +3166,45 @@ const EventoDetalle = () => {
               Vas a {confirmacionPago.nuevoEstado === 'aprobado' ? 'aprobar' : 'anular'} el pago de{' '}
               {formatearMoneda(confirmacionPago.pago.monto || 0)}.
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+            <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1rem' }}>
               Método: {confirmacionPago.pago.metodo_pago || '-'} · Fecha: {formatearFecha(confirmacionPago.pago.fecha_pago)}
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+            {/* Selector de cuenta destino - solo para aprobación */}
+            {confirmacionPago.nuevoEstado === 'aprobado' && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                  <Landmark size={18} color="#4f46e5" />
+                  Cuenta Destino <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <select
+                  value={cuentaAprobacion}
+                  onChange={(e) => setCuentaAprobacion(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.9rem',
+                    backgroundColor: 'white',
+                  }}
+                >
+                  <option value="">Seleccionar cuenta...</option>
+                  {cuentas.map((cuenta) => (
+                    <option key={cuenta.id} value={cuenta.id}>
+                      {cuenta.nombre} {cuenta.numero_cuenta ? `- ${cuenta.numero_cuenta}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {!cuentaAprobacion && (
+                  <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.25rem' }}>
+                    Seleccione la cuenta donde se registrará este pago
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
               <button
                 type="button"
                 onClick={() => setConfirmacionPago(null)}
@@ -3108,14 +3225,17 @@ const EventoDetalle = () => {
               <button
                 type="button"
                 onClick={confirmarCambioEstadoPago}
+                disabled={confirmacionPago.nuevoEstado === 'aprobado' && !cuentaAprobacion}
                 style={{
                   flex: 1,
                   padding: '0.75rem',
-                  backgroundColor: confirmacionPago.nuevoEstado === 'aprobado' ? '#10b981' : '#ef4444',
+                  backgroundColor: (confirmacionPago.nuevoEstado === 'aprobado' && !cuentaAprobacion) 
+                    ? '#9ca3af' 
+                    : confirmacionPago.nuevoEstado === 'aprobado' ? '#10b981' : '#ef4444',
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.375rem',
-                  cursor: 'pointer',
+                  cursor: (confirmacionPago.nuevoEstado === 'aprobado' && !cuentaAprobacion) ? 'not-allowed' : 'pointer',
                   fontSize: '0.875rem',
                   fontWeight: '500',
                 }}

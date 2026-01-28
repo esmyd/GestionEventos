@@ -82,7 +82,7 @@ class ProductoModelo:
         """
         return self.base_datos.obtener_todos(consulta, (categoria_id,))
     
-    def actualizar_producto(self, producto_id, datos_producto):
+    def actualizar_producto(self, producto_id, datos_producto, usuario_id=None):
         """Actualiza los datos de un producto"""
         # Si no se proporciona precio pero sí precio_minimo o precio_maximo, usar precio_minimo como precio base
         precio = datos_producto.get('precio')
@@ -91,11 +91,19 @@ class ProductoModelo:
         elif not precio:
             precio = 0.00
         
+        # Obtener stock anterior para detectar cambios
+        producto_actual = self.obtener_producto_por_id(producto_id)
+        stock_anterior = int(producto_actual.get('stock') or producto_actual.get('stock_disponible') or 0) if producto_actual else 0
+        stock_nuevo = int(datos_producto.get('stock', 0))
+        
+        # Debug log
+        print(f"[PRODUCTO_MODELO] Actualizando producto {producto_id}: stock_anterior={stock_anterior}, stock_nuevo={stock_nuevo}, datos_recibidos={datos_producto.get('stock')}")
+        
         consulta = """
         UPDATE productos 
         SET nombre = %s, descripcion = %s, detalles_adicionales = %s, variantes = %s, 
             precio = %s, precio_minimo = %s, precio_maximo = %s, duracion_horas = %s, 
-            id_categoria = %s, stock = %s, unidad_medida = %s, tipo_servicio = %s
+            id_categoria = %s, stock = %s, stock_disponible = %s, unidad_medida = %s, tipo_servicio = %s
         WHERE id = %s
         """
         parametros = (
@@ -108,20 +116,81 @@ class ProductoModelo:
             datos_producto.get('precio_maximo'),
             datos_producto.get('duracion_horas'),
             datos_producto.get('id_categoria') if datos_producto.get('id_categoria') else None,
-            datos_producto.get('stock', 0),
+            stock_nuevo,
+            stock_nuevo,  # Actualizar también stock_disponible
             datos_producto.get('unidad_medida', 'unidad'),
             datos_producto.get('tipo_servicio', 'servicio'),
             producto_id
         )
-        return self.base_datos.ejecutar_consulta(consulta, parametros)
+        resultado = self.base_datos.ejecutar_consulta(consulta, parametros)
+        
+        # Si hubo cambio de stock, registrar el movimiento en el inventario
+        if resultado and stock_nuevo != stock_anterior:
+            try:
+                from modelos.inventario_modelo import InventarioModelo
+                inventario = InventarioModelo()
+                diferencia = stock_nuevo - stock_anterior
+                
+                if diferencia > 0:
+                    tipo_movimiento = 'entrada'
+                    motivo = f"Entrada de stock desde edición de producto"
+                else:
+                    tipo_movimiento = 'salida'
+                    motivo = f"Salida de stock desde edición de producto"
+                
+                inventario.registrar_movimiento(
+                    producto_id=producto_id,
+                    tipo_movimiento=tipo_movimiento,
+                    cantidad=abs(diferencia),
+                    stock_anterior=stock_anterior,
+                    stock_nuevo=stock_nuevo,
+                    motivo=motivo,
+                    referencia_tipo='ajuste_manual',
+                    referencia_id=None,
+                    usuario_id=usuario_id
+                )
+            except Exception as e:
+                print(f"Error al registrar movimiento de inventario: {e}")
+        
+        return resultado
     
     def eliminar_producto(self, producto_id):
         """Elimina (desactiva) un producto"""
         consulta = "UPDATE productos SET activo = FALSE WHERE id = %s"
         return self.base_datos.ejecutar_consulta(consulta, (producto_id,))
     
-    def actualizar_stock(self, producto_id, cantidad):
-        """Actualiza el stock disponible de un producto"""
-        consulta = "UPDATE productos SET stock = stock + %s WHERE id = %s"
-        return self.base_datos.ejecutar_consulta(consulta, (cantidad, producto_id))
+    def actualizar_stock(self, producto_id, cantidad, motivo=None, referencia_tipo='ajuste_manual', 
+                         referencia_id=None, usuario_id=None):
+        """Actualiza el stock disponible de un producto y registra el movimiento"""
+        # Obtener stock actual antes del cambio
+        producto = self.obtener_producto_por_id(producto_id)
+        stock_anterior = int(producto.get('stock') or producto.get('stock_disponible') or 0) if producto else 0
+        stock_nuevo = stock_anterior + cantidad
+        
+        # Actualizar ambas columnas de stock para mantener consistencia
+        consulta = "UPDATE productos SET stock = %s, stock_disponible = %s WHERE id = %s"
+        resultado = self.base_datos.ejecutar_consulta(consulta, (stock_nuevo, stock_nuevo, producto_id))
+        
+        # Registrar movimiento en cardex
+        try:
+            from modelos.inventario_modelo import InventarioModelo
+            inventario = InventarioModelo()
+            tipo_movimiento = 'entrada' if cantidad > 0 else 'salida'
+            if motivo and 'ajuste' in motivo.lower():
+                tipo_movimiento = 'ajuste'
+            inventario.registrar_movimiento(
+                producto_id=producto_id,
+                tipo_movimiento=tipo_movimiento,
+                cantidad=abs(cantidad),
+                stock_anterior=stock_anterior,
+                stock_nuevo=stock_nuevo,
+                motivo=motivo or f"{'Entrada' if cantidad > 0 else 'Salida'} de stock",
+                referencia_tipo=referencia_tipo,
+                referencia_id=referencia_id,
+                usuario_id=usuario_id
+            )
+        except Exception as e:
+            pass  # No fallar si el registro de movimiento falla
+        
+        return resultado
 

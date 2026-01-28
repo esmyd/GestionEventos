@@ -561,8 +561,8 @@ class EventoModelo:
         """Gestiona el inventario según el cambio de estado del evento"""
         # Estados que requieren reserva de stock
         estados_reservados = ('confirmado', 'en_proceso')
-        # Estados que liberan stock
-        estados_liberados = ('cancelado', 'cotizacion')
+        # Estados que liberan stock (cancelado devuelve al inventario, completado marca como usado)
+        estados_liberados = ('cancelado', 'cotizacion', 'completado')
         
         # Si pasa de un estado que no reserva a uno que sí reserva
         if estado_anterior not in estados_reservados and estado_nuevo in estados_reservados:

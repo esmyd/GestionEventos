@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
-import { Plus, Search, Package, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, Package, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2, ListChecks } from 'lucide-react';
 import { hasRole, ROLES } from '../utils/roles';
+import ProductoOpciones from '../components/ProductoOpciones';
 
 const Productos = () => {
   const { usuario } = useAuth();
@@ -23,6 +24,7 @@ const Productos = () => {
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
   const [mostrarModalDetalle, setMostrarModalDetalle] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
+  const [mostrarModalOpciones, setMostrarModalOpciones] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
   // Estados para formularios
@@ -194,6 +196,16 @@ const Productos = () => {
 
   const cerrarModalEliminar = () => {
     setMostrarModalEliminar(false);
+    setProductoSeleccionado(null);
+  };
+
+  const abrirModalOpciones = (producto) => {
+    setProductoSeleccionado(producto);
+    setMostrarModalOpciones(true);
+  };
+
+  const cerrarModalOpciones = () => {
+    setMostrarModalOpciones(false);
     setProductoSeleccionado(null);
   };
 
@@ -514,6 +526,26 @@ const Productos = () => {
                         Eliminar
                       </button>
                     )}
+                    {puedeEditar && producto.tipo_servicio !== 'servicio' && (
+                      <button
+                        onClick={() => abrirModalOpciones(producto)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#6366f1',
+                          color: 'white',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <ListChecks size={16} strokeWidth={2.5} />
+                        Opciones
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -662,6 +694,28 @@ const Productos = () => {
                               <Trash2 size={18} strokeWidth={2.5} />
                             </button>
                           )}
+                          {puedeEditar && producto.tipo_servicio !== 'servicio' && (
+                            <button
+                              onClick={() => abrirModalOpciones(producto)}
+                              style={{
+                                padding: '0.5rem',
+                                backgroundColor: '#6366f1',
+                                color: 'white',
+                                borderRadius: '0.375rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#4f46e5')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#6366f1')}
+                              title="Opciones de confirmación"
+                            >
+                              <ListChecks size={18} strokeWidth={2.5} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -802,8 +856,17 @@ const Productos = () => {
                     </label>
                     <input
                       type="number"
+                      min="0"
+                      step="1"
                       value={formData.stock}
                       onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                      onWheel={(e) => e.target.blur()}
+                      onKeyDown={(e) => {
+                        // Evitar que las flechas arriba/abajo cambien el valor
+                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                        }
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.75rem',
@@ -1164,8 +1227,17 @@ const Productos = () => {
                     </label>
                     <input
                       type="number"
+                      min="0"
+                      step="1"
                       value={formData.stock}
                       onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                      onWheel={(e) => e.target.blur()}
+                      onKeyDown={(e) => {
+                        // Evitar que las flechas arriba/abajo cambien el valor
+                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                        }
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.75rem',
@@ -1710,6 +1782,16 @@ const Productos = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Opciones de Producto */}
+      {mostrarModalOpciones && productoSeleccionado && (
+        <ProductoOpciones
+          productoId={productoSeleccionado.id_producto || productoSeleccionado.id}
+          productoNombre={productoSeleccionado.nombre}
+          puedeEditar={puedeEditar}
+          onClose={cerrarModalOpciones}
+        />
       )}
     </div>
   );

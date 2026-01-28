@@ -218,6 +218,39 @@ def eliminar_pago(pago_id):
     return jsonify({'error': 'No se puede eliminar un pago. Usa anular.'}), 400
 
 
+@pagos_bp.route('/<int:pago_id>/cuenta', methods=['PUT'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def actualizar_cuenta_pago(pago_id):
+    """Actualiza la cuenta destino de un pago"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Datos requeridos'}), 400
+        
+        cuenta_id = data.get('cuenta_id')
+        if cuenta_id is None:
+            return jsonify({'error': 'cuenta_id es requerido'}), 400
+        
+        pago_actual = pago_modelo.obtener_pago_por_id(pago_id)
+        if not pago_actual:
+            return jsonify({'error': 'Pago no encontrado'}), 404
+        
+        if not pago_modelo.actualizar_cuenta_pago(pago_id, cuenta_id):
+            return jsonify({'error': 'No se pudo actualizar la cuenta del pago'}), 500
+        
+        pago_actualizado = pago_modelo.obtener_pago_por_id(pago_id)
+        logger.info(f"Cuenta del pago {pago_id} actualizada a cuenta_id {cuenta_id}")
+        
+        return jsonify({
+            'message': 'Cuenta actualizada correctamente',
+            'pago': pago_actualizado
+        }), 200
+    except Exception as e:
+        logger.error(f"Error al actualizar cuenta del pago {pago_id}: {str(e)}")
+        return jsonify({'error': 'Error al actualizar cuenta del pago'}), 500
+
+
 @pagos_bp.route('/evento/<int:evento_id>/total', methods=['GET'])
 @requiere_autenticacion
 def obtener_total_pagado(evento_id):

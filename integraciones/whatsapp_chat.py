@@ -1130,34 +1130,14 @@ class WhatsAppChatService:
                         if not telefono:
                             continue
                         
-                        # Procesar calificación si es una respuesta de calificación (formato interactivo)
-                        if texto and texto.startswith("calif_"):
-                            self._procesar_calificacion(telefono, texto, mensaje.get("id"))
-                            continue
-                        
-                        # Procesar calificación si es un número simple (1-5) y hay solicitud pendiente
-                        texto_limpio = texto.strip() if texto else ""
-                        if texto_limpio in ['1', '2', '3', '4', '5']:
-                            if self._procesar_calificacion_simple(telefono, int(texto_limpio), mensaje.get("id")):
-                                continue
-                        
+                        # Siempre obtener/crear conversación y registrar mensaje entrante
                         conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
                         if not conversacion:
                             cliente = self._obtener_cliente_por_telefono(telefono)
                             conversacion_id = self.modelo.crear_conversacion(telefono, cliente_id=cliente.get("id") if cliente else None)
                             conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
-                        self.modelo.actualizar_conversacion(conversacion["id"])
-                        self.modelo.actualizar_interaccion_cliente(conversacion["id"])
-                        # Incrementar contador de mensajes no leídos
-                        self.modelo.incrementar_no_leidos(conversacion["id"])
                         
-                        # Reenviar mensajes fallidos por ventana 24h ahora que el cliente escribió
-                        self._reenviar_mensajes_fallidos_por_ventana(telefono, conversacion["id"])
-                        
-                        # Verificar si hay calificación pendiente de observaciones
-                        if self._procesar_observaciones_calificacion(telefono, texto):
-                            continue
-                        
+                        # Registrar mensaje entrante del cliente
                         self._registrar_mensaje(
                             conversacion["id"],
                             "in",
@@ -1169,6 +1149,30 @@ class WhatsAppChatService:
                             estado="received",
                             origen="cliente"
                         )
+                        
+                        self.modelo.actualizar_conversacion(conversacion["id"])
+                        self.modelo.actualizar_interaccion_cliente(conversacion["id"])
+                        self.modelo.incrementar_no_leidos(conversacion["id"])
+                        
+                        # Procesar calificación si es una respuesta de calificación (formato interactivo)
+                        if texto and texto.startswith("calif_"):
+                            self._procesar_calificacion(telefono, texto, mensaje.get("id"))
+                            continue
+                        
+                        # Procesar calificación si es un número simple (1-5) y hay solicitud pendiente
+                        texto_limpio = texto.strip() if texto else ""
+                        if texto_limpio in ['1', '2', '3', '4', '5']:
+                            if self._procesar_calificacion_simple(telefono, int(texto_limpio), mensaje.get("id")):
+                                continue
+                        
+                        # Reenviar mensajes fallidos por ventana 24h ahora que el cliente escribió
+                        self._reenviar_mensajes_fallidos_por_ventana(telefono, conversacion["id"])
+                        
+                        # Verificar si hay calificación pendiente de observaciones
+                        if self._procesar_observaciones_calificacion(telefono, texto):
+                            continue
+                        
+                        # Procesar bot si está activo
                         if not conversacion.get("bot_activo"):
                             continue
                         self._procesar_bot(conversacion, telefono, texto, media_type=media_type, media_id=media_id)
@@ -1298,7 +1302,20 @@ class WhatsAppChatService:
             else:
                 mensaje_respuesta = f"Gracias por su calificación {estrellas}.\n\nLamentamos que su experiencia no haya sido la mejor. Por favor, cuéntenos qué podríamos mejorar para futuros eventos.\n\n_Escriba sus observaciones a continuación:_"
             
-            whatsapp.enviar_mensaje(telefono, mensaje_respuesta)
+            # Enviar y registrar mensaje de respuesta
+            enviado, wa_msg_id = whatsapp.enviar_mensaje_chat(telefono, mensaje_respuesta)
+            
+            # Registrar en whatsapp_mensajes
+            conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
+            if conversacion and enviado:
+                self._registrar_mensaje(
+                    conversacion["id"],
+                    "out",
+                    mensaje_respuesta,
+                    estado="sent",
+                    wa_message_id=wa_msg_id,
+                    origen="bot"
+                )
             
             self.logger.info(f"Calificación simple {calificacion} registrada para evento {evento_id}")
             return True
@@ -1355,7 +1372,20 @@ class WhatsAppChatService:
             else:
                 mensaje_respuesta = f"Gracias por su calificación {estrellas}.\n\nLamentamos que su experiencia no haya sido la mejor. Por favor, cuéntenos qué podríamos mejorar para futuros eventos.\n\n_Escriba sus observaciones a continuación:_"
             
-            whatsapp.enviar_mensaje(telefono, mensaje_respuesta)
+            # Enviar y registrar mensaje de respuesta
+            enviado, wa_msg_id = whatsapp.enviar_mensaje_chat(telefono, mensaje_respuesta)
+            
+            # Registrar en whatsapp_mensajes
+            conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
+            if conversacion and enviado:
+                self._registrar_mensaje(
+                    conversacion["id"],
+                    "out",
+                    mensaje_respuesta,
+                    estado="sent",
+                    wa_message_id=wa_msg_id,
+                    origen="bot"
+                )
             
             self.logger.info(f"Calificación {calificacion} registrada para evento {evento_id}")
             return True
@@ -1387,7 +1417,21 @@ class WhatsAppChatService:
                 from integraciones.whatsapp import IntegracionWhatsApp
                 whatsapp = IntegracionWhatsApp()
                 mensaje_respuesta = f"✅ ¡Gracias por sus comentarios sobre \"{nombre_evento}\"!\n\nSus observaciones nos ayudan a mejorar nuestro servicio. Tomaremos en cuenta sus sugerencias.\n\n¡Esperamos verle pronto!"
-                whatsapp.enviar_mensaje(telefono, mensaje_respuesta)
+                
+                # Enviar y registrar mensaje
+                enviado, wa_msg_id = whatsapp.enviar_mensaje_chat(telefono, mensaje_respuesta)
+                
+                # Registrar en whatsapp_mensajes
+                conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
+                if conversacion and enviado:
+                    self._registrar_mensaje(
+                        conversacion["id"],
+                        "out",
+                        mensaje_respuesta,
+                        estado="sent",
+                        wa_message_id=wa_msg_id,
+                        origen="bot"
+                    )
                 
                 self.logger.info(f"Observaciones registradas para evento {evento_id}")
             

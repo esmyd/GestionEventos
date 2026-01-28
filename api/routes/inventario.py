@@ -130,3 +130,118 @@ def obtener_stock_producto(producto_id):
     except Exception as e:
         logger.error(f"Error al obtener stock del producto: {str(e)}")
         return jsonify({'error': 'Error al obtener stock del producto'}), 500
+
+
+@inventario_bp.route('/movimientos', methods=['GET'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general', 'coordinador')
+def obtener_movimientos_cardex():
+    """Obtiene todos los movimientos del cardex (movimientos_inventario)"""
+    try:
+        from modelos.base_datos import BaseDatos
+        base_datos = BaseDatos()
+        
+        # Verificar si la tabla existe
+        tabla_existe = base_datos.obtener_uno("""
+            SELECT COUNT(*) as total
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'movimientos_inventario'
+        """) or {}
+        
+        if int(tabla_existe.get("total") or 0) == 0:
+            return jsonify({'movimientos': [], 'mensaje': 'Tabla de movimientos no existe aún'}), 200
+        
+        # Obtener movimientos con nombre de producto, evento y cliente
+        consulta = """
+        SELECT 
+            mi.id,
+            mi.producto_id,
+            p.nombre as producto_nombre,
+            mi.tipo_movimiento,
+            mi.cantidad,
+            mi.stock_anterior,
+            mi.stock_nuevo,
+            mi.motivo,
+            mi.referencia_tipo,
+            mi.referencia_id,
+            CASE 
+                WHEN mi.referencia_tipo = 'evento' THEN mi.referencia_id
+                WHEN mi.referencia_tipo = 'devolucion' THEN mi.referencia_id
+                ELSE NULL 
+            END as evento_id,
+            e.nombre_evento,
+            e.estado as evento_estado,
+            cl.nombre_completo as cliente_nombre,
+            mi.usuario_id,
+            u.nombre_completo as usuario_nombre,
+            mi.fecha_movimiento
+        FROM movimientos_inventario mi
+        LEFT JOIN productos p ON mi.producto_id = p.id
+        LEFT JOIN usuarios u ON mi.usuario_id = u.id
+        LEFT JOIN eventos e ON (mi.referencia_tipo IN ('evento', 'devolucion') AND mi.referencia_id = e.id_evento)
+        LEFT JOIN clientes c ON e.id_cliente = c.id
+        LEFT JOIN usuarios cl ON c.usuario_id = cl.id
+        ORDER BY mi.fecha_movimiento DESC
+        LIMIT 500
+        """
+        movimientos = base_datos.obtener_todos(consulta) or []
+        return jsonify({'movimientos': movimientos}), 200
+    except Exception as e:
+        logger.error(f"Error al obtener movimientos del cardex: {str(e)}")
+        return jsonify({'error': 'Error al obtener movimientos'}), 500
+
+
+@inventario_bp.route('/recalcular', methods=['POST'])
+@requiere_autenticacion
+@requiere_rol('administrador', 'gerente_general')
+def recalcular_inventario():
+    """Recalcula el inventario basándose en los movimientos registrados"""
+    try:
+        from modelos.base_datos import BaseDatos
+        base_datos = BaseDatos()
+        
+        # Obtener todos los productos
+        productos = base_datos.obtener_todos("SELECT id, nombre, stock, stock_disponible FROM productos WHERE activo = TRUE OR activo IS NULL")
+        
+        resultados = []
+        for producto in productos or []:
+            producto_id = producto.get('id')
+            stock_actual = int(producto.get('stock') or 0)
+            
+            # Calcular stock basado en movimientos
+            # Entradas + Devoluciones - Salidas - Reservas
+            consulta_movimientos = """
+            SELECT 
+                SUM(CASE WHEN tipo_movimiento IN ('entrada', 'devolucion') THEN cantidad ELSE 0 END) as entradas,
+                SUM(CASE WHEN tipo_movimiento IN ('salida', 'reserva') THEN cantidad ELSE 0 END) as salidas
+            FROM movimientos_inventario
+            WHERE producto_id = %s
+            """
+            mov = base_datos.obtener_uno(consulta_movimientos, (producto_id,)) or {}
+            entradas = int(mov.get('entradas') or 0)
+            salidas = int(mov.get('salidas') or 0)
+            stock_calculado = entradas - salidas
+            
+            if stock_calculado != stock_actual:
+                # Actualizar el stock
+                base_datos.ejecutar_consulta(
+                    "UPDATE productos SET stock = %s, stock_disponible = %s WHERE id = %s",
+                    (stock_calculado, stock_calculado, producto_id)
+                )
+                resultados.append({
+                    'producto_id': producto_id,
+                    'nombre': producto.get('nombre'),
+                    'stock_anterior': stock_actual,
+                    'stock_nuevo': stock_calculado,
+                    'diferencia': stock_calculado - stock_actual
+                })
+        
+        logger.info(f"Inventario recalculado: {len(resultados)} productos actualizados")
+        return jsonify({
+            'message': f'Inventario recalculado. {len(resultados)} productos actualizados.',
+            'productos_actualizados': resultados
+        }), 200
+    except Exception as e:
+        logger.error(f"Error al recalcular inventario: {str(e)}")
+        return jsonify({'error': 'Error al recalcular inventario'}), 500

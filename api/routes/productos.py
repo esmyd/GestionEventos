@@ -78,7 +78,18 @@ def actualizar_producto(producto_id):
         if not data:
             return jsonify({'error': 'Datos requeridos'}), 400
         
-        resultado = producto_modelo.actualizar_producto(producto_id, data)
+        # Log para debug de stock
+        logger.info(f"Actualizando producto {producto_id} - Stock recibido: {data.get('stock')}")
+        
+        # Obtener usuario del token (si está disponible)
+        usuario_id = None
+        try:
+            from flask import g
+            usuario_id = getattr(g, 'usuario_id', None)
+        except:
+            pass
+        
+        resultado = producto_modelo.actualizar_producto(producto_id, data, usuario_id=usuario_id)
         if resultado:
             producto = producto_modelo.obtener_producto_por_id(producto_id)
             return jsonify({'message': 'Producto actualizado exitosamente', 'producto': producto}), 200
@@ -105,20 +116,41 @@ def eliminar_producto(producto_id):
         return jsonify({'error': 'Error al eliminar producto'}), 500
 
 
-@productos_bp.route('/<int:producto_id>/stock', methods=['PUT'])
+@productos_bp.route('/<int:producto_id>/stock', methods=['PUT', 'PATCH'])
 @requiere_autenticacion
 @requiere_rol('administrador', 'gerente_general', 'coordinador')
 def actualizar_stock(producto_id):
-    """Actualiza el stock de un producto"""
+    """Actualiza el stock de un producto y registra el movimiento en cardex"""
     try:
         data = request.get_json()
         if not data or 'cantidad' not in data:
             return jsonify({'error': 'cantidad es requerida'}), 400
         
         cantidad = data['cantidad']
-        resultado = producto_modelo.actualizar_stock(producto_id, cantidad)
+        motivo = data.get('motivo')
+        referencia_tipo = data.get('referencia_tipo', 'ajuste_manual')
+        referencia_id = data.get('referencia_id')
+        
+        # Obtener usuario del token (si está disponible)
+        usuario_id = None
+        try:
+            from flask import g
+            usuario_id = getattr(g, 'usuario_id', None)
+        except:
+            pass
+        
+        resultado = producto_modelo.actualizar_stock(
+            producto_id, 
+            cantidad,
+            motivo=motivo,
+            referencia_tipo=referencia_tipo,
+            referencia_id=referencia_id,
+            usuario_id=usuario_id
+        )
+        
         if resultado:
             producto = producto_modelo.obtener_producto_por_id(producto_id)
+            logger.info(f"Stock actualizado para producto {producto_id}: {cantidad:+d} ({motivo or 'sin motivo'})")
             return jsonify({'message': 'Stock actualizado exitosamente', 'producto': producto}), 200
         else:
             return jsonify({'error': 'Error al actualizar stock'}), 500

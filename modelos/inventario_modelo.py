@@ -12,6 +12,60 @@ class InventarioModelo:
         self.base_datos = BaseDatos()
         self.logger = obtener_logger()
         self._asegurar_columnas_producto()
+        self._asegurar_tabla_movimientos()
+    
+    def _asegurar_tabla_movimientos(self):
+        """Crea la tabla movimientos_inventario si no existe"""
+        try:
+            consulta = """
+            SELECT COUNT(*) as total
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'movimientos_inventario'
+            """
+            existe = self.base_datos.obtener_uno(consulta) or {}
+            if int(existe.get("total") or 0) == 0:
+                self.base_datos.ejecutar_consulta("""
+                    CREATE TABLE movimientos_inventario (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        producto_id INT NOT NULL,
+                        tipo_movimiento ENUM('entrada', 'salida', 'ajuste', 'reserva', 'devolucion') NOT NULL,
+                        cantidad INT NOT NULL,
+                        stock_anterior INT NOT NULL,
+                        stock_nuevo INT NOT NULL,
+                        motivo VARCHAR(255),
+                        referencia_tipo ENUM('evento', 'compra', 'ajuste_manual', 'devolucion', 'otro') DEFAULT 'otro',
+                        referencia_id INT DEFAULT NULL,
+                        usuario_id INT,
+                        fecha_movimiento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        observaciones TEXT,
+                        INDEX idx_producto_id (producto_id),
+                        INDEX idx_tipo_movimiento (tipo_movimiento),
+                        INDEX idx_fecha_movimiento (fecha_movimiento)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """)
+                self.logger.info("Tabla movimientos_inventario creada correctamente")
+        except Exception as e:
+            self.logger.error(f"Error al crear tabla movimientos_inventario: {e}")
+    
+    def registrar_movimiento(self, producto_id, tipo_movimiento, cantidad, stock_anterior, stock_nuevo, 
+                              motivo=None, referencia_tipo='otro', referencia_id=None, usuario_id=None):
+        """Registra un movimiento de inventario en el cardex"""
+        try:
+            consulta = """
+            INSERT INTO movimientos_inventario 
+            (producto_id, tipo_movimiento, cantidad, stock_anterior, stock_nuevo, 
+             motivo, referencia_tipo, referencia_id, usuario_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            self.base_datos.ejecutar_consulta(consulta, (
+                producto_id, tipo_movimiento, cantidad, stock_anterior, stock_nuevo,
+                motivo, referencia_tipo, referencia_id, usuario_id
+            ))
+            return True
+        except Exception as e:
+            self.logger.error(f"Error al registrar movimiento de inventario: {e}")
+            return False
     
     def _asegurar_columnas_producto(self):
         """Asegura que los productos tengan las columnas necesarias para control de inventario"""
@@ -100,22 +154,41 @@ class InventarioModelo:
             return False, "Producto no encontrado"
         
         control = producto.get("control_inventario", "ilimitado")
-        if control == "ilimitado":
+        # Usar stock o stock_disponible (el que tenga valor)
+        stock_actual = int(producto.get("stock") or producto.get("stock_disponible") or 0)
+        
+        # Si tiene stock > 0, tratarlo como controlado aunque esté como ilimitado
+        if control == "ilimitado" and stock_actual == 0:
             # Registrar en inventario pero no descontar stock
             self._registrar_movimiento(producto_id, evento_id, cantidad, tipo, "reservado")
+            # Registrar en cardex (sin cambio de stock real)
+            self.registrar_movimiento(
+                producto_id=producto_id, tipo_movimiento='reserva', cantidad=cantidad,
+                stock_anterior=stock_actual, stock_nuevo=stock_actual,
+                motivo=f"Reserva para evento #{evento_id} (producto ilimitado)",
+                referencia_tipo='evento', referencia_id=evento_id
+            )
             return True, None
         
-        stock_disponible = int(producto.get("stock_disponible") or 0)
-        if stock_disponible < cantidad:
-            return False, f"Stock insuficiente. Disponible: {stock_disponible}, Requerido: {cantidad}"
+        # Si no hay suficiente stock
+        if stock_actual < cantidad:
+            return False, f"Stock insuficiente. Disponible: {stock_actual}, Requerido: {cantidad}"
         
-        # Descontar del stock disponible
-        nuevo_stock = stock_disponible - cantidad
-        consulta = "UPDATE productos SET stock_disponible = %s WHERE id = %s"
-        self.base_datos.ejecutar_consulta(consulta, (nuevo_stock, producto_id))
+        # Descontar del stock (ambas columnas para consistencia)
+        nuevo_stock = stock_actual - cantidad
+        consulta = "UPDATE productos SET stock = %s, stock_disponible = %s WHERE id = %s"
+        self.base_datos.ejecutar_consulta(consulta, (nuevo_stock, nuevo_stock, producto_id))
         
-        # Registrar movimiento
+        # Registrar movimiento en tabla inventario
         self._registrar_movimiento(producto_id, evento_id, cantidad, tipo, "reservado")
+        
+        # Registrar en cardex (movimientos_inventario)
+        self.registrar_movimiento(
+            producto_id=producto_id, tipo_movimiento='reserva', cantidad=cantidad,
+            stock_anterior=stock_actual, stock_nuevo=nuevo_stock,
+            motivo=f"Reserva para evento #{evento_id}",
+            referencia_tipo='evento', referencia_id=evento_id
+        )
         
         # Verificar alerta de stock bajo
         self._verificar_alerta_stock_bajo(producto_id, nuevo_stock)
@@ -129,19 +202,37 @@ class InventarioModelo:
             return False, "Producto no encontrado"
         
         control = producto.get("control_inventario", "ilimitado")
-        if control == "ilimitado":
+        # Usar stock o stock_disponible (el que tenga valor)
+        stock_actual = int(producto.get("stock") or producto.get("stock_disponible") or 0)
+        
+        # Si es ilimitado y no hay stock registrado, no hay nada que liberar
+        if control == "ilimitado" and stock_actual == 0:
             # Solo marcar como devuelto en inventario
             self._marcar_devuelto(producto_id, evento_id)
+            # Registrar en cardex (sin cambio de stock real)
+            self.registrar_movimiento(
+                producto_id=producto_id, tipo_movimiento='devolucion', cantidad=cantidad,
+                stock_anterior=stock_actual, stock_nuevo=stock_actual,
+                motivo=f"Devolución de evento #{evento_id} (producto ilimitado)",
+                referencia_tipo='devolucion', referencia_id=evento_id
+            )
             return True, None
         
-        # Incrementar stock disponible
-        stock_disponible = int(producto.get("stock_disponible") or 0)
-        nuevo_stock = stock_disponible + cantidad
-        consulta = "UPDATE productos SET stock_disponible = %s WHERE id = %s"
-        self.base_datos.ejecutar_consulta(consulta, (nuevo_stock, producto_id))
+        # Incrementar stock (ambas columnas para consistencia)
+        nuevo_stock = stock_actual + cantidad
+        consulta = "UPDATE productos SET stock = %s, stock_disponible = %s WHERE id = %s"
+        self.base_datos.ejecutar_consulta(consulta, (nuevo_stock, nuevo_stock, producto_id))
         
         # Marcar como devuelto en inventario
         self._marcar_devuelto(producto_id, evento_id)
+        
+        # Registrar en cardex (movimientos_inventario)
+        self.registrar_movimiento(
+            producto_id=producto_id, tipo_movimiento='devolucion', cantidad=cantidad,
+            stock_anterior=stock_actual, stock_nuevo=nuevo_stock,
+            motivo=f"Devolución de evento #{evento_id}",
+            referencia_tipo='devolucion', referencia_id=evento_id
+        )
         
         return True, None
     

@@ -29,6 +29,7 @@ import {
   Bell,
   AlertTriangle,
   Star,
+  Landmark,
 } from 'lucide-react';
 
 const Reportes = ({
@@ -42,6 +43,7 @@ const Reportes = ({
   const [resumenFinanciero, setResumenFinanciero] = useState(null);
   const [resumenDanos, setResumenDanos] = useState(null);
   const [resumenCalificaciones, setResumenCalificaciones] = useState(null);
+  const [pagosPorCuenta, setPagosPorCuenta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [descargando, setDescargando] = useState(null);
@@ -79,18 +81,20 @@ const Reportes = ({
       if (desde) params.fecha_desde = desde;
       if (hasta) params.fecha_hasta = hasta;
       
-      const [metricasData, eventosData, resumenData, danosData, calificacionesData] = await Promise.all([
+      const [metricasData, eventosData, resumenData, danosData, calificacionesData, pagosCuentaData] = await Promise.all([
         reportesService.getMetricas(params),
         reportesService.getEventosPorEstado().catch(() => null),
         reportesService.getResumenFinanciero().catch(() => null),
         reportesService.getResumenDanos(params).catch(() => null),
         reportesService.getResumenCalificaciones(params).catch(() => null),
+        reportesService.getPagosPorCuenta(params).catch(() => null),
       ]);
       setMetricas(metricasData.metricas);
       setEventosPorEstado(eventosData?.resumen || null);
       setResumenFinanciero(resumenData?.resumen_financiero || null);
       setResumenDanos(danosData?.resumen || null);
       setResumenCalificaciones(calificacionesData?.resumen || null);
+      setPagosPorCuenta(pagosCuentaData || null);
       setError('');
     } catch (err) {
       const errorMessage =
@@ -1167,6 +1171,132 @@ const Reportes = ({
           </button>
         </div>
       </div>
+
+      {/* Sección de Pagos por Cuenta */}
+      {pagosPorCuenta && pagosPorCuenta.pagos_por_cuenta && pagosPorCuenta.pagos_por_cuenta.length > 0 && (
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '0.75rem',
+          border: '1px solid #e5e7eb',
+          padding: isMobile ? '1rem' : '1.5rem',
+          marginTop: '1.5rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: '2.5rem',
+              height: '2.5rem',
+              borderRadius: '0.5rem',
+              backgroundColor: '#eef2ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Landmark size={20} color="#4f46e5" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0, color: '#111827' }}>
+                Pagos por Cuenta Destino
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: 0 }}>
+                Distribución de ingresos por cuenta bancaria
+              </p>
+            </div>
+          </div>
+
+          {/* Totales */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            backgroundColor: '#f9fafb',
+            borderRadius: '0.5rem',
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '600' }}>Total Ingresos</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981' }}>
+                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(pagosPorCuenta.total_ingresos || 0)}
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '600' }}>Total Reembolsos</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#ef4444' }}>
+                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(pagosPorCuenta.total_reembolsos || 0)}
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '600' }}>Neto Total</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#4f46e5' }}>
+                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(pagosPorCuenta.total_general || 0)}
+              </div>
+            </div>
+          </div>
+
+          {/* Tabla de cuentas */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>Cuenta</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>Tipo</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>Pagos</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>Ingresos</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>Reembolsos</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>Neto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pagosPorCuenta.pagos_por_cuenta.map((cuenta) => (
+                  <tr key={cuenta.cuenta_id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <td style={{ padding: '0.75rem' }}>
+                      <div style={{ fontWeight: '600', color: '#111827', fontSize: '0.875rem' }}>{cuenta.nombre_cuenta}</div>
+                      {cuenta.numero_cuenta && (
+                        <div style={{ fontSize: '0.75rem', color: '#6b7280', fontFamily: 'monospace' }}>{cuenta.numero_cuenta}</div>
+                      )}
+                    </td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <span style={{
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.7rem',
+                        fontWeight: '500',
+                        backgroundColor:
+                          cuenta.tipo_cuenta === 'ahorros' ? '#dbeafe' :
+                          cuenta.tipo_cuenta === 'corriente' ? '#e0f2fe' :
+                          cuenta.tipo_cuenta === 'digital' ? '#f3e8ff' :
+                          cuenta.tipo_cuenta === 'efectivo' ? '#dcfce7' : '#f3f4f6',
+                        color:
+                          cuenta.tipo_cuenta === 'ahorros' ? '#1d4ed8' :
+                          cuenta.tipo_cuenta === 'corriente' ? '#0369a1' :
+                          cuenta.tipo_cuenta === 'digital' ? '#7c3aed' :
+                          cuenta.tipo_cuenta === 'efectivo' ? '#16a34a' : '#6b7280',
+                      }}>
+                        {cuenta.tipo_cuenta === 'ahorros' ? 'Ahorros' :
+                         cuenta.tipo_cuenta === 'corriente' ? 'Corriente' :
+                         cuenta.tipo_cuenta === 'digital' ? 'Digital' :
+                         cuenta.tipo_cuenta === 'efectivo' ? 'Efectivo' : cuenta.tipo_cuenta}
+                      </span>
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
+                      {cuenta.total_pagos}
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', color: '#10b981', fontWeight: '500' }}>
+                      {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(cuenta.total_ingresos)}
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', color: '#ef4444', fontWeight: '500' }}>
+                      {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(cuenta.total_reembolsos)}
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', color: '#4f46e5', fontWeight: '700' }}>
+                      {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(cuenta.total_neto)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

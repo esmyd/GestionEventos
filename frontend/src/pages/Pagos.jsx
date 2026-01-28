@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { pagosService, eventosService } from '../services/api';
+import { pagosService, eventosService, cuentasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
-import { Plus, Search, DollarSign, Eye, Trash2, X, Save, AlertCircle, Calendar, User, FileText } from 'lucide-react';
+import { Plus, Search, DollarSign, Eye, Trash2, X, Save, AlertCircle, Calendar, User, FileText, Landmark, Edit2 } from 'lucide-react';
 import { hasPermission, hasRole, PERMISSIONS, ROLES } from '../utils/roles';
 
 const Pagos = () => {
@@ -14,6 +14,7 @@ const Pagos = () => {
   const isMobile = useIsMobile();
   const [pagos, setPagos] = useState([]);
   const [eventos, setEventos] = useState([]);
+  const [cuentas, setCuentas] = useState([]);
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
   const [totalPagado, setTotalPagado] = useState(0);
   const [totalReembolsosEvento, setTotalReembolsosEvento] = useState(0);
@@ -35,8 +36,12 @@ const Pagos = () => {
   const [mostrarModalRegistrar, setMostrarModalRegistrar] = useState(false);
   const [mostrarModalDetalle, setMostrarModalDetalle] = useState(false);
   const [mostrarConfirmReembolso, setMostrarConfirmReembolso] = useState(false);
+  const [mostrarModalCuenta, setMostrarModalCuenta] = useState(false);
   const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
+  const [pagoParaCuenta, setPagoParaCuenta] = useState(null);
+  const [cuentaSeleccionada, setCuentaSeleccionada] = useState('');
   const [actualizandoEstado, setActualizandoEstado] = useState(false);
+  const [actualizandoCuenta, setActualizandoCuenta] = useState(false);
 
   // Estados para formulario
   const [formData, setFormData] = useState({
@@ -85,7 +90,17 @@ const Pagos = () => {
 
   useEffect(() => {
     cargarEventos();
+    cargarCuentas();
   }, [usuario?.id]);
+
+  const cargarCuentas = async () => {
+    try {
+      const data = await cuentasService.getAll();
+      setCuentas(data.cuentas || []);
+    } catch (err) {
+      console.error('Error al cargar cuentas:', err);
+    }
+  };
 
   useEffect(() => {
     if (filtroEvento) {
@@ -185,13 +200,12 @@ const Pagos = () => {
     if (!fecha) return '-';
     try {
       const fechaObj = parseFechaLocal(fecha);
-      return fechaObj.toLocaleString('es-CO', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const year = fechaObj.getFullYear();
+      const month = String(fechaObj.getMonth() + 1).padStart(2, '0');
+      const day = String(fechaObj.getDate()).padStart(2, '0');
+      const hours = String(fechaObj.getHours()).padStart(2, '0');
+      const minutes = String(fechaObj.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
     } catch {
       return fecha;
     }
@@ -382,6 +396,37 @@ const Pagos = () => {
     }
   };
 
+  const abrirModalCuenta = (pago) => {
+    setPagoParaCuenta(pago);
+    setCuentaSeleccionada(pago.cuenta_id || '');
+    setMostrarModalCuenta(true);
+  };
+
+  const cerrarModalCuenta = () => {
+    setMostrarModalCuenta(false);
+    setPagoParaCuenta(null);
+    setCuentaSeleccionada('');
+  };
+
+  const actualizarCuentaPago = async () => {
+    if (!pagoParaCuenta || !cuentaSeleccionada) {
+      showError('Debe seleccionar una cuenta');
+      return;
+    }
+    try {
+      setActualizandoCuenta(true);
+      await pagosService.updateCuenta(pagoParaCuenta.id, parseInt(cuentaSeleccionada));
+      await cargarPagos();
+      success('Cuenta del pago actualizada correctamente');
+      cerrarModalCuenta();
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'No se pudo actualizar la cuenta';
+      showError(errorMessage);
+    } finally {
+      setActualizandoCuenta(false);
+    }
+  };
+
   const cerrarModalEliminar = () => {
     setPagoSeleccionado(null);
   };
@@ -447,6 +492,30 @@ const Pagos = () => {
   };
   const tieneSaldoPendiente = calcularSaldoPendiente() > 0;
   const eventoCancelado = eventoSeleccionado?.estado === 'cancelado';
+
+  // Determinar tipo de pago automáticamente según el monto
+  const determinarTipoPago = (monto) => {
+    if (!monto || parseFloat(monto) <= 0) return 'abono';
+    const montoNum = parseFloat(monto);
+    const saldoPendiente = calcularSaldoPendiente();
+    // Si el monto cubre el saldo pendiente o más, es pago completo
+    if (montoNum >= saldoPendiente && saldoPendiente > 0) {
+      return 'pago_completo';
+    }
+    return 'abono';
+  };
+
+  // Manejar cambio de monto con tipo de pago automático
+  const handleMontoChange = (e) => {
+    const nuevoMonto = e.target.value;
+    // Solo actualizar tipo automáticamente si no es reembolso
+    if (formData.tipo_pago !== 'reembolso') {
+      const nuevoTipo = determinarTipoPago(nuevoMonto);
+      setFormData({ ...formData, monto: nuevoMonto, tipo_pago: nuevoTipo });
+    } else {
+      setFormData({ ...formData, monto: nuevoMonto });
+    }
+  };
 
   const abrirAdicionalesEvento = () => {
     if (!eventoSeleccionado) return;
@@ -1365,6 +1434,9 @@ const Pagos = () => {
                       Método
                     </th>
                     <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                      Cuenta Destino
+                    </th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                       Estado
                     </th>
                     <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
@@ -1387,7 +1459,7 @@ const Pagos = () => {
                 <tbody>
                   {pagosFiltrados.length === 0 ? (
                     <tr>
-                      <td colSpan="10" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                      <td colSpan="11" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
                         No hay pagos que coincidan con los filtros
                       </td>
                     </tr>
@@ -1425,6 +1497,9 @@ const Pagos = () => {
                           </span>
                         </td>
                         <td style={{ padding: '1rem' }}>{pago.metodo_pago || '-'}</td>
+                        <td style={{ padding: '1rem', fontSize: '0.85rem', color: '#4f46e5', fontWeight: '500' }}>
+                          {pago.nombre_cuenta || '-'}
+                        </td>
                         <td style={{ padding: '1rem' }}>
                           <span
                             style={{
@@ -1507,6 +1582,28 @@ const Pagos = () => {
                             >
                               <Eye size={16} />
                             </button>
+                            {puedeRegistrar && (
+                              <button
+                                onClick={() => abrirModalCuenta(pago)}
+                                style={{
+                                  padding: '0.5rem',
+                                  backgroundColor: '#4f46e5',
+                                  color: 'white',
+                                  borderRadius: '0.375rem',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'background-color 0.2s',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#4338ca')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#4f46e5')}
+                                title="Cambiar Cuenta"
+                              >
+                                <Landmark size={16} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1609,24 +1706,37 @@ const Pagos = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                      Tipo de Pago <span style={{ color: '#ef4444' }}>*</span>
+                      Tipo de Pago <span style={{ color: '#6b7280', fontWeight: '400', fontSize: '0.8rem' }}>(automático)</span>
                     </label>
-                    <select
-                      value={formData.tipo_pago}
-                      onChange={(e) => setFormData({ ...formData, tipo_pago: e.target.value })}
-                      required
+                    <div
                       style={{
                         width: '100%',
                         padding: '0.75rem',
                         border: '1px solid #d1d5db',
                         borderRadius: '0.375rem',
                         fontSize: '1rem',
+                        backgroundColor: formData.tipo_pago === 'reembolso' ? '#fef2f2' : formData.tipo_pago === 'pago_completo' ? '#f0fdf4' : '#eff6ff',
+                        color: formData.tipo_pago === 'reembolso' ? '#dc2626' : formData.tipo_pago === 'pago_completo' ? '#16a34a' : '#2563eb',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
-                      <option value="abono">Abono</option>
-                      <option value="pago_completo">Pago Completo</option>
-                      <option value="reembolso">Reembolso</option>
-                    </select>
+                      <span>
+                        {formData.tipo_pago === 'abono' ? 'Abono' : formData.tipo_pago === 'pago_completo' ? 'Pago Completo' : 'Reembolso'}
+                      </span>
+                      {formData.tipo_pago !== 'reembolso' && (
+                        <span style={{ fontSize: '0.7rem', color: '#6b7280', fontWeight: '400' }}>
+                          Saldo: {formatearMoneda(calcularSaldoPendiente())}
+                        </span>
+                      )}
+                    </div>
+                    {formData.tipo_pago === 'pago_completo' && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#16a34a' }}>
+                        El monto cubre el saldo pendiente del evento.
+                      </div>
+                    )}
                     {formData.tipo_pago === 'reembolso' && (
                       <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#ef4444' }}>
                         Este reembolso se descontará del total pagado y requiere confirmación.
@@ -1670,7 +1780,7 @@ const Pagos = () => {
                       step="0.01"
                       min="0.01"
                       value={formData.monto}
-                      onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+                      onChange={handleMontoChange}
                       required
                       style={{
                         width: '100%',
@@ -1931,6 +2041,18 @@ const Pagos = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    Cuenta Destino
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Landmark size={18} color="#4f46e5" />
+                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>
+                      {pagoSeleccionado.nombre_cuenta || 'Sin cuenta asignada'}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
                     Origen
                   </label>
                   <span
@@ -1993,7 +2115,7 @@ const Pagos = () => {
                   </button>
                   <button
                     onClick={() => cambiarEstadoPago(pagoSeleccionado, 'aprobado')}
-                    disabled={actualizandoEstado}
+                    disabled={actualizandoEstado || !puedeAprobar}
                     style={{
                       padding: '0.75rem 1.5rem',
                       backgroundColor: '#10b981',
@@ -2004,7 +2126,6 @@ const Pagos = () => {
                       fontWeight: '500',
                       opacity: actualizandoEstado || !puedeAprobar ? 0.7 : 1,
                     }}
-                    disabled={actualizandoEstado || !puedeAprobar}
                   >
                     Aprobar
                   </button>
@@ -2106,6 +2227,153 @@ const Pagos = () => {
                 }}
               >
                 Confirmar reembolso
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cambiar Cuenta */}
+      {mostrarModalCuenta && pagoParaCuenta && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={cerrarModalCuenta}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '0.5rem',
+              padding: '1.5rem',
+              width: '90%',
+              maxWidth: '450px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: '2.5rem',
+                  height: '2.5rem',
+                  borderRadius: '0.5rem',
+                  backgroundColor: '#eef2ff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Landmark size={20} color="#4f46e5" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0, color: '#111827' }}>
+                    Cambiar Cuenta Destino
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: 0 }}>
+                    Pago #{pagoParaCuenta.id} - {formatearMoneda(pagoParaCuenta.monto)}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={cerrarModalCuenta}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.5rem',
+                }}
+              >
+                <X size={24} color="#6b7280" />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                Cuenta Actual
+              </label>
+              <div style={{
+                padding: '0.75rem',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '0.375rem',
+                fontSize: '0.9rem',
+                color: '#6b7280',
+              }}>
+                {pagoParaCuenta.nombre_cuenta || 'Sin cuenta asignada'}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                Nueva Cuenta <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <select
+                value={cuentaSeleccionada}
+                onChange={(e) => setCuentaSeleccionada(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  fontSize: '1rem',
+                }}
+              >
+                <option value="">Seleccionar cuenta...</option>
+                {cuentas.map((cuenta) => (
+                  <option key={cuenta.id} value={cuenta.id}>
+                    {cuenta.nombre} {cuenta.numero_cuenta ? `- ${cuenta.numero_cuenta}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                onClick={cerrarModalCuenta}
+                disabled={actualizandoCuenta}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  cursor: actualizandoCuenta ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={actualizarCuentaPago}
+                disabled={actualizandoCuenta || !cuentaSeleccionada}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  backgroundColor: actualizandoCuenta || !cuentaSeleccionada ? '#9ca3af' : '#4f46e5',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  cursor: actualizandoCuenta || !cuentaSeleccionada ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                <Save size={16} />
+                {actualizandoCuenta ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
           </div>

@@ -64,6 +64,7 @@ class BaseDatos:
                 cursor.execute(consulta, parametros)
             else:
                 cursor.execute(consulta)
+            filas_afectadas = cursor.rowcount
             conexion.commit()
             cursor.close()
             
@@ -78,6 +79,10 @@ class BaseDatos:
                 except Exception:
                     # Ignorar errores al consumir resultados adicionales
                     pass
+            
+            # Para UPDATE/DELETE, verificar si se afectaron filas
+            if consulta.strip().upper().startswith(('UPDATE', 'DELETE')):
+                print(f"Filas afectadas: {filas_afectadas}")
             
             return True
         except Error as e:
