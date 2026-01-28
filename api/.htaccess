@@ -1,8 +1,0 @@
-# Configuración de Passenger solo para /api/*
-# Este archivo debe estar en: /GestionEventos/api/.htaccess
-
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-PassengerAppRoot "/home/siglotecno2/gestioneventos.siglotecnologico.com/GestionEventos"
-PassengerBaseURI "/api"
-PassengerPython "/home/siglotecno2/virtualenv/gestioneventos.siglotecnologico.com/GestionEventos/3.12/bin/python"
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END

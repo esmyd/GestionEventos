@@ -1,34 +1,8 @@
 import axios from 'axios';
 
-// Determinar la URL base de la API
-// En desarrollo: usa el proxy de Vite (/api)
-// En producción: usa la URL completa del backend
-const getApiBaseUrl = () => {
-  // Si hay variable de entorno, usarla
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // Si estamos en desarrollo, usar proxy
-  if (import.meta.env.DEV) {
-    return '/api';
-  }
-  
-  // En producción, detectar automáticamente la URL del backend
-  const hostname = window.location.hostname;
-  const protocol = window.location.protocol;
-  
-  // Si es localhost o desarrollo, usar proxy
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return '/api';
-  }
-  
-  // En producción, el backend está en gestioneventos.siglotecnologico.com
-  // y el frontend está en ge.siglotecnologico.com (dominio separado)
-  return 'https://gestioneventos.siglotecnologico.com/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+// Usar URL relativa para aprovechar el proxy de Vite en desarrollo
+// En producción, cambiar a la URL completa del servidor
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Crear instancia de axios
 const api = axios.create({
