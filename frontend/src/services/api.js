@@ -23,10 +23,9 @@ const getApiBaseUrl = () => {
     return '/api';
   }
   
-  // En producción, el backend Python está en el mismo dominio
-  // pero en la raíz del proyecto, mientras el frontend está en /frontend
-  // Usar ruta relativa para que el servidor web redirija /api al backend
-  return '/api';
+  // En producción, el backend está en gestioneventos.siglotecnologico.com
+  // y el frontend está en ge.siglotecnologico.com (dominio separado)
+  return 'https://gestioneventos.siglotecnologico.com/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

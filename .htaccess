@@ -1,22 +1,37 @@
-# Configuración en la raíz del proyecto
-# Este archivo debe estar en: /gestioneventos.siglotecnologico.com/GestionEventos/.htaccess
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/siglotecno2/gestioneventos.siglotecnologico.com/GestionEventos"
+PassengerBaseURI "/"
+PassengerPython "/home/siglotecno2/virtualenv/gestioneventos.siglotecnologico.com/GestionEventos/3.12/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
 
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
+<IfModule Litespeed>
+</IfModule>
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
+
+# Configuración para servir el frontend
 RewriteEngine On
 
-# Las peticiones /api/* son manejadas por el backend Python (WSGI/Passenger)
-# No redirigir /api, dejar que el backend Python las procese
+# Las peticiones /api/* son manejadas por Passenger (backend Python)
+# No hacer rewrite para /api, dejar que Passenger las procese
 RewriteCond %{REQUEST_URI} ^/api
-RewriteRule ^api/(.*)$ - [L]
+RewriteRule ^ - [L]
 
-# Para archivos estáticos del frontend (assets, etc.)
+# Si es un archivo estático (assets del frontend), servirlo directamente
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
-# Para rutas que no son /api y no son archivos, servir el frontend
+# Si es un directorio que existe, servirlo directamente  
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Para todas las demás rutas (frontend), servir desde frontend/dist
+RewriteCond %{REQUEST_URI} !^/api
+RewriteCond %{REQUEST_URI} !^/frontend
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/api
-RewriteRule ^(.*)$ frontend/$1 [L]
+RewriteRule ^(.*)$ frontend/dist/$1 [L]
 
 # Si la petición es la raíz, servir index.html del frontend
-RewriteRule ^$ frontend/index.html [L]
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule ^$ frontend/dist/index.html [L]
