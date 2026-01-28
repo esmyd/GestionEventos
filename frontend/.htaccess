@@ -1,0 +1,15 @@
+# Configuración para servir el frontend React y redirigir API al backend Python
+
+# Habilitar rewrite engine
+RewriteEngine On
+
+# Redirigir todas las peticiones /api/* al backend Python
+# Ajustar la URL según donde esté configurado tu backend en Banahost
+RewriteRule ^api/(.*)$ https://gestioneventos.siglotecnologico.com/api/$1 [P,L]
+
+# Para archivos estáticos (assets, imágenes, etc.), servirlos normalmente
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Para todas las demás rutas, servir index.html (SPA routing)
+RewriteRule . /index.html [L]

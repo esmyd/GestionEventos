@@ -163,8 +163,8 @@ const Inventario = () => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         const alertCount = tab.id === 'alertas' ? productosConAlerta.length : 0;
-        
-        return (
+
+  return (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -229,7 +229,7 @@ const Inventario = () => {
               fontSize: '0.95rem'
             }}
           />
-        </div>
+      </div>
         <button
           onClick={() => cargarProductos()}
           style={{
@@ -568,7 +568,7 @@ const Inventario = () => {
           <button
             onClick={handleRecalcular}
             disabled={recalculando}
-            style={{
+          style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
@@ -578,7 +578,7 @@ const Inventario = () => {
               border: 'none',
               borderRadius: '0.5rem',
               cursor: recalculando ? 'wait' : 'pointer',
-              fontSize: '0.875rem',
+            fontSize: '0.875rem',
               opacity: recalculando ? 0.7 : 1
             }}
           >
@@ -676,7 +676,7 @@ const Inventario = () => {
                             padding: '0.2rem 0.5rem',
                             borderRadius: '9999px',
                             fontSize: '0.7rem',
-                            fontWeight: '500',
+            fontWeight: '500',
                             backgroundColor: `${tipoColor}15`,
                             color: tipoColor,
                             textTransform: 'capitalize'
@@ -875,8 +875,8 @@ const Inventario = () => {
       {filtroEvento && (
         <div style={{
           backgroundColor: 'white',
-          borderRadius: '0.5rem',
-          border: '1px solid #e5e7eb',
+            borderRadius: '0.5rem',
+            border: '1px solid #e5e7eb',
           overflow: 'hidden'
         }}>
           {inventarioEvento.length === 0 ? (
@@ -931,37 +931,37 @@ const Inventario = () => {
           )}
         </div>
       )}
-    </div>
+          </div>
   );
 
   const renderAlertas = () => (
     <div>
       {productosConAlerta.length === 0 ? (
         <div style={{
-          backgroundColor: 'white',
+            backgroundColor: 'white',
           padding: '3rem',
-          borderRadius: '0.5rem',
-          border: '1px solid #e5e7eb',
+            borderRadius: '0.5rem',
+            border: '1px solid #e5e7eb',
           textAlign: 'center',
           color: '#6b7280'
         }}>
           <AlertTriangle size={48} style={{ margin: '0 auto 1rem', opacity: 0.5, color: '#10b981' }} />
           <p style={{ fontWeight: '600', color: '#10b981' }}>Todo en orden</p>
           <p>No hay productos con stock bajo o agotado</p>
-        </div>
-      ) : (
+                </div>
+              ) : (
         <div style={{
           backgroundColor: 'white',
           borderRadius: '0.5rem',
-          border: '1px solid #e5e7eb',
+                      border: '1px solid #e5e7eb',
           overflow: 'hidden'
         }}>
           <div style={{ padding: '1rem', backgroundColor: '#fef3c7', borderBottom: '1px solid #fcd34d' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#92400e' }}>
               <AlertTriangle size={20} />
               <span style={{ fontWeight: '600' }}>{productosConAlerta.length} producto(s) requieren atención</span>
-            </div>
-          </div>
+                      </div>
+                    </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
@@ -998,10 +998,10 @@ const Inventario = () => {
                     <td style={{ padding: '1rem', textAlign: 'center', color: '#6b7280' }}>{stockMin}</td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                       <span style={{
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: '9999px',
-                        fontSize: '0.75rem',
-                        fontWeight: '500',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
                         backgroundColor: agotado ? '#fee2e2' : '#fef3c7',
                         color: agotado ? '#ef4444' : '#f59e0b'
                       }}>
@@ -1037,9 +1037,9 @@ const Inventario = () => {
               })}
             </tbody>
           </table>
-        </div>
-      )}
-    </div>
+                                </div>
+                              )}
+                            </div>
   );
 
   const renderModal = () => {
@@ -1118,7 +1118,7 @@ const Inventario = () => {
                 fontSize: '1rem'
               }}
             />
-          </div>
+                          </div>
           
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
             <button
@@ -1128,7 +1128,7 @@ const Inventario = () => {
                 setCantidadAjuste('');
                 setMotivoAjuste('');
               }}
-              style={{
+                            style={{
                 padding: '0.75rem 1.25rem',
                 backgroundColor: '#f3f4f6',
                 border: '1px solid #d1d5db',
@@ -1139,22 +1139,22 @@ const Inventario = () => {
             >
               Cancelar
             </button>
-            <button
+                          <button
               onClick={handleAjusteStock}
               disabled={!cantidadAjuste || parseInt(cantidadAjuste) <= 0}
-              style={{
+                            style={{
                 padding: '0.75rem 1.25rem',
                 backgroundColor: tipoAjuste === 'entrada' ? '#10b981' : '#ef4444',
-                color: 'white',
+                              color: 'white',
                 border: 'none',
-                borderRadius: '0.375rem',
-                cursor: 'pointer',
-                fontWeight: '500',
+                              borderRadius: '0.375rem',
+                              cursor: 'pointer',
+                              fontWeight: '500',
                 opacity: (!cantidadAjuste || parseInt(cantidadAjuste) <= 0) ? 0.5 : 1
-              }}
-            >
+                            }}
+                          >
               {tipoAjuste === 'entrada' ? 'Registrar Entrada' : 'Registrar Salida'}
-            </button>
+                          </button>
           </div>
         </div>
       </div>
@@ -1172,7 +1172,7 @@ const Inventario = () => {
           Inventario
         </h1>
         <p style={{ color: '#6b7280' }}>Control de stock, movimientos y alertas</p>
-      </div>
+            </div>
 
       {error && (
         <div style={{

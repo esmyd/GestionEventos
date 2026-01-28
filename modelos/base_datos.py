@@ -22,7 +22,10 @@ class BaseDatos:
             conexion = mysql.connector.connect(**DB_CONFIG)
             if conexion.is_connected():
                 self._thread_local.conexion = conexion
-                print("Conexión exitosa a MySQL")
+                # Solo mostrar en desarrollo
+                from config import IS_PRODUCTION
+                if not IS_PRODUCTION:
+                    print("Conexión exitosa a MySQL")
                 return True
         except Error as e:
             print(f"Error al conectar a MySQL: {e}")

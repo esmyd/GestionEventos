@@ -1,8 +1,43 @@
 import axios from 'axios';
 
-// Usar URL relativa para aprovechar el proxy de Vite en desarrollo
-// En producción, cambiar a la URL completa del servidor
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// Determinar la URL base de la API
+// En desarrollo: usa el proxy de Vite (/api)
+// En producción: usa la URL completa del backend
+const getApiBaseUrl = () => {
+  // Si hay variable de entorno, usarla
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Si estamos en desarrollo, usar proxy
+  if (import.meta.env.DEV) {
+    return '/api';
+  }
+  
+  // En producción, detectar automáticamente la URL del backend
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol;
+  
+  // Si es localhost o desarrollo, usar proxy
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return '/api';
+  }
+  
+  // En producción, usar la URL completa del backend Python
+  // IMPORTANTE: Cambiar esta URL por la URL real de tu backend en Banahost
+  // 
+  // OPCIÓN A: Si el backend está en el mismo dominio (ej: siglotecnologico.com)
+  // y el servidor web redirige /api al backend:
+  return '/api';
+  
+  // OPCIÓN B: Si el backend está en un subdominio diferente:
+  // return `${protocol}//api.${hostname}/api`;
+  
+  // OPCIÓN C: Si el backend está en una URL específica de Banahost:
+  // return 'https://gestioneventos.siglotecnologico.com/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Crear instancia de axios
 const api = axios.create({

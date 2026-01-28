@@ -8,6 +8,10 @@ import os
 import sys
 from datetime import datetime
 
+def get_timestamp():
+    """Retorna timestamp formateado sin microsegundos"""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
@@ -26,14 +30,14 @@ def procesar_reintentos_whatsapp(limite=50, debug=False):
         resultado = servicio.procesar_reintentos(limite=limite)
         
         if resultado['total'] > 0:
-            print(f"[{datetime.now()}] Reintentos WhatsApp: {resultado['exitosos']} exitosos, "
+            print(f"[{get_timestamp()}] Reintentos WhatsApp: {resultado['exitosos']} exitosos, "
                   f"{resultado['fallidos']} fallidos, {resultado['no_reintentables']} no reintentables")
         elif debug:
-            print(f"[{datetime.now()}] No hay mensajes WhatsApp pendientes de reintento")
+            print(f"[{get_timestamp()}] No hay mensajes WhatsApp pendientes de reintento")
         
         return resultado
     except Exception as e:
-        print(f"[{datetime.now()}] Error procesando reintentos WhatsApp: {e}")
+        print(f"[{get_timestamp()}] Error procesando reintentos WhatsApp: {e}")
         return {'total': 0, 'exitosos': 0, 'fallidos': 0, 'no_reintentables': 0}
 
 
@@ -45,12 +49,12 @@ def main():
     parser.add_argument("--sin-reintentos", action="store_true", help="No procesar reintentos de WhatsApp")
     args = parser.parse_args()
 
-    print(f"[{datetime.now()}] Iniciando procesamiento de notificaciones...")
+    print(f"[{get_timestamp()}] Iniciando procesamiento de notificaciones...")
     
     # Si solo quiere procesar reintentos
     if args.solo_reintentos:
         resultado_reintentos = procesar_reintentos_whatsapp(args.limite, args.debug)
-        print(f"[{datetime.now()}] Procesamiento de reintentos finalizado.")
+        print(f"[{get_timestamp()}] Procesamiento de reintentos finalizado.")
         return
     
     modelo = NotificacionModeloV2()
@@ -59,7 +63,7 @@ def main():
     resultado = modelo.generar_notificaciones_programadas()
     if resultado is None:
         # Fallback a procesamiento directo si no existe procedimiento en DB
-        print(f"[{datetime.now()}] Procedimiento generar_notificaciones_programadas no disponible. Usando fallback.")
+        print(f"[{get_timestamp()}] Procedimiento generar_notificaciones_programadas no disponible. Usando fallback.")
         sistema = SistemaNotificaciones()
         if args.debug:
             try:
@@ -79,15 +83,15 @@ def main():
         try:
             EventoModelo().actualizar_eventos_finalizados()
         except Exception as e:
-            print(f"[{datetime.now()}] Error al actualizar estados por fecha: {e}")
-        print(f"[{datetime.now()}] Fallback completado. Total enviadas: {total}")
+            print(f"[{get_timestamp()}] Error al actualizar estados por fecha: {e}")
+        print(f"[{get_timestamp()}] Fallback completado. Total enviadas: {total}")
         
         # Procesar reintentos de WhatsApp (a menos que se haya desactivado)
         if not args.sin_reintentos:
-            print(f"[{datetime.now()}] Procesando reintentos de WhatsApp...")
+            print(f"[{get_timestamp()}] Procesando reintentos de WhatsApp...")
             procesar_reintentos_whatsapp(args.limite, args.debug)
         
-        print(f"[{datetime.now()}] Procesamiento completo finalizado.")
+        print(f"[{get_timestamp()}] Procesamiento completo finalizado.")
         return
 
     if args.debug:
@@ -105,15 +109,15 @@ def main():
     try:
         EventoModelo().actualizar_eventos_finalizados()
     except Exception as e:
-        print(f"[{datetime.now()}] Error al actualizar estados por fecha: {e}")
-    print(f"[{datetime.now()}] Notificaciones procesadas. Enviadas: {enviados}, Errores: {errores}")
+        print(f"[{get_timestamp()}] Error al actualizar estados por fecha: {e}")
+    print(f"[{get_timestamp()}] Notificaciones procesadas. Enviadas: {enviados}, Errores: {errores}")
     
     # Procesar reintentos de WhatsApp (a menos que se haya desactivado)
     if not args.sin_reintentos:
-        print(f"[{datetime.now()}] Procesando reintentos de WhatsApp...")
+        print(f"[{get_timestamp()}] Procesando reintentos de WhatsApp...")
         resultado_reintentos = procesar_reintentos_whatsapp(args.limite, args.debug)
     
-    print(f"[{datetime.now()}] Procesamiento completo finalizado.")
+    print(f"[{get_timestamp()}] Procesamiento completo finalizado.")
 
 
 if __name__ == "__main__":
