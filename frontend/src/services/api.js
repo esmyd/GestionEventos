@@ -23,18 +23,10 @@ const getApiBaseUrl = () => {
     return '/api';
   }
   
-  // En producción, usar la URL completa del backend Python
-  // IMPORTANTE: Cambiar esta URL por la URL real de tu backend en Banahost
-  // 
-  // OPCIÓN A: Si el backend está en el mismo dominio (ej: siglotecnologico.com)
-  // y el servidor web redirige /api al backend:
+  // En producción, el backend Python está en el mismo dominio
+  // pero en la raíz del proyecto, mientras el frontend está en /frontend
+  // Usar ruta relativa para que el servidor web redirija /api al backend
   return '/api';
-  
-  // OPCIÓN B: Si el backend está en un subdominio diferente:
-  // return `${protocol}//api.${hostname}/api`;
-  
-  // OPCIÓN C: Si el backend está en una URL específica de Banahost:
-  // return 'https://gestioneventos.siglotecnologico.com/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

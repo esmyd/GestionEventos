@@ -1,0 +1,22 @@
+# Configuración en la raíz del proyecto
+# Este archivo debe estar en: /gestioneventos.siglotecnologico.com/GestionEventos/.htaccess
+
+RewriteEngine On
+
+# Las peticiones /api/* son manejadas por el backend Python (WSGI/Passenger)
+# No redirigir /api, dejar que el backend Python las procese
+RewriteCond %{REQUEST_URI} ^/api
+RewriteRule ^api/(.*)$ - [L]
+
+# Para archivos estáticos del frontend (assets, etc.)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Para rutas que no son /api y no son archivos, servir el frontend
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api
+RewriteRule ^(.*)$ frontend/$1 [L]
+
+# Si la petición es la raíz, servir index.html del frontend
+RewriteRule ^$ frontend/index.html [L]
