@@ -18,13 +18,15 @@ class SalonModelo:
         INSERT INTO salones (nombre, capacidad, ubicacion, descripcion, precio_base, activo)
         VALUES (%s, %s, %s, %s, %s, %s)
         """
+        activo_val = datos_salon.get('activo', True)
+        activo_db = 1 if (activo_val is True or activo_val == 1 or str(activo_val).lower() == 'true') else 0
         parametros = (
             datos_salon['nombre'],
             datos_salon['capacidad'],
             datos_salon.get('ubicacion'),
             datos_salon.get('descripcion'),
             datos_salon.get('precio_base', 0),
-            datos_salon.get('activo', True)
+            activo_db
         )
         if self.base_datos.ejecutar_consulta(consulta, parametros):
             salon_id = self.base_datos.obtener_ultimo_id()
@@ -52,13 +54,15 @@ class SalonModelo:
             precio_base = %s, activo = %s
         WHERE id_salon = %s
         """
+        activo_val = datos_salon.get('activo', True)
+        activo_db = 1 if (activo_val is True or activo_val == 1 or str(activo_val).lower() == 'true') else 0
         parametros = (
             datos_salon['nombre'],
             datos_salon['capacidad'],
             datos_salon.get('ubicacion'),
             datos_salon.get('descripcion'),
             datos_salon.get('precio_base', 0),
-            datos_salon.get('activo', True),
+            activo_db,
             salon_id
         )
         return self.base_datos.ejecutar_consulta(consulta, parametros)

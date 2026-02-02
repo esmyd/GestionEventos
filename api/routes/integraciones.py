@@ -15,7 +15,7 @@ modelo = IntegracionModelo()
 
 @integraciones_bp.route("/whatsapp", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_rol("administrador", "gerente_general", "administrador_sistema")
 def obtener_whatsapp():
     try:
         integracion = modelo.obtener_integracion("whatsapp")
@@ -27,7 +27,7 @@ def obtener_whatsapp():
 
 @integraciones_bp.route("/whatsapp", methods=["PUT"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_rol("administrador", "gerente_general", "administrador_sistema")
 def actualizar_whatsapp():
     try:
         data = request.get_json() or {}
@@ -35,6 +35,7 @@ def actualizar_whatsapp():
             "access_token": data.get("access_token", "").strip(),
             "phone_number_id": data.get("phone_number_id", "").strip(),
             "business_id": data.get("business_id", "").strip(),
+            "waba_id": data.get("waba_id", "").strip() or None,
             "api_version": data.get("api_version", "v18.0").strip(),
             "verify_token": data.get("verify_token", "").strip(),
         }

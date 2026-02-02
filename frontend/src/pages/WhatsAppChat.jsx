@@ -673,6 +673,34 @@ const WhatsAppChat = () => {
               >
                 {isMobile ? 'Reset' : 'Reiniciar'}
               </button>
+              {seleccion?.requiere_reengagement && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await whatsappChatService.reenviarFallidos(seleccion.id);
+                      success('Plantilla enviada y mensajes fallidos reenviados');
+                      cargarConversaciones(true);
+                      if (seleccion?.id) cargarMensajes(seleccion.id);
+                    } catch (err) {
+                      showError(err.response?.data?.error || 'No se pudo reenviar');
+                    }
+                  }}
+                  style={{
+                    padding: isMobile ? '0.35rem 0.6rem' : '0.4rem 0.75rem',
+                    borderRadius: '6px',
+                    border: '1px solid #5c3d3d',
+                    background: '#5c3d3d',
+                    color: '#f15c6d',
+                    cursor: 'pointer',
+                    fontSize: isMobile ? '0.75rem' : '0.8rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {isMobile ? 'Reenviar 24h' : 'Enviar plantilla y reenviar mensajes'}
+                </button>
+              )}
             </div>
           </div>
 

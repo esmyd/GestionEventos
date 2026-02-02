@@ -11,6 +11,7 @@ const IntegracionesWhatsApp = ({ embedded = false }) => {
     access_token: '',
     phone_number_id: '',
     business_id: '',
+    waba_id: '',
     api_version: 'v18.0',
     verify_token: '',
     activo: false,
@@ -27,6 +28,7 @@ const IntegracionesWhatsApp = ({ embedded = false }) => {
           access_token: integracion.configuracion?.access_token || '',
           phone_number_id: integracion.configuracion?.phone_number_id || '',
           business_id: integracion.configuracion?.business_id || '',
+          waba_id: integracion.configuracion?.waba_id || '',
           api_version: integracion.configuracion?.api_version || 'v18.0',
           verify_token: integracion.configuracion?.verify_token || '',
           activo: Boolean(integracion.activo),
@@ -131,6 +133,20 @@ const IntegracionesWhatsApp = ({ embedded = false }) => {
                 onChange={(e) => setFormData((prev) => ({ ...prev, business_id: e.target.value }))}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
               />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: '#374151' }}>
+                WABA ID <span style={{ color: '#9ca3af', fontWeight: 'normal' }}>(opcional, para Consumo Meta)</span>
+              </label>
+              <input
+                value={formData.waba_id}
+                onChange={(e) => setFormData((prev) => ({ ...prev, waba_id: e.target.value }))}
+                placeholder="ID de WhatsApp Business Account"
+                style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
+              />
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                Si Consumo Meta da error, añade aquí el WABA ID desde Meta Business Manager → Cuentas → WhatsApp Business Accounts.
+              </p>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: '#374151' }}>

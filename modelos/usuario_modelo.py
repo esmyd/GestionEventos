@@ -82,9 +82,19 @@ class UsuarioModelo:
         consulta = "SELECT * FROM usuarios WHERE rol = %s AND activo = TRUE ORDER BY nombre_completo"
         return self.base_datos.obtener_todos(consulta, (rol,))
 
+    ROLES_CONOCIDOS = (
+        'administrador_sistema',
+        'administrador',
+        'gerente_general',
+        'coordinador',
+        'cliente',
+    )
+
     def obtener_roles_disponibles(self):
-        """Obtiene los roles disponibles según los usuarios registrados"""
-        consulta = "SELECT DISTINCT rol FROM usuarios ORDER BY rol"
-        resultados = self.base_datos.obtener_todos(consulta)
-        return [r.get('rol') for r in resultados if r.get('rol')]
+        """Obtiene los roles disponibles: roles conocidos del sistema + los usados en usuarios"""
+        consulta = "SELECT DISTINCT rol FROM usuarios WHERE rol IS NOT NULL AND rol != '' ORDER BY rol"
+        resultados = self.base_datos.obtener_todos(consulta) or []
+        en_bd = {r.get('rol') for r in resultados if r.get('rol')}
+        todos = set(self.ROLES_CONOCIDOS) | en_bd
+        return sorted(todos)
 

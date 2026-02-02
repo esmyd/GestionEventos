@@ -68,6 +68,15 @@ class WhatsAppChatModelo:
         """
         return self.base_datos.ejecutar_consulta(consulta, (detalle, conversacion_id))
 
+    def limpiar_reengagement(self, conversacion_id):
+        """Quita el flag de requiere_reengagement tras enviar plantilla y reenviar mensajes."""
+        consulta = """
+        UPDATE whatsapp_conversaciones
+        SET requiere_reengagement = 0
+        WHERE id = %s
+        """
+        return self.base_datos.ejecutar_consulta(consulta, (conversacion_id,))
+
     def _asegurar_columna_no_leidos(self):
         """Asegura que exista la columna mensajes_no_leidos en whatsapp_conversaciones"""
         try:

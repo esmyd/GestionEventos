@@ -3,7 +3,7 @@ Rutas para gestión de clientes
 """
 from flask import Blueprint, request, jsonify
 from modelos.cliente_modelo import ClienteModelo
-from api.middleware import requiere_autenticacion, requiere_rol, obtener_usuario_actual
+from api.middleware import requiere_autenticacion, requiere_rol, obtener_usuario_actual, requiere_modulo, requiere_limite_no_excedido
 from utilidades.logger import obtener_logger
 
 clientes_bp = Blueprint('clientes', __name__)
@@ -47,6 +47,8 @@ def obtener_cliente(cliente_id):
 
 
 @clientes_bp.route('', methods=['POST'])
+@requiere_modulo('clientes')
+@requiere_limite_no_excedido('clientes')
 def crear_cliente():
     """Crea un nuevo cliente"""
     try:

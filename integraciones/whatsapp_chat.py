@@ -1,8 +1,10 @@
 """
 Servicio de chat WhatsApp: inbox, bot y respuestas automaticas
 """
+import json
 import random
 import re
+import time
 from datetime import datetime, timedelta
 from modelos.whatsapp_chat_modelo import WhatsAppChatModelo
 from modelos.cliente_modelo import ClienteModelo
@@ -300,9 +302,30 @@ class WhatsAppChatService:
     # Control de rate limit para plantillas de re-engagement por teléfono
     _reengagement_enviados = {}  # {telefono: timestamp}
     _REENGAGEMENT_COOLDOWN = 60  # segundos entre envíos al mismo teléfono
+    # Evitar bucle: no reenviar el mismo mensaje (id) por 131047 más de una vez en X minutos
+    _ultimo_reenvio_131047_por_mensaje_id = {}  # {mensaje_id: timestamp}
+    _REENVIO_131047_COOLDOWN = 300  # 5 minutos entre reenvíos del mismo mensaje por 131047
+
+    def _ya_envio_campana_hoy(self, telefono):
+        """True si ya enviamos al menos un mensaje de campaña a este teléfono hoy (máximo 1 por día)."""
+        telefono_norm = str(telefono).replace("+", "").replace(" ", "").replace("-", "")
+        consulta = """
+        SELECT COUNT(*) as total FROM whatsapp_mensajes wm
+        JOIN whatsapp_conversaciones wc ON wm.conversacion_id = wc.id
+        WHERE REPLACE(REPLACE(REPLACE(wc.telefono, '+', ''), ' ', ''), '-', '') = %s
+          AND wm.direccion = 'out' AND wm.origen = 'campana'
+          AND wm.fecha_creacion >= CURDATE()
+        """
+        row = self.modelo.base_datos.obtener_uno(consulta, (telefono_norm,))
+        return int(row.get("total") or 0) >= 1
 
     def _enviar_plantilla_reengagement(self, telefono, cliente_id=None):
         import time
+        
+        # Máximo una campaña por cliente por día (son caras)
+        if self._ya_envio_campana_hoy(telefono):
+            self.logger.info(f"No se envía campaña a {telefono}: ya se envió una hoy")
+            return False
         
         # Verificar si ya se envió recientemente a este teléfono (evitar bucles)
         ahora = time.time()
@@ -342,6 +365,13 @@ class WhatsAppChatService:
         # Registrar el envío para el rate limit (incluso si falla, para evitar spam)
         self._reengagement_enviados[telefono] = ahora
         
+        # Costo de campaña (marketing) para registrar
+        try:
+            config_precios = self.metricas.obtener_config() or {}
+            costo_campana = float(config_precios.get("precio_whatsapp_marketing") or config_precios.get("precio_whatsapp") or 0)
+        except Exception:
+            costo_campana = 0.0
+        
         conversacion = self.modelo.obtener_conversacion_por_telefono(telefono)
         if not conversacion:
             conversacion_id = self.modelo.crear_conversacion(telefono, cliente_id=cliente_id)
@@ -355,9 +385,22 @@ class WhatsAppChatService:
                 estado="sent" if ok else "fallido",
                 wa_message_id=wa_id,
                 origen="campana",
-                raw_json=error
+                raw_json=error,
+                costo_unitario=costo_campana,
+                costo_total=costo_campana
             )
         return ok
+
+    def _es_error_ventana(self, error):
+        """Indica si el error de WhatsApp es por ventana de 24h (código 131047)."""
+        if not error:
+            return False
+        try:
+            data = json.loads(error) if isinstance(error, str) else error
+            codigo = (data or {}).get("error", {}).get("code")
+            return int(codigo) == 131047
+        except Exception:
+            return False
 
     def _formato_evento(self, evento):
         return (
@@ -1081,7 +1124,9 @@ class WhatsAppChatService:
                         wa_message_id = status.get("id")
                         estado = status.get("status")
                         if wa_message_id and estado:
-                            self.modelo.actualizar_estado_por_wa_id_con_detalle(wa_message_id, estado, raw_json=status)
+                            # Normalizar 'failed' a 'fallido' para que el reenvío los encuentre
+                            estado_db = "fallido" if estado == "failed" else estado
+                            self.modelo.actualizar_estado_por_wa_id_con_detalle(wa_message_id, estado_db, raw_json=status)
                             if estado == "failed":
                                 errores = status.get("errors") or []
                                 error_131047 = False
@@ -1092,6 +1137,54 @@ class WhatsAppChatService:
                                         conversacion_id = self.modelo.obtener_conversacion_id_por_wa_id(wa_message_id)
                                         if conversacion_id:
                                             self.modelo.marcar_reengagement(conversacion_id, detalle=detalle)
+                                            # Enviar plantilla de re-apertura configurada para abrir ventana 24h
+                                            conv = self.modelo.base_datos.obtener_uno(
+                                                "SELECT telefono, cliente_id FROM whatsapp_conversaciones WHERE id = %s",
+                                                (conversacion_id,),
+                                            )
+                                            if conv:
+                                                telefono = conv.get("telefono")
+                                                # Enviar plantilla solo si no la enviamos hace poco (rate limit); si ya se envió, la ventana ya está abierta
+                                                plantilla_enviada = self._enviar_plantilla_reengagement(telefono, conv.get("cliente_id"))
+                                                if plantilla_enviada:
+                                                    self.logger.info(
+                                                        f"Plantilla de re-apertura enviada a {telefono} tras error 131047"
+                                                    )
+                                                    time.sleep(2)  # dar tiempo a que se abra la ventana 24h
+                                                else:
+                                                    self.logger.info(
+                                                        f"Plantilla ya enviada recientemente a {telefono}; reenviando mensaje (ventana abierta)"
+                                                    )
+                                                # Reenviar el mensaje que falló solo si no lo reenviamos ya hace poco (evitar bucle)
+                                                msg_row = self.modelo.base_datos.obtener_uno(
+                                                    "SELECT id, mensaje FROM whatsapp_mensajes WHERE wa_message_id = %s",
+                                                    (wa_message_id,),
+                                                )
+                                                if msg_row and (msg_row.get("mensaje") or "").strip():
+                                                    msg_id = msg_row.get("id")
+                                                    ahora = time.time()
+                                                    ultimo = self._ultimo_reenvio_131047_por_mensaje_id.get(msg_id, 0)
+                                                    if ahora - ultimo < self._REENVIO_131047_COOLDOWN:
+                                                        self.logger.info(
+                                                            f"Mensaje {msg_id} ya reenviado por 131047 hace {int(ahora - ultimo)}s; omitiendo para evitar bucle/rate limit"
+                                                        )
+                                                    else:
+                                                        self._ultimo_reenvio_131047_por_mensaje_id[msg_id] = ahora
+                                                        ok, new_wa_id = self.whatsapp.enviar_mensaje_chat(
+                                                            telefono, (msg_row.get("mensaje") or "").strip()
+                                                        )
+                                                        if ok:
+                                                            self.modelo.base_datos.ejecutar_consulta(
+                                                                "UPDATE whatsapp_mensajes SET estado = %s, wa_message_id = %s WHERE id = %s",
+                                                                ("sent", new_wa_id, msg_id),
+                                                            )
+                                                            self.logger.info(
+                                                                f"Mensaje {msg_id} reenviado tras error 131047"
+                                                            )
+                                                        else:
+                                                            self.logger.warning(
+                                                                f"No se pudo reenviar mensaje {msg_id}"
+                                                            )
                                         self.logger.warning(
                                             f"WhatsApp fuera de ventana 24h (re-engagement) para wa_id={wa_message_id}: {detalle}"
                                         )
@@ -1165,17 +1258,22 @@ class WhatsAppChatService:
                             if self._procesar_calificacion_simple(telefono, int(texto_limpio), mensaje.get("id")):
                                 continue
                         
-                        # Reenviar mensajes fallidos por ventana 24h ahora que el cliente escribió
-                        self._reenviar_mensajes_fallidos_por_ventana(telefono, conversacion["id"])
+                        # Recargar conversación para obtener bot_activo actualizado (evitar race si se desactivó)
+                        conversacion_actual = self.modelo.obtener_conversacion_por_telefono(telefono)
+                        if conversacion_actual:
+                            conversacion = conversacion_actual
+
+                        # Reenviar mensajes fallidos por ventana 24h solo si el bot está activo
+                        if conversacion.get("bot_activo"):
+                            self._reenviar_mensajes_fallidos_por_ventana(telefono, conversacion["id"])
                         
                         # Verificar si hay calificación pendiente de observaciones
                         if self._procesar_observaciones_calificacion(telefono, texto):
                             continue
                         
-                        # Procesar bot si está activo
-                        if not conversacion.get("bot_activo"):
-                            continue
-                        self._procesar_bot(conversacion, telefono, texto, media_type=media_type, media_id=media_id)
+                        # Procesar bot SOLO si está activo (cuando está desactivado, responde el humano)
+                        if conversacion.get("bot_activo"):
+                            self._procesar_bot(conversacion, telefono, texto, media_type=media_type, media_id=media_id)
         except Exception as e:
             self.logger.error(f"Error procesando webhook WhatsApp: {e}")
 
@@ -1185,13 +1283,14 @@ class WhatsAppChatService:
         """
         try:
             # Buscar mensajes fallidos por error 131047 (ventana 24h) para esta conversación
+            # estado puede ser 'fallido' (nuestro) o 'failed' (webhook)
             consulta = """
             SELECT id, mensaje, origen, wa_message_id, raw_json
             FROM whatsapp_mensajes
             WHERE conversacion_id = %s
               AND direccion = 'out'
-              AND estado = 'fallido'
-              AND fecha_creacion > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+              AND estado IN ('fallido', 'failed')
+              AND fecha_creacion > DATE_SUB(NOW(), INTERVAL 7 DAY)
             ORDER BY fecha_creacion ASC
             LIMIT 10
             """
@@ -1201,7 +1300,8 @@ class WhatsAppChatService:
                 return
             
             self.logger.info(f"[REENVIO] Encontrados {len(mensajes_fallidos)} mensajes fallidos para {telefono}")
-            
+            # El cliente acaba de escribir: estamos DENTRO de la ventana 24h. NO enviar campaña (es cara).
+            # Solo reenviar los mensajes fallidos como mensajes normales (gratis).
             for msg in mensajes_fallidos:
                 msg_id = msg.get("id")
                 mensaje_texto = msg.get("mensaje")
@@ -1245,9 +1345,31 @@ class WhatsAppChatService:
                     self.logger.info(f"[REENVIO] Mensaje {msg_id} reenviado exitosamente")
                 else:
                     self.logger.warning(f"[REENVIO] Fallo al reenviar mensaje {msg_id}")
-                    
+            # Limpiar flag para que el badge "24h expirado" desaparezca en la UI
+            self.modelo.limpiar_reengagement(conversacion_id)
         except Exception as e:
             self.logger.error(f"[REENVIO] Error al reenviar mensajes fallidos: {e}")
+
+    def reenviar_mensajes_fallidos(self, conversacion_id):
+        """
+        Envía la plantilla de re-apertura y reenvía los mensajes que fallaron por ventana 24h.
+        Útil cuando el operador quiere reenviar sin esperar a que el cliente escriba.
+        Retorna (éxito, mensaje).
+        """
+        try:
+            conv = self.modelo.base_datos.obtener_uno(
+                "SELECT id, telefono FROM whatsapp_conversaciones WHERE id = %s", (conversacion_id,)
+            )
+            if not conv:
+                return False, "Conversación no encontrada"
+            telefono = conv.get("telefono")
+            if not telefono:
+                return False, "Sin teléfono en la conversación"
+            self._reenviar_mensajes_fallidos_por_ventana(telefono, conversacion_id)
+            return True, None
+        except Exception as e:
+            self.logger.error(f"Error al reenviar mensajes fallidos: {e}")
+            return False, str(e)
 
     def _procesar_calificacion_simple(self, telefono, calificacion, wa_message_id=None):
         """
@@ -1460,17 +1582,29 @@ class WhatsAppChatService:
             mapa = datos.get("mapa") or {}
             opciones = datos.get("opciones") or []
             seleccion = None
+            evento_id = None
             if opciones:
                 seleccion = self._resolver_opcion(texto, opciones)
             if texto_normalizado in mapa:
                 seleccion = texto_normalizado
             elif texto_normalizado.startswith("evento:"):
                 seleccion = texto_normalizado
+            # Fallback: parsear evento:N manualmente (p. ej. de list_reply con formato ligeramente distinto)
+            if not seleccion and isinstance(texto, str) and "evento:" in texto.lower():
+                try:
+                    parte = texto.strip().split("evento:", 1)[-1].split()[0]
+                    if parte.isdigit() and int(parte) in ids:
+                        seleccion = f"evento:{parte}"
+                except (IndexError, ValueError):
+                    pass
             if seleccion:
-                evento_id = int(str(seleccion).split(":", 1)[1])
+                try:
+                    evento_id = int(str(seleccion).split(":", 1)[1])
+                except (IndexError, ValueError):
+                    evento_id = None
             elif texto_normalizado.isdigit() and int(texto_normalizado) in ids:
                 evento_id = int(texto_normalizado)
-            else:
+            if not evento_id:
                 if opciones:
                     self._enviar_opciones(conversacion, "Selecciona una opción válida:", opciones)
                 else:
@@ -1572,7 +1706,14 @@ class WhatsAppChatService:
             )
             return False
         telefono = conversacion.get("telefono")
-        enviado, wa_message_id = self.whatsapp.enviar_mensaje_chat(telefono, mensaje)
+        enviado, wa_message_id, error = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje)
+        # Si falla por ventana 24h, enviar plantilla de re-apertura y reintentar una vez
+        if not enviado and not _reintento and self._es_error_ventana(error):
+            self.logger.info(f"Error ventana 24h al enviar mensaje manual a {telefono}, enviando plantilla de re-apertura")
+            if self._enviar_plantilla_reengagement(telefono, conversacion.get("cliente_id")):
+                enviado, wa_message_id, error = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje)
+                if enviado:
+                    self.logger.info(f"Mensaje manual enviado correctamente tras plantilla de re-apertura")
         if enviado:
             precio_unitario = self._obtener_precio_whatsapp()
             self._registrar_mensaje(
@@ -1587,7 +1728,10 @@ class WhatsAppChatService:
             )
             self.modelo.actualizar_conversacion(conversacion_id)
             return True
-        self._registrar_mensaje(conversacion_id, "out", mensaje, estado="fallido", wa_message_id=wa_message_id, origen="humano")
+        self._registrar_mensaje(
+            conversacion_id, "out", mensaje, estado="fallido",
+            wa_message_id=wa_message_id, origen="humano", raw_json=error
+        )
         return False
 
     def enviar_media_manual(self, conversacion_id, archivo, tipo, caption=None, _reintento=False):

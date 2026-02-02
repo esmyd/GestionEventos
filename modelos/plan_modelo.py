@@ -44,6 +44,8 @@ class PlanModelo:
     
     def actualizar_plan(self, plan_id, datos_plan):
         """Actualiza los datos de un plan"""
+        activo_val = datos_plan.get('activo', True)
+        activo_db = 1 if (activo_val is True or activo_val == 1 or str(activo_val).lower() == 'true') else 0
         consulta = """
         UPDATE planes 
         SET nombre = %s, descripcion = %s, precio_base = %s, capacidad_minima = %s,
@@ -58,7 +60,7 @@ class PlanModelo:
             datos_plan.get('capacidad_maxima'),
             datos_plan.get('duracion_horas'),
             datos_plan.get('incluye'),
-            datos_plan.get('activo', True),
+            activo_db,
             plan_id
         )
         return self.base_datos.ejecutar_consulta(consulta, parametros)
@@ -85,10 +87,24 @@ class PlanModelo:
     def obtener_productos_plan(self, plan_id):
         """Obtiene todos los productos incluidos en un plan"""
         consulta = """
-        SELECT pp.*, p.nombre as nombre_producto, p.precio, p.categoria
+        SELECT pp.*, p.nombre as nombre_producto, p.precio, p.categoria, p.tipo_servicio, c.nombre as nombre_categoria
         FROM plan_productos pp
         JOIN productos p ON pp.producto_id = p.id
+        LEFT JOIN categorias c ON p.id_categoria = c.id
         WHERE pp.plan_id = %s
+        """
+        return self.base_datos.obtener_todos(consulta, (plan_id,))
+
+    def obtener_productos_servicio_del_plan(self, plan_id):
+        """Obtiene los productos del plan con tipo_servicio='servicio' (categoría servicio)"""
+        consulta = """
+        SELECT pp.*, p.nombre as nombre_producto, p.precio, p.tipo_servicio, c.nombre as nombre_categoria
+        FROM plan_productos pp
+        JOIN productos p ON pp.producto_id = p.id
+        LEFT JOIN categorias c ON p.id_categoria = c.id
+        WHERE pp.plan_id = %s
+          AND (p.tipo_servicio = 'servicio' OR LOWER(COALESCE(c.nombre, '')) = 'servicio')
+        ORDER BY pp.id
         """
         return self.base_datos.obtener_todos(consulta, (plan_id,))
     

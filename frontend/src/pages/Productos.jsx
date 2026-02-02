@@ -230,10 +230,14 @@ const Productos = () => {
         stock: parseInt(formData.stock) || 0,
         activo: formData.activo,
       };
-      await productosService.create(productoData);
+      const respuesta = await productosService.create(productoData);
       await cargarProductos();
       cerrarModalCrear();
-      success('Producto creado exitosamente');
+      success('Producto creado. Ahora puedes agregar las variaciones.');
+      if (respuesta?.producto) {
+        setProductoSeleccionado({ ...respuesta.producto, id_producto: respuesta.producto.id });
+        setMostrarModalOpciones(true);
+      }
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Error al crear el producto';
       setErrorFormulario(errorMessage);
@@ -438,6 +442,9 @@ const Productos = () => {
                     <div>
                       <div style={{ fontWeight: '600', color: '#111827' }}>{producto.nombre || '-'}</div>
                       <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{producto.nombre_categoria || '-'}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.15rem' }}>
+                        Tipo: <span style={{ textTransform: 'capitalize' }}>{producto.tipo_servicio || 'servicio'}</span>
+                      </div>
                     </div>
                   </div>
                   <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
@@ -562,6 +569,9 @@ const Productos = () => {
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Categoría
                   </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Tipo
+                  </th>
                   <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600' }}>
                     Precio
                   </th>
@@ -579,7 +589,7 @@ const Productos = () => {
               <tbody>
                 {productosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                    <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
                       {busqueda || filtroCategoria ? 'No se encontraron productos con ese criterio' : 'No hay productos disponibles'}
                     </td>
                   </tr>
@@ -610,6 +620,21 @@ const Productos = () => {
                         </div>
                       </td>
                       <td style={{ padding: '1rem' }}>{producto.nombre_categoria || '-'}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <span
+                          style={{
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            textTransform: 'capitalize',
+                            backgroundColor: '#f3f4f6',
+                            color: '#374151',
+                          }}
+                        >
+                          {producto.tipo_servicio || 'servicio'}
+                        </span>
+                      </td>
                       <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '500' }}>
                         {formatearMoneda(producto.precio || 0)}
                       </td>
@@ -757,8 +782,13 @@ const Productos = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Nuevo Producto</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Nuevo Producto</h2>
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: '#6b7280' }}>
+                  Paso 1: Agregue los datos del producto. Después podrá agregar las variaciones.
+                </p>
+              </div>
               <button
                 onClick={cerrarModalCrear}
                 style={{

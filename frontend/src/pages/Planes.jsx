@@ -75,7 +75,7 @@ const Planes = () => {
       setPlanes(data.planes || []);
       setError('');
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || 'Error al cargar los planes';
+      const errorMessage = err.response?.data?.error || err.message || 'Error al cargar los paquetes';
       setError(errorMessage);
       console.error(err);
     } finally {
@@ -154,6 +154,8 @@ const Planes = () => {
   const precioMinValor = filtroPrecioMin === '' ? null : parseFloat(filtroPrecioMin);
   const precioMaxValor = filtroPrecioMax === '' ? null : parseFloat(filtroPrecioMax);
 
+  const planActivo = (p) => p.activo === true || p.activo === 1;
+
   const planesFiltrados = planes
     .filter((plan) => {
     if (!busqueda) return true;
@@ -164,8 +166,8 @@ const Planes = () => {
     );
     })
     .filter((plan) => {
-      if (filtroEstado === 'activos') return plan.activo !== false;
-      if (filtroEstado === 'inactivos') return plan.activo === false;
+      if (filtroEstado === 'activos') return planActivo(plan);
+      if (filtroEstado === 'inactivos') return !planActivo(plan);
       return true;
     })
     .filter((plan) => {
@@ -259,7 +261,7 @@ const Planes = () => {
       capacidad_maxima: plan.capacidad_maxima || '',
       duracion_horas: plan.duracion_horas || '',
       incluye: plan.incluye || '',
-      activo: plan.activo !== false,
+      activo: !!(plan.activo === true || plan.activo === 1),
     });
     setProductoSeleccionadoForm('');
     setCantidadProductoForm('1');
@@ -376,7 +378,7 @@ const Planes = () => {
     }
     const yaExiste = productosSeleccionados.some((item) => item.producto_id === productoId);
     if (yaExiste) {
-      showError('Este producto ya está agregado al plan');
+      showError('Este producto ya está agregado al paquete');
       return;
     }
 
@@ -498,7 +500,7 @@ const Planes = () => {
           await sincronizarProductosPlan(planId, productosSeleccionados, []);
         } catch (err) {
           console.error('Error al agregar productos al plan:', err);
-          showError('Plan creado, pero ocurrió un error al agregar productos');
+          showError('Paquete creado, pero ocurrió un error al agregar productos');
         }
       }
       if (planId) {
@@ -506,14 +508,14 @@ const Planes = () => {
           await sincronizarServiciosPlan(planId, serviciosPlan);
         } catch (err) {
           console.error('Error al agregar servicios al plan:', err);
-          showError('Plan creado, pero ocurrió un error al agregar servicios');
+          showError('Paquete creado, pero ocurrió un error al agregar servicios');
         }
       }
       await cargarPlanes();
       cerrarModalCrear();
-      success('Plan creado exitosamente');
+      success('Paquete creado exitosamente');
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Error al crear el plan';
+      const errorMessage = err.response?.data?.error || 'Error al crear el paquete';
       setErrorFormulario(errorMessage);
       console.error(err);
     } finally {
@@ -547,9 +549,9 @@ const Planes = () => {
       setProductosSeleccionadosOriginal(productosSeleccionados);
       setServiciosPlanOriginal(serviciosPlan);
       cerrarModalEditar();
-      success('Plan actualizado exitosamente');
+      success('Paquete actualizado exitosamente');
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Error al actualizar el plan';
+      const errorMessage = err.response?.data?.error || 'Error al actualizar el paquete';
       setErrorFormulario(errorMessage);
       console.error(err);
     } finally {
@@ -563,9 +565,9 @@ const Planes = () => {
       await planesService.delete(planSeleccionado.id);
       await cargarPlanes();
       cerrarModalEliminar();
-      success('Plan eliminado exitosamente');
+      success('Paquete eliminado exitosamente');
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Error al eliminar el plan';
+      const errorMessage = err.response?.data?.error || 'Error al eliminar el paquete';
       showError(errorMessage);
       console.error(err);
     } finally {
@@ -584,7 +586,7 @@ const Planes = () => {
       await cargarProductosPlan(planSeleccionado.id);
       setProductoSeleccionado('');
       setCantidadProducto('1');
-      success('Producto agregado al plan exitosamente');
+      success('Producto agregado al paquete exitosamente');
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Error al agregar el producto';
       showError(errorMessage);
@@ -596,7 +598,7 @@ const Planes = () => {
     try {
       await planesService.eliminarProducto(planSeleccionado.id, productoId);
       await cargarProductosPlan(planSeleccionado.id);
-      success('Producto eliminado del plan exitosamente');
+      success('Producto eliminado del paquete exitosamente');
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Error al eliminar el producto';
       showError(errorMessage);
@@ -605,7 +607,7 @@ const Planes = () => {
   };
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando planes...</div>;
+    return <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando paquetes...</div>;
   }
 
   return (
@@ -613,8 +615,8 @@ const Planes = () => {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Planes</h1>
-          <p style={{ color: '#6b7280' }}>Gestión de planes de eventos</p>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Paquetes</h1>
+          <p style={{ color: '#6b7280' }}>Gestión de paquetes de eventos</p>
         </div>
         {puedeCrear && (
           <button
@@ -636,7 +638,7 @@ const Planes = () => {
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#6366f1')}
           >
             <Plus size={20} />
-            Nuevo Plan
+            Nuevo Paquete
           </button>
         )}
       </div>
@@ -671,7 +673,7 @@ const Planes = () => {
         />
         <input
           type="text"
-          placeholder="Buscar planes..."
+          placeholder="Buscar paquetes..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           style={{
@@ -783,7 +785,7 @@ const Planes = () => {
       >
         {planesFiltrados.length === 0 ? (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-            {busqueda ? 'No se encontraron planes con ese criterio' : 'No hay planes disponibles'}
+            {busqueda ? 'No se encontraron paquetes con ese criterio' : 'No hay paquetes disponibles'}
           </div>
         ) : (
           planesFiltrados.map((plan) => (
@@ -879,11 +881,11 @@ const Planes = () => {
                     borderRadius: '9999px',
                     fontSize: '0.75rem',
                     fontWeight: '500',
-                    backgroundColor: plan.activo !== false ? '#10b98120' : '#ef444420',
-                    color: plan.activo !== false ? '#10b981' : '#ef4444',
+                    backgroundColor: planActivo(plan) ? '#10b98120' : '#ef444420',
+                    color: planActivo(plan) ? '#10b981' : '#ef4444',
                   }}
                 >
-                  {plan.activo !== false ? 'Activo' : 'Inactivo'}
+                  {planActivo(plan) ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -996,7 +998,7 @@ const Planes = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Nuevo Plan</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Nuevo Paquete</h2>
               <button
                 onClick={cerrarModalCrear}
                 style={{
@@ -1071,7 +1073,7 @@ const Planes = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                      Precio del Plan <span style={{ color: '#ef4444' }}>*</span>
+                      Precio del Paquete <span style={{ color: '#ef4444' }}>*</span>
                     </label>
                     <input
                       type="number"
@@ -1187,7 +1189,7 @@ const Planes = () => {
                 </div>
 
                 <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', padding: '1rem' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Productos del Plan</h3>
+                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Productos del Paquete</h3>
                   {cargandoProductosPlan && (
                     <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>Cargando productos...</p>
                   )}
@@ -1274,7 +1276,7 @@ const Planes = () => {
                   <div style={{ marginTop: '1rem' }}>
                     {productosSeleccionados.length === 0 ? (
                       <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', fontStyle: 'italic' }}>
-                        No hay productos asignados a este plan
+                        No hay productos asignados a este paquete
                       </p>
                     ) : (
                       <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', overflow: 'hidden' }}>
@@ -1353,200 +1355,6 @@ const Planes = () => {
                   </div>
                 </div>
 
-                <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', padding: '1rem' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Servicios del Plan</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr auto', gap: '0.75rem', alignItems: 'end' }}>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-                        Servicio
-                      </label>
-                      <input
-                        type="text"
-                        value={servicioNombreForm}
-                        onChange={(e) => setServicioNombreForm(e.target.value)}
-                        placeholder="Ej: Confirmación de proteínas"
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '0.375rem',
-                          fontSize: '1rem',
-                        }}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleAgregarServicioForm}
-                      style={{
-                        padding: '0.75rem 1rem',
-                        backgroundColor: '#6366f1',
-                        color: 'white',
-                        borderRadius: '0.375rem',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: '500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Plus size={18} />
-                      Agregar
-                    </button>
-                  </div>
-                  {errorServicioForm && (
-                    <div style={{ marginTop: '0.5rem', color: '#ef4444', fontSize: '0.875rem' }}>
-                      {errorServicioForm}
-                    </div>
-                  )}
-                  <div style={{ marginTop: '1rem' }}>
-                    {serviciosPlan.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', fontStyle: 'italic' }}>
-                        No hay servicios asignados a este plan
-                      </p>
-                    ) : (
-                      <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                          <thead>
-                            <tr style={{ backgroundColor: '#f9fafb' }}>
-                              <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                                Servicio
-                              </th>
-                              <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                                Acción
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {serviciosPlan.map((servicio, index) => (
-                              <tr key={`${servicio.nombre}-${index}`} style={{ borderTop: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '0.75rem' }}>{servicio.nombre}</td>
-                                <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEliminarServicioForm(index)}
-                                    style={{
-                                      padding: '0.5rem',
-                                      backgroundColor: '#ef4444',
-                                      color: 'white',
-                                      borderRadius: '0.375rem',
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                    }}
-                                    title="Eliminar"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', padding: '1rem' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Servicios del Plan</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr auto', gap: '0.75rem', alignItems: 'end' }}>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-                        Servicio
-                      </label>
-                      <input
-                        type="text"
-                        value={servicioNombreForm}
-                        onChange={(e) => setServicioNombreForm(e.target.value)}
-                        placeholder="Ej: Confirmación de proteínas"
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '0.375rem',
-                          fontSize: '1rem',
-                        }}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleAgregarServicioForm}
-                      style={{
-                        padding: '0.75rem 1rem',
-                        backgroundColor: '#6366f1',
-                        color: 'white',
-                        borderRadius: '0.375rem',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: '500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Plus size={18} />
-                      Agregar
-                    </button>
-                  </div>
-                  {errorServicioForm && (
-                    <div style={{ marginTop: '0.5rem', color: '#ef4444', fontSize: '0.875rem' }}>
-                      {errorServicioForm}
-                    </div>
-                  )}
-                  <div style={{ marginTop: '1rem' }}>
-                    {serviciosPlan.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', fontStyle: 'italic' }}>
-                        No hay servicios asignados a este plan
-                      </p>
-                    ) : (
-                      <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                          <thead>
-                            <tr style={{ backgroundColor: '#f9fafb' }}>
-                              <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                                Servicio
-                              </th>
-                              <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                                Acción
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {serviciosPlan.map((servicio, index) => (
-                              <tr key={`${servicio.nombre}-${index}`} style={{ borderTop: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '0.75rem' }}>{servicio.nombre}</td>
-                                <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEliminarServicioForm(index)}
-                                    style={{
-                                      padding: '0.5rem',
-                                      backgroundColor: '#ef4444',
-                                      color: 'white',
-                                      borderRadius: '0.375rem',
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                    }}
-                                    title="Eliminar"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <input
                     type="checkbox"
@@ -1554,7 +1362,7 @@ const Planes = () => {
                     onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
                     style={{ width: '1.25rem', height: '1.25rem', cursor: 'pointer' }}
                   />
-                  <label style={{ fontWeight: '500', cursor: 'pointer' }}>Plan activo</label>
+                  <label style={{ fontWeight: '500', cursor: 'pointer' }}>Paquete activo</label>
                 </div>
 
                 <div>
@@ -1565,7 +1373,7 @@ const Planes = () => {
                     value={formData.incluye}
                     onChange={(e) => setFormData({ ...formData, incluye: e.target.value })}
                     rows={3}
-                    placeholder="Notas, restricciones o consideraciones del plan..."
+                    placeholder="Notas, restricciones o consideraciones del paquete..."
                     style={{
                       width: '100%',
                       padding: '0.75rem',
@@ -1650,7 +1458,7 @@ const Planes = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Editar Plan</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Editar Paquete</h2>
               <button
                 onClick={cerrarModalEditar}
                 style={{
@@ -1725,7 +1533,7 @@ const Planes = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                      Precio del Plan <span style={{ color: '#ef4444' }}>*</span>
+                      Precio del Paquete <span style={{ color: '#ef4444' }}>*</span>
                     </label>
                     <input
                       type="number"
@@ -1841,7 +1649,7 @@ const Planes = () => {
                 </div>
 
                 <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', padding: '1rem' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Productos del Plan</h3>
+                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Productos del Paquete</h3>
                   {cargandoProductosPlan && (
                     <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>Cargando productos...</p>
                   )}
@@ -1928,7 +1736,7 @@ const Planes = () => {
                   <div style={{ marginTop: '1rem' }}>
                     {productosSeleccionados.length === 0 ? (
                       <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', fontStyle: 'italic' }}>
-                        No hay productos asignados a este plan
+                        No hay productos asignados a este paquete
                       </p>
                     ) : (
                       <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', overflow: 'hidden' }}>
@@ -2007,115 +1815,6 @@ const Planes = () => {
                   </div>
                 </div>
 
-                <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', padding: '1rem' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Servicios del Plan</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr auto', gap: '0.75rem', alignItems: 'end' }}>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-                        Servicio
-                      </label>
-                      <input
-                        type="text"
-                        value={servicioNombreForm}
-                        onChange={(e) => setServicioNombreForm(e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAgregarServicioForm();
-                          }
-                        }}
-                        placeholder="Ej: Confirmación de proteínas"
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '0.375rem',
-                          fontSize: '1rem',
-                        }}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleAgregarServicioForm}
-                      style={{
-                        padding: '0.75rem 1rem',
-                        backgroundColor: '#6366f1',
-                        color: 'white',
-                        borderRadius: '0.375rem',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: '500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Plus size={18} />
-                      Agregar
-                    </button>
-                  </div>
-                  {errorServicioForm && (
-                    <div style={{ marginTop: '0.5rem', color: '#ef4444', fontSize: '0.875rem' }}>
-                      {errorServicioForm}
-                    </div>
-                  )}
-                  <div style={{ marginTop: '1rem' }}>
-                    {serviciosPlan.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', fontStyle: 'italic' }}>
-                        No hay servicios asignados a este plan
-                      </p>
-                    ) : (
-                      <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                          <thead>
-                            <tr style={{ backgroundColor: '#f9fafb' }}>
-                              <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', width: '3rem' }}>
-                                Orden
-                              </th>
-                              <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
-                                Servicio
-                              </th>
-                              <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600' }}>
-                                Acción
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {serviciosPlan.map((servicio, index) => (
-                              <tr key={`${servicio.nombre}-${index}`} style={{ borderTop: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '0.75rem', textAlign: 'center', color: '#6b7280' }}>
-                                  {index + 1}
-                                </td>
-                                <td style={{ padding: '0.75rem' }}>{servicio.nombre}</td>
-                                <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEliminarServicioForm(index)}
-                                    style={{
-                                      padding: '0.5rem',
-                                      backgroundColor: '#ef4444',
-                                      color: 'white',
-                                      borderRadius: '0.375rem',
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                    }}
-                                    title="Eliminar"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <input
                     type="checkbox"
@@ -2123,7 +1822,7 @@ const Planes = () => {
                     onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
                     style={{ width: '1.25rem', height: '1.25rem', cursor: 'pointer' }}
                   />
-                  <label style={{ fontWeight: '500', cursor: 'pointer' }}>Plan activo</label>
+                  <label style={{ fontWeight: '500', cursor: 'pointer' }}>Paquete activo</label>
                 </div>
 
                 <div>
@@ -2134,7 +1833,7 @@ const Planes = () => {
                     value={formData.incluye}
                     onChange={(e) => setFormData({ ...formData, incluye: e.target.value })}
                     rows={3}
-                    placeholder="Notas, restricciones o consideraciones del plan..."
+                    placeholder="Notas, restricciones o consideraciones del paquete..."
                     style={{
                       width: '100%',
                       padding: '0.75rem',
@@ -2219,7 +1918,7 @@ const Planes = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Detalle del Plan</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Detalle del Paquete</h2>
               <button
                 onClick={cerrarModalDetalle}
                 style={{
@@ -2335,11 +2034,11 @@ const Planes = () => {
                       borderRadius: '9999px',
                       fontSize: '0.75rem',
                       fontWeight: '500',
-                      backgroundColor: planSeleccionado.activo !== false ? '#10b98120' : '#ef444420',
-                      color: planSeleccionado.activo !== false ? '#10b981' : '#ef4444',
+                      backgroundColor: planActivo(planSeleccionado) ? '#10b98120' : '#ef444420',
+                      color: planActivo(planSeleccionado) ? '#10b981' : '#ef4444',
                     }}
                   >
-                    {planSeleccionado.activo !== false ? 'Activo' : 'Inactivo'}
+                    {planActivo(planSeleccionado) ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
 
@@ -2376,7 +2075,7 @@ const Planes = () => {
                   </div>
                   {productosPlan.length === 0 ? (
                     <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', fontStyle: 'italic' }}>
-                      No hay productos asignados a este plan
+                      No hay productos asignados a este paquete
                     </p>
                   ) : (
                     <div style={{ backgroundColor: '#f9fafb', borderRadius: '0.375rem', padding: '1rem' }}>
@@ -2400,35 +2099,6 @@ const Planes = () => {
                           <p style={{ margin: 0, fontWeight: '500', color: '#6366f1' }}>
                             {formatearMoneda(prod.precio || 0)}
                           </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Servicios del plan */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-                    Servicios del Plan
-                  </label>
-                  {serviciosPlan.length === 0 ? (
-                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', fontStyle: 'italic' }}>
-                      No hay servicios asignados a este plan
-                    </p>
-                  ) : (
-                    <div style={{ backgroundColor: '#f9fafb', borderRadius: '0.375rem', padding: '1rem' }}>
-                      {serviciosPlan.map((servicio, index) => (
-                        <div
-                          key={`${servicio.nombre}-${index}`}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '0.5rem 0',
-                            borderBottom: '1px solid #e5e7eb',
-                          }}
-                        >
-                          <p style={{ margin: 0, fontWeight: '500' }}>{servicio.nombre}</p>
                         </div>
                       ))}
                     </div>
@@ -2511,9 +2181,9 @@ const Planes = () => {
                 <AlertCircle size={24} color="#dc2626" />
               </div>
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Eliminar Plan</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Eliminar Paquete</h2>
                 <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0' }}>
-                  ¿Está seguro de eliminar este plan?
+                  ¿Está seguro de eliminar este paquete?
                 </p>
               </div>
             </div>
@@ -2564,7 +2234,7 @@ const Planes = () => {
         </div>
       )}
 
-      {/* Modal Gestionar Productos del Plan */}
+      {/* Modal Gestionar Productos del Paquete */}
       {mostrarModalProductos && planSeleccionado && (
         <div
           style={{
@@ -2595,7 +2265,7 @@ const Planes = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Gestionar Productos del Plan</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Gestionar Productos del Paquete</h2>
               <button
                 onClick={cerrarModalProductos}
                 style={{
@@ -2613,7 +2283,7 @@ const Planes = () => {
             </div>
 
             <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}>
-              <p style={{ margin: 0, fontWeight: '500' }}>Plan: {planSeleccionado.nombre}</p>
+              <p style={{ margin: 0, fontWeight: '500' }}>Paquete: {planSeleccionado.nombre}</p>
             </div>
 
             {/* Agregar producto */}
@@ -2689,7 +2359,7 @@ const Planes = () => {
               <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Productos Incluidos</h3>
               {productosPlan.length === 0 ? (
                 <p style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                  No hay productos asignados a este plan
+                  No hay productos asignados a este paquete
                 </p>
               ) : (
                 <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.375rem', overflow: 'hidden' }}>

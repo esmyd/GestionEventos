@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNombrePlataforma } from '../hooks/useNombrePlataforma';
+import { useModulos } from '../hooks/useModulos';
 import { getRoleLabel, hasModuleAccess, hasRole, MODULES, ROLES } from '../utils/roles';
 import { whatsappChatService } from '../services/api';
 import {
@@ -30,18 +31,31 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  Crown,
+  Shield,
+  Send,
+  Truck,
+  FileDigit,
+  FileSignature,
+  Globe,
+  Sparkles,
+  Calculator,
+  Camera,
 } from 'lucide-react';
 
 const Layout = () => {
   const { usuario, logout } = useAuth();
   const { nombrePlataforma } = useNombrePlataforma();
+  const { moduloExcluidoPorPlan } = useModulos();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [administracionOpen, setAdministracionOpen] = useState(true);
   const [catalogoOpen, setCatalogoOpen] = useState(true);
   const [operacionesOpen, setOperacionesOpen] = useState(true);
   const [configuracionesOpen, setConfiguracionesOpen] = useState(true);
   const [usuariosOpen, setUsuariosOpen] = useState(true);
+  const [proximasImplementacionesOpen, setProximasImplementacionesOpen] = useState(false);
   const [whatsappNoLeidos, setWhatsappNoLeidos] = useState(0);
   const iniciales = nombrePlataforma
     .split(' ')
@@ -53,78 +67,123 @@ const Layout = () => {
   // Definir permisos por rol
   const getMenuItemsByRole = (rol, usuarioActual) => {
     const todosLosItems = [
-      { path: '/inicio', icon: Home, label: 'Inicio', moduleKey: null, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
+      { path: '/panel', icon: Home, label: 'Panel', moduleKey: null, roles: [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
       { path: '/mi-evento', icon: Calendar, label: 'Mi evento', moduleKey: MODULES.PORTAL_CLIENTE, roles: [ROLES.CLIENT] },
-      { path: '/perfil', icon: UserCircle, label: 'Mi perfil', moduleKey: MODULES.PERFIL, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
-      { path: '/reportes', icon: BarChart3, label: 'Reportes', moduleKey: MODULES.REPORTES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/perfil', icon: UserCircle, label: 'Mi perfil', moduleKey: MODULES.PERFIL, roles: [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
+      { path: '/mi-plan', icon: Crown, label: 'Mi Plan', moduleKey: MODULES.MI_PLAN, roles: [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
+      { path: '/admin/suscripcion', icon: Shield, label: 'Admin Suscripción', moduleKey: MODULES.ADMIN_SUSCRIPCION, roles: [ROLES.ADMIN_SISTEMA] },
+      { path: '/reportes', icon: BarChart3, label: 'Reportes', moduleKey: MODULES.REPORTES, roles: [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/eventos', icon: Calendar, label: 'Eventos', moduleKey: MODULES.EVENTOS, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
       { path: '/pagos', icon: CreditCard, label: 'Pagos', moduleKey: MODULES.PAGOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/cuentas', icon: Landmark, label: 'Cuentas', moduleKey: MODULES.CUENTAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/salones', icon: Building, label: 'Salones', moduleKey: MODULES.SALONES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/notificaciones-nativas', icon: Bell, label: 'Notificaciones', moduleKey: MODULES.NOTIFICACIONES_NATIVAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/calendario', icon: CalendarDays, label: 'Calendario', moduleKey: MODULES.CALENDARIO, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT] },
-      { path: '/planes', icon: FileText, label: 'Planes', moduleKey: MODULES.PLANES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
+      { path: '/planes', icon: FileText, label: 'Paquetes', moduleKey: MODULES.PLANES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/productos', icon: Package, label: 'Productos', moduleKey: MODULES.PRODUCTOS, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/categorias', icon: FolderTree, label: 'Categorías', moduleKey: MODULES.CATEGORIAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/inventario', icon: Warehouse, label: 'Inventario', moduleKey: MODULES.INVENTARIO, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
       { path: '/usuarios', icon: Settings, label: 'Usuarios', moduleKey: MODULES.USUARIOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/clientes', icon: Users, label: 'Clientes', moduleKey: MODULES.CLIENTES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR] },
-      { path: '/permisos', icon: Settings, label: 'Roles y Permisos', moduleKey: MODULES.PERMISOS, roles: [ROLES.ADMIN] },
+      { path: '/permisos', icon: Shield, label: 'Roles y Permisos', moduleKey: MODULES.PERMISOS, roles: [ROLES.ADMIN_SISTEMA, ROLES.ADMIN] },
       { path: '/configuraciones/whatsapp-chat', icon: MessageCircle, label: 'WhatsApp', moduleKey: MODULES.WHATSAPP_CHAT, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/whatsapp-panel', icon: Gauge, label: 'Panel WhatsApp', moduleKey: MODULES.WHATSAPP_METRICAS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/whatsapp-plantillas', icon: Mail, label: 'Plantillas WhatsApp', moduleKey: MODULES.WHATSAPP_TEMPLATES, roles: [ROLES.ADMIN, ROLES.MANAGER] },
       { path: '/configuraciones/carga-masiva', icon: Upload, label: 'Carga masiva', moduleKey: MODULES.CARGA_MASIVA, roles: [ROLES.ADMIN, ROLES.MANAGER] },
-      { path: '/configuraciones/limpieza-datos', icon: Settings, label: 'Config. Sistema', moduleKey: MODULES.CONFIG_DATOS, roles: [ROLES.ADMIN, ROLES.MANAGER] },
+      { path: '/configuraciones/limpieza-datos', icon: Settings, label: 'Config. Sistema', moduleKey: MODULES.CONFIG_DATOS, roles: [ROLES.ADMIN_SISTEMA] },
+      // Próximas implementaciones (en construcción)
+      { path: '/proximas/envio-sugerencia', icon: Send, label: 'Envío de Sugerencia', moduleKey: MODULES.ENVIO_SUGERENCIA, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
+      { path: '/proximas/proveedores', icon: Truck, label: 'Proveedores', moduleKey: MODULES.PROVEEDORES, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
+      { path: '/proximas/facturacion-electronica', icon: FileDigit, label: 'Facturación Electrónica', moduleKey: MODULES.FACTURACION_ELECTRONICA, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
+      { path: '/proximas/contratos', icon: FileSignature, label: 'Contratos Digitales', moduleKey: MODULES.CONTRATOS, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
+      { path: '/proximas/reservas-online', icon: Globe, label: 'Reservas Online', moduleKey: MODULES.RESERVAS_ONLINE, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
+      { path: '/proximas/crm-avanzado', icon: Users, label: 'CRM Avanzado', moduleKey: MODULES.CRM_AVANZADO, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
+      { path: '/proximas/integracion-contabilidad', icon: Calculator, label: 'Integración Contable', moduleKey: MODULES.INTEGRACION_CONTABILIDAD, roles: [ROLES.ADMIN, ROLES.MANAGER], enConstruccion: true },
+      { path: '/proximas/sitio-web-eventos', icon: Globe, label: 'Sitio Web de Eventos', moduleKey: MODULES.SITIO_WEB_EVENTOS, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
+      { path: '/proximas/instagram', icon: Camera, label: 'Instagram', moduleKey: MODULES.INSTAGRAM, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR], enConstruccion: true },
     ];
 
     if (!rol) return [];
 
-    // Filtrar items según el rol del usuario
-    return todosLosItems.filter((item) => hasModuleAccess(usuarioActual, item.moduleKey, item.roles));
+    // Filtrar: rol/permisos Y que el plan no excluya el módulo
+    return todosLosItems.filter((item) => {
+      if (!hasModuleAccess(usuarioActual, item.moduleKey, item.roles)) return false;
+      // Módulos en construcción no se excluyen por plan
+      if (item.enConstruccion) return true;
+      // Si el módulo está en el plan y explícitamente no disponible, ocultar
+      if (item.moduleKey && moduloExcluidoPorPlan(item.moduleKey)) return false;
+      return true;
+    });
   };
 
   const menuItems = usuario ? getMenuItemsByRole(usuario.rol, usuario) : [];
   const esCliente = hasRole(usuario?.rol, [ROLES.CLIENT]);
-  const rutasCatalogo = ['/planes', '/productos', '/categorias', '/inventario','/configuraciones/carga-masiva'];
+  const rutasAdministracionSistema = ['/admin/suscripcion', '/configuraciones/limpieza-datos'];
+  const rutasCatalogo = ['/planes', '/productos', '/categorias', '/inventario', '/salones', '/cuentas', '/configuraciones/carga-masiva'];
   const rutasOperaciones = [
     '/calendario',
     '/eventos',
+    '/clientes',
     '/pagos',
-    '/cuentas',
-    '/salones',
     '/configuraciones/whatsapp-chat'
   ];
   const rutasConfiguraciones = [
     '/notificaciones-nativas',
     '/configuraciones/whatsapp-panel',
     '/configuraciones/whatsapp-plantillas',
-    '/configuraciones/limpieza-datos',
   ];
-  const rutasUsuarios = ['/usuarios', '/clientes', '/permisos'];
+  const rutasUsuarios = ['/usuarios', '/permisos'];
+  const rutasProximasImplementaciones = [
+    '/proximas/envio-sugerencia',
+    '/proximas/proveedores',
+    '/proximas/facturacion-electronica',
+    '/proximas/contratos',
+    '/proximas/reservas-online',
+    '/proximas/crm-avanzado',
+    '/proximas/integracion-contabilidad',
+    '/proximas/sitio-web-eventos',
+    '/proximas/instagram',
+  ];
 
   const menuItemsFiltrados = esCliente
-    ? menuItems.filter((item) => ['/inicio', '/mi-evento'].includes(item.path))
+    ? menuItems.filter((item) => ['/panel', '/mi-evento'].includes(item.path))
     : menuItems;
 
+  const administracionSistemaItems = menuItemsFiltrados.filter((item) => rutasAdministracionSistema.includes(item.path));
   const catalogoItems = menuItemsFiltrados.filter((item) => rutasCatalogo.includes(item.path));
   const operacionesItems = menuItemsFiltrados.filter((item) => rutasOperaciones.includes(item.path));
   const configuracionesItems = menuItemsFiltrados.filter((item) => rutasConfiguraciones.includes(item.path));
   const usuariosItems = menuItemsFiltrados.filter((item) => rutasUsuarios.includes(item.path));
-  const rutasInferior = ['/perfil', '/reportes'];
+  const proximasImplementacionesItems = menuItemsFiltrados.filter((item) => rutasProximasImplementaciones.includes(item.path));
+  const rutasInferior = ['/perfil', '/reportes', '/mi-plan'];
   const menuItemsRest = menuItemsFiltrados.filter(
     (item) =>
+      !rutasAdministracionSistema.includes(item.path) &&
       !rutasCatalogo.includes(item.path) &&
       !rutasOperaciones.includes(item.path) &&
       !rutasConfiguraciones.includes(item.path) &&
       !rutasUsuarios.includes(item.path) &&
+      !rutasProximasImplementaciones.includes(item.path) &&
       !rutasInferior.includes(item.path)
   );
   const menuItemsInferior = menuItemsFiltrados.filter((item) => rutasInferior.includes(item.path));
 
-  const catalogoActivo = catalogoItems.some((item) => location.pathname === item.path);
-  const operacionesActivo = operacionesItems.some((item) => location.pathname === item.path);
-  const configuracionesActivo = configuracionesItems.some((item) => location.pathname.startsWith(item.path));
-  const usuariosActivo = usuariosItems.some((item) => location.pathname === item.path);
+  // Resaltar módulo activo: coincide exactamente o está en una sub-ruta (ej: /eventos/123)
+  const isPathActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  const administracionSistemaActivo = administracionSistemaItems.some((item) => isPathActive(item.path));
+  const catalogoActivo = catalogoItems.some((item) => isPathActive(item.path));
+  const operacionesActivo = operacionesItems.some((item) => isPathActive(item.path));
+  const configuracionesActivo = configuracionesItems.some((item) => isPathActive(item.path));
+  const usuariosActivo = usuariosItems.some((item) => isPathActive(item.path));
+  const proximasImplementacionesActivo = proximasImplementacionesItems.some((item) => isPathActive(item.path));
+
+  useEffect(() => {
+    if (administracionSistemaActivo) setAdministracionOpen(true);
+  }, [administracionSistemaActivo]);
 
   useEffect(() => {
     if (catalogoActivo) {
@@ -149,6 +208,12 @@ const Layout = () => {
       setUsuariosOpen(true);
     }
   }, [usuariosActivo]);
+
+  useEffect(() => {
+    if (proximasImplementacionesActivo) {
+      setProximasImplementacionesOpen(true);
+    }
+  }, [proximasImplementacionesActivo]);
 
   useEffect(() => {
     const actualizarVista = () => {
@@ -299,6 +364,67 @@ const Layout = () => {
             </div>
           ) : (
             <>
+              {administracionSistemaItems.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setAdministracionOpen((prev) => !prev)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.75rem 1.5rem',
+                      width: '100%',
+                      background: 'none',
+                      border: 'none',
+                      color: administracionSistemaActivo ? 'white' : '#d1d5db',
+                      cursor: 'pointer',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <Shield size={20} />
+                    {sidebarOpen && (
+                      <>
+                        <span style={{ flex: 1, textAlign: 'left' }}>Administración del sistema</span>
+                        {administracionOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </>
+                    )}
+                  </button>
+                  {administracionOpen && (
+                    <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
+                      {administracionSistemaItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = isPathActive(item.path);
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: '0.6rem 1.5rem',
+                              color: isActive ? 'white' : '#d1d5db',
+                              backgroundColor: isActive ? 'rgba(79, 70, 229, 0.9)' : 'transparent',
+                              textDecoration: 'none',
+                              transition: 'all 0.2s',
+                              gap: '0.75rem',
+                              borderLeft: sidebarOpen ? (isActive ? '3px solid #a5b4fc' : '2px solid #374151') : 'none',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            <Icon size={18} />
+                            {sidebarOpen && <span>{item.label}</span>}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {operacionesItems.length > 0 && (
                 <div>
                   <button
@@ -327,7 +453,7 @@ const Layout = () => {
                     <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
                       {operacionesItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '/');
+                        const isActive = isPathActive(item.path);
                         const esWhatsApp = item.path === '/configuraciones/whatsapp-chat';
                         const mostrarBadgeWA = esWhatsApp && whatsappNoLeidos > 0;
                         return (
@@ -339,11 +465,11 @@ const Layout = () => {
                               alignItems: 'center',
                               padding: '0.6rem 1.5rem',
                               color: isActive ? 'white' : '#d1d5db',
-                              backgroundColor: isActive ? '#4f46e5' : 'transparent',
+                              backgroundColor: isActive ? 'rgba(79, 70, 229, 0.9)' : 'transparent',
                               textDecoration: 'none',
                               transition: 'all 0.2s',
                               gap: '0.75rem',
-                              borderLeft: sidebarOpen ? '2px solid #374151' : 'none',
+                              borderLeft: sidebarOpen ? (isActive ? '3px solid #a5b4fc' : '2px solid #374151') : 'none',
                             }}
                             onMouseEnter={(e) => {
                               if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
@@ -411,7 +537,7 @@ const Layout = () => {
 
               {menuItemsRest.map((item) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '/');
+                const isActive = isPathActive(item.path);
                 return (
                   <Link
                     key={item.path}
@@ -467,40 +593,40 @@ const Layout = () => {
                     <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
                       {catalogoItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
+                        const isActive = isPathActive(item.path);
                         return (
                           <Link
                             key={item.path}
                             to={item.path}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: '0.6rem 1.5rem',
-                              color: isActive ? 'white' : '#d1d5db',
-                              backgroundColor: isActive ? '#4f46e5' : 'transparent',
-                              textDecoration: 'none',
-                              transition: 'all 0.2s',
-                              gap: '0.75rem',
-                              borderLeft: sidebarOpen ? '2px solid #374151' : 'none',
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
-                          >
-                            <Icon size={18} />
-                            {sidebarOpen && <span>{item.label}</span>}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.6rem 1.5rem',
+                      color: isActive ? 'white' : '#d1d5db',
+                      backgroundColor: isActive ? 'rgba(79, 70, 229, 0.9)' : 'transparent',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                      gap: '0.75rem',
+                      borderLeft: sidebarOpen ? (isActive ? '3px solid #a5b4fc' : '2px solid #374151') : 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <Icon size={18} />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
-              {usuariosItems.length > 0 && (
+      {usuariosItems.length > 0 && (
                 <div>
                   <button
                     onClick={() => setUsuariosOpen((prev) => !prev)}
@@ -528,40 +654,40 @@ const Layout = () => {
                     <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
                       {usuariosItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
+                        const isActive = isPathActive(item.path);
                         return (
                           <Link
                             key={item.path}
                             to={item.path}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: '0.6rem 1.5rem',
-                              color: isActive ? 'white' : '#d1d5db',
-                              backgroundColor: isActive ? '#4f46e5' : 'transparent',
-                              textDecoration: 'none',
-                              transition: 'all 0.2s',
-                              gap: '0.75rem',
-                              borderLeft: sidebarOpen ? '2px solid #374151' : 'none',
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
-                          >
-                            <Icon size={18} />
-                            {sidebarOpen && <span>{item.label}</span>}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.6rem 1.5rem',
+                      color: isActive ? 'white' : '#d1d5db',
+                      backgroundColor: isActive ? 'rgba(79, 70, 229, 0.9)' : 'transparent',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                      gap: '0.75rem',
+                      borderLeft: sidebarOpen ? (isActive ? '3px solid #a5b4fc' : '2px solid #374151') : 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <Icon size={18} />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
-              {configuracionesItems.length > 0 && (
+      {configuracionesItems.length > 0 && (
                 <div>
                   <button
                     onClick={() => setConfiguracionesOpen((prev) => !prev)}
@@ -589,7 +715,7 @@ const Layout = () => {
                     <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
                       {configuracionesItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname.startsWith(item.path);
+                        const isActive = isPathActive(item.path);
                         return (
                           <Link
                             key={item.path}
@@ -599,11 +725,11 @@ const Layout = () => {
                               alignItems: 'center',
                               padding: '0.6rem 1.5rem',
                               color: isActive ? 'white' : '#d1d5db',
-                              backgroundColor: isActive ? '#4f46e5' : 'transparent',
+                              backgroundColor: isActive ? 'rgba(79, 70, 229, 0.9)' : 'transparent',
                               textDecoration: 'none',
                               transition: 'all 0.2s',
                               gap: '0.75rem',
-                              borderLeft: sidebarOpen ? '2px solid #374151' : 'none',
+                              borderLeft: sidebarOpen ? (isActive ? '3px solid #a5b4fc' : '2px solid #374151') : 'none',
                             }}
                             onMouseEnter={(e) => {
                               if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
@@ -614,6 +740,67 @@ const Layout = () => {
                           >
                             <Icon size={18} />
                             {sidebarOpen && <span>{item.label}</span>}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+      {proximasImplementacionesItems.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setProximasImplementacionesOpen((prev) => !prev)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.75rem 1.5rem',
+                      width: '100%',
+                      background: 'none',
+                      border: 'none',
+                      color: proximasImplementacionesActivo ? 'white' : '#9ca3af',
+                      cursor: 'pointer',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <Sparkles size={20} style={{ opacity: 0.9 }} />
+                    {sidebarOpen && (
+                      <>
+                        <span style={{ flex: 1, textAlign: 'left', fontSize: '0.9rem' }}>Próximas implementaciones</span>
+                        {proximasImplementacionesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </>
+                    )}
+                  </button>
+                  {proximasImplementacionesOpen && (
+                    <div style={{ paddingLeft: sidebarOpen ? '1.5rem' : '0.5rem' }}>
+                      {proximasImplementacionesItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = isPathActive(item.path);
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: '0.6rem 1.5rem',
+                              color: isActive ? 'white' : '#9ca3af',
+                              backgroundColor: isActive ? 'rgba(79, 70, 229, 0.9)' : 'transparent',
+                              textDecoration: 'none',
+                              transition: 'all 0.2s',
+                              gap: '0.75rem',
+                              borderLeft: sidebarOpen ? (isActive ? '3px solid #a5b4fc' : '2px solid #4b5563') : 'none',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = '#374151';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            <Icon size={18} style={{ opacity: 0.85 }} />
+                            {sidebarOpen && <span style={{ fontSize: '0.875rem' }}>{item.label}</span>}
                           </Link>
                         );
                       })}
@@ -647,7 +834,7 @@ const Layout = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.75rem' }}>
               {menuItemsInferior.map((item) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.path;
+                const isActive = isPathActive(item.path);
                 return (
                   <Link
                     key={item.path}

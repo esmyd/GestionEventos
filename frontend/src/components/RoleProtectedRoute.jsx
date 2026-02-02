@@ -1,7 +1,16 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { hasModuleAccess, isRoleAllowed } from '../utils/roles';
+import { useModulos } from '../hooks/useModulos';
+import { hasModuleAccess, isRoleAllowed, ROLES } from '../utils/roles';
+
+/**
+ * Redirige "Volver" según el rol: cliente -> /mi-evento, resto -> /panel
+ */
+const getRutaVolver = (rol) => {
+  if (rol === ROLES.CLIENT) return '/mi-evento';
+  return '/panel';
+};
 
 /**
  * Componente para proteger rutas según roles
@@ -11,8 +20,10 @@ import { hasModuleAccess, isRoleAllowed } from '../utils/roles';
  */
 const RoleProtectedRoute = ({ children, allowedRoles = [], moduleKey = null }) => {
   const { usuario, loading } = useAuth();
+  const { moduloExcluidoPorPlan, loading: modulosLoading } = useModulos();
+  const navigate = useNavigate();
 
-  if (loading) {
+  if (loading || modulosLoading) {
     return (
       <div
         style={{
@@ -32,8 +43,9 @@ const RoleProtectedRoute = ({ children, allowedRoles = [], moduleKey = null }) =
   }
 
   if (moduleKey) {
-    const tieneAcceso = hasModuleAccess(usuario, moduleKey, allowedRoles);
-    if (!tieneAcceso) {
+    const tieneAccesoRol = hasModuleAccess(usuario, moduleKey, allowedRoles);
+    const excluidoPorPlan = moduloExcluidoPorPlan(moduleKey);
+    if (!tieneAccesoRol) {
       return (
         <div
           style={{
@@ -68,6 +80,41 @@ const RoleProtectedRoute = ({ children, allowedRoles = [], moduleKey = null }) =
         </div>
       );
     }
+    if (excluidoPorPlan) {
+      return (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            gap: '1rem',
+            padding: '2rem',
+          }}
+        >
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f59e0b' }}>
+            Módulo no incluido en tu plan
+          </h2>
+          <p style={{ color: '#6b7280', textAlign: 'center', maxWidth: '400px' }}>
+            Esta funcionalidad no está incluida en tu plan actual. Revisa los beneficios disponibles o contacta a soporte para cambiar de plan.
+          </p>
+          <Link
+            to="/mi-plan"
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#6366f1',
+              color: 'white',
+              borderRadius: '0.375rem',
+              textDecoration: 'none',
+              fontWeight: '500',
+            }}
+          >
+            Ver mi plan
+          </Link>
+        </div>
+      );
+    }
   } else if (allowedRoles.length > 0 && !isRoleAllowed(usuario?.rol, allowedRoles)) {
     return (
       <div
@@ -87,7 +134,7 @@ const RoleProtectedRoute = ({ children, allowedRoles = [], moduleKey = null }) =
           No tienes permisos para acceder a esta sección.
         </p>
         <button
-          onClick={() => window.history.back()}
+          onClick={() => navigate(getRutaVolver(usuario?.rol))}
           style={{
             padding: '0.75rem 1.5rem',
             backgroundColor: '#6366f1',

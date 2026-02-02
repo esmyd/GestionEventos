@@ -16,6 +16,7 @@ class PagoModelo:
         self._pagos_columnas_cache = None
         self._asegurar_columna_estado_pago()
         self._asegurar_columna_cuenta_id()
+        self._asegurar_columna_recibo_ruta()
 
     def _pagos_tiene_columna(self, nombre):
         if self._pagos_columnas_cache is None:
@@ -53,6 +54,20 @@ class PagoModelo:
             self.logger.info("Columna cuenta_id agregada a tabla pagos")
         except Exception as e:
             self.logger.warning(f"No se pudo crear la columna cuenta_id en pagos: {e}")
+
+    def _asegurar_columna_recibo_ruta(self):
+        """Asegura que exista la columna recibo_ruta para adjuntar comprobante de pago"""
+        if self._pagos_tiene_columna("recibo_ruta"):
+            return
+        try:
+            self.base_datos.ejecutar_consulta(
+                "ALTER TABLE pagos ADD COLUMN recibo_ruta VARCHAR(512) NULL AFTER observaciones"
+            )
+            self._pagos_columnas_cache = None
+            self._pagos_tiene_columna("recibo_ruta")
+            self.logger.info("Columna recibo_ruta agregada a tabla pagos")
+        except Exception as e:
+            self.logger.warning(f"No se pudo crear la columna recibo_ruta en pagos: {e}")
     
     def crear_pago(self, datos_pago):
         """Crea un nuevo pago o abono
@@ -156,6 +171,9 @@ class PagoModelo:
         if self._pagos_tiene_columna("cuenta_id") and cuenta_id:
             columnas.append("cuenta_id")
             valores.append(cuenta_id)
+        if self._pagos_tiene_columna("recibo_ruta") and datos_pago.get("recibo_ruta"):
+            columnas.append("recibo_ruta")
+            valores.append(datos_pago["recibo_ruta"])
 
         placeholders = ", ".join(["%s"] * len(columnas))
         consulta = f"INSERT INTO pagos ({', '.join(columnas)}) VALUES ({placeholders})"
@@ -189,7 +207,8 @@ class PagoModelo:
                         float(monto),
                         datos_pago.get('tipo_pago'),
                         datos_pago.get('metodo_pago', ''),
-                        str(datos_pago.get('fecha_pago', ''))
+                        str(datos_pago.get('fecha_pago', '')),
+                        pago_id=pago_id
                     )
             except Exception as e:
                 self.logger.error(f"Error al enviar notificación de pago ID {pago_id}: {str(e)}")
@@ -331,8 +350,15 @@ class PagoModelo:
         consulta = "UPDATE pagos SET cuenta_id = %s WHERE id = %s"
         return self.base_datos.ejecutar_consulta(consulta, (cuenta_id, pago_id))
 
-    def _enviar_notificacion_pago(self, evento, monto, tipo_pago, metodo_pago, fecha_pago):
-        # Determinar tipo de pago
+    def actualizar_recibo_pago(self, pago_id, recibo_ruta):
+        """Actualiza la ruta del recibo adjunto de un pago"""
+        if not self._pagos_tiene_columna("recibo_ruta"):
+            return False
+        consulta = "UPDATE pagos SET recibo_ruta = %s WHERE id = %s"
+        return self.base_datos.ejecutar_consulta(consulta, (recibo_ruta, pago_id))
+
+    def _enviar_notificacion_pago(self, evento, monto, tipo_pago, metodo_pago, fecha_pago, pago_id=None):
+        # Determinar tipo de notificación
         precio_total = self._obtener_precio_total_evento(evento.get('id_evento'))
         total_pagado = self.obtener_total_pagado_evento(evento.get('id_evento'))
         if precio_total > 0 and total_pagado >= precio_total:
@@ -342,9 +368,33 @@ class PagoModelo:
         else:
             tipo_notif = 'abono'
 
+        evento_id = evento.get('id_evento')
+
+        # abono y pago_completo: usar SistemaNotificaciones (plantillas + botones WhatsApp)
+        if tipo_notif in ('abono', 'pago_completo'):
+            use_sistema = (tipo_notif == 'pago_completo') or (tipo_notif == 'abono' and pago_id)
+            if use_sistema:
+                from integraciones.sistema_notificaciones import SistemaNotificaciones
+                sistema = SistemaNotificaciones()
+                try:
+                    if tipo_notif == 'abono':
+                        sistema.notificar_abono(evento_id, pago_id)
+                    else:
+                        sistema.notificar_pago_completo(evento_id)
+                    self.logger.debug(f"Notificación enviada para pago evento {evento_id}, Tipo: {tipo_notif}")
+                    return
+                except Exception as e:
+                    self.logger.warning(f"Error al enviar notificación vía SistemaNotificaciones: {e}")
+            self._fallback_notificacion_automatica(evento, monto, tipo_notif, metodo_pago, fecha_pago)
+        else:
+            # reembolso: usar NotificacionesAutomaticas (sin plantilla configurable)
+            self._fallback_notificacion_automatica(evento, monto, tipo_notif, metodo_pago, fecha_pago)
+
+    def _fallback_notificacion_automatica(self, evento, monto, tipo_notif, metodo_pago, fecha_pago):
+        """Fallback a NotificacionesAutomaticas cuando no hay config en SistemaNotificaciones"""
+        saldo_pendiente = float(evento.get('saldo', 0) or 0)
         from integraciones.notificaciones_automaticas import NotificacionesAutomaticas
         notif = NotificacionesAutomaticas()
-        saldo_pendiente = float(evento.get('saldo', 0) or 0)
         notif.enviar_notificacion_pago(
             evento=evento,
             monto=float(monto),
@@ -353,7 +403,7 @@ class PagoModelo:
             fecha_pago=str(fecha_pago),
             saldo_pendiente=saldo_pendiente
         )
-        self.logger.debug(f"Notificación enviada para pago evento {evento.get('id_evento')}, Tipo: {tipo_notif}")
+        self.logger.debug(f"Notificación (fallback) enviada para pago evento {evento.get('id_evento')}, Tipo: {tipo_notif}")
     
     def actualizar_saldo_evento(self, evento_id):
         """Actualiza el saldo pendiente de un evento basado en los pagos

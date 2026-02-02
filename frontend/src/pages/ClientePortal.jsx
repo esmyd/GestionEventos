@@ -3,7 +3,31 @@ import { Link } from 'react-router-dom';
 import { clientesService, eventosService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
-import { Calendar, Clock, MapPin, Package, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Package, AlertCircle, CheckCircle2, Circle, ChevronRight } from 'lucide-react';
+
+// Pasos del proceso del evento (para el cliente)
+const PASOS_PROCESO = [
+  { id: 'cotizacion', label: 'Cotización', orden: 0 },
+  { id: 'confirmado', label: 'Confirmado', orden: 1 },
+  { id: 'en_proceso', label: 'En proceso', orden: 2 },
+  { id: 'completado', label: 'Completado', orden: 3 },
+];
+
+const getStepIndexByEstado = (estado) => {
+  if (!estado) return 0;
+  const step = PASOS_PROCESO.find((s) => s.id === estado);
+  return step ? step.orden : 0;
+};
+
+const getPorcentajeProceso = (estado, progresoServicios = 0) => {
+  if (estado === 'cancelado') return 0;
+  const stepIndex = getStepIndexByEstado(estado);
+  const base = (stepIndex / (PASOS_PROCESO.length - 1)) * 100;
+  if (estado === 'completado') return 100;
+  if (estado === 'en_proceso') return Math.min(75 + (progresoServicios * 0.25) / 100, 99);
+  if (estado === 'confirmado') return 50;
+  return Math.min(25 + (progresoServicios * 0.25) / 100, 49);
+};
 
 const ClientePortal = () => {
   const { toasts, removeToast, error: showError } = useToast();
@@ -197,10 +221,11 @@ const ClientePortal = () => {
           <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{proximosEventos.length}</div>
         </div>
         <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
-          <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '600' }}>Saldo pendiente</div>
-          <div style={{ fontSize: '1.3rem', fontWeight: '700', color: '#ef4444' }}>
+          <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '600' }}>Saldo pendiente total</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: '700', color: totalSaldo > 0 ? '#dc2626' : '#0f172a' }}>
             {formatearMoneda(totalSaldo)}
           </div>
+          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.25rem' }}>Por pagar en todos tus eventos</div>
         </div>
       </div>
 
@@ -300,7 +325,14 @@ const ClientePortal = () => {
       ) : (
         <div style={{ display: 'grid', gap: '1rem' }}>
           {eventosOrdenados.map((evento) => {
-            const progreso = evento.progreso_servicios ?? evento.porcentaje_avance_servicios ?? 0;
+            const progresoConfirmaciones = evento.progreso_confirmaciones ?? evento.porcentaje_avance_confirmaciones ?? 0;
+            const estadoActual = (evento.estado || 'cotizacion').toLowerCase().replace(/\s/g, '_');
+            const pasoActual = getStepIndexByEstado(estadoActual);
+            const porcentajeProceso = evento.estado === 'cancelado' ? 0 : getPorcentajeProceso(estadoActual, progresoConfirmaciones);
+            const totalEvento = parseFloat(evento.total || 0) || 0;
+            const saldoPendiente = parseFloat(evento.saldo || 0) || 0;
+            const pagado = Math.max(0, totalEvento - saldoPendiente);
+
             return (
               <div
                 key={evento.id_evento || evento.id}
@@ -310,7 +342,7 @@ const ClientePortal = () => {
                   border: '1px solid #e5e7eb',
                   padding: '1.5rem',
                   display: 'grid',
-                  gap: '1rem',
+                  gap: '1.25rem',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
@@ -323,9 +355,15 @@ const ClientePortal = () => {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <AlertCircle size={16} color="#6b7280" />
+                    {evento.estado === 'cancelado' ? (
+                      <AlertCircle size={16} color="#9ca3af" />
+                    ) : evento.estado === 'completado' ? (
+                      <CheckCircle2 size={16} color="#10b981" />
+                    ) : (
+                      <Circle size={16} color="#6366f1" />
+                    )}
                     <span style={{ fontSize: '0.85rem', fontWeight: '600', textTransform: 'capitalize' }}>
-                      {evento.estado || '-'}
+                      {evento.estado ? evento.estado.replace(/_/g, ' ') : '-'}
                     </span>
                   </div>
                 </div>
@@ -348,31 +386,94 @@ const ClientePortal = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Package size={16} color="#6b7280" />
-                    <span style={{ fontSize: '0.85rem' }}>{evento.nombre_plan || 'Plan no definido'}</span>
+                    <span style={{ fontSize: '0.85rem' }}>{evento.nombre_plan || 'Paquete no definido'}</span>
                   </div>
                 </div>
 
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#6b7280' }}>
-                    <span>Avance del evento</span>
-                    <span>{progreso}%</span>
+                {evento.estado !== 'cancelado' && (
+                  <div
+                    style={{
+                      padding: '1rem',
+                      backgroundColor: '#f8fafc',
+                      borderRadius: '0.5rem',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#475569' }}>Progreso del proceso</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#6366f1' }}>{Math.round(porcentajeProceso)}%</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }}>
+                      {PASOS_PROCESO.map((paso, idx) => {
+                        const completado = pasoActual > idx || (pasoActual === idx && paso.id === estadoActual);
+                        const esActual = paso.id === estadoActual;
+                        return (
+                          <React.Fragment key={paso.id}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.35rem 0.6rem',
+                                borderRadius: '9999px',
+                                backgroundColor: completado ? '#6366f1' : esActual ? '#c7d2fe' : '#f1f5f9',
+                                color: completado ? '#fff' : esActual ? '#4338ca' : '#94a3b8',
+                                fontSize: '0.75rem',
+                                fontWeight: esActual || completado ? '600' : '500',
+                              }}
+                            >
+                              {completado ? <CheckCircle2 size={14} /> : null}
+                              {paso.label}
+                            </div>
+                            {idx < PASOS_PROCESO.length - 1 && (
+                              <ChevronRight size={14} style={{ color: '#cbd5e1', flexShrink: 0 }} />
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                    <div style={{ marginTop: '0.75rem', width: '100%', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          width: `${porcentajeProceso}%`,
+                          height: '100%',
+                          backgroundColor: porcentajeProceso >= 100 ? '#10b981' : '#6366f1',
+                          transition: 'width 0.3s',
+                        }}
+                      />
+                    </div>
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#64748b' }}>
+                      Avance de confirmaciones de ítems: {progresoConfirmaciones}%
+                    </div>
                   </div>
-                  <div style={{ width: '100%', height: '8px', backgroundColor: '#e5e7eb', borderRadius: '9999px', overflow: 'hidden' }}>
-                    <div
-                      style={{
-                        width: `${progreso}%`,
-                        height: '100%',
-                        backgroundColor: progreso >= 100 ? '#10b981' : '#6366f1',
-                        transition: 'width 0.3s',
-                      }}
-                    />
+                )}
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: '1rem',
+                    padding: '1rem',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #e2e8f0',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em', marginBottom: '0.25rem' }}>Total del paquete</div>
+                    <div style={{ fontSize: '1rem', fontWeight: '700', color: '#0f172a' }}>{formatearMoneda(totalEvento)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em', marginBottom: '0.25rem' }}>Pagado</div>
+                    <div style={{ fontSize: '1rem', fontWeight: '700', color: '#10b981' }}>{formatearMoneda(pagado)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em', marginBottom: '0.25rem' }}>Saldo pendiente</div>
+                    <div style={{ fontSize: '1rem', fontWeight: '700', color: saldoPendiente > 0 ? '#dc2626' : '#0f172a' }}>{formatearMoneda(saldoPendiente)}</div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div style={{ fontSize: '0.9rem', color: '#374151' }}>
-                    Saldo pendiente: <strong>{formatearMoneda(parseFloat(evento.saldo || 0) || 0)}</strong>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                   <Link
                     to={`/eventos/${evento.id_evento || evento.id}`}
                     style={{

@@ -469,6 +469,7 @@ class SistemaNotificaciones:
         """
         Envía notificación por WhatsApp y retorna (exito, wa_message_id, error)
         registrar_inmediatamente: Si False, no registra el mensaje (útil para re-engagement)
+        Si hay botones_whatsapp configurados, envía mensaje interactivo con botones (solo dentro ventana 24h).
         """
         try:
             telefono = evento.get('telefono')
@@ -476,14 +477,32 @@ class SistemaNotificaciones:
                 self.logger.warning(f"No hay teléfono para el evento {evento.get('id_evento')}")
                 return False, None, None
             
-            # Formatear plantilla
             plantilla = config.get('plantilla_whatsapp', '')
             mensaje = self._render_template(plantilla, datos, tipo_notificacion, "whatsapp")
             
-            # Enviar mensaje
-            ok, wa_message_id, error = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje)
+            botones_raw = config.get('botones_whatsapp')
+            botones = []
+            if botones_raw:
+                try:
+                    bt = json.loads(botones_raw) if isinstance(botones_raw, str) else botones_raw
+                    if isinstance(bt, list) and bt:
+                        botones = [
+                            {"id": (b.get("id") or f"btn_{i}")[:20], "titulo": (b.get("titulo") or "")[:20]}
+                            for i, b in enumerate(bt[:3])
+                            if (b.get("id") or "").strip() and (b.get("titulo") or "").strip()
+                        ]
+                except Exception:
+                    pass
             
-            # Registrar en whatsapp_mensajes para trazabilidad (solo si se solicita)
+            ok, wa_message_id, error = False, None, None
+            if botones:
+                titulo = self._obtener_nombre_plataforma()
+                ok, wa_message_id, error = self.whatsapp.enviar_mensaje_con_botones(
+                    telefono, titulo[:60], mensaje[:1024], botones
+                )
+            if not ok and not botones or (ok is False and error):
+                ok, wa_message_id, error = self.whatsapp.enviar_mensaje_con_error(telefono, mensaje)
+            
             if registrar_inmediatamente:
                 self._registrar_mensaje_whatsapp(evento, mensaje, ok, wa_message_id, error, tipo_notificacion)
             
@@ -558,11 +577,11 @@ class SistemaNotificaciones:
             'metodo_pago': pago.get('metodo_pago', '').replace('_', ' ').title()
         }
         
-        return self.enviar_notificacion(evento_id, 'abono_recibido', datos_adicionales)
+        return self.enviar_notificacion(evento_id, 'abono_recibido', datos_adicionales, force=True)
     
     def notificar_pago_completo(self, evento_id):
         """Envía notificación cuando se completa el pago"""
-        return self.enviar_notificacion(evento_id, 'pago_completo')
+        return self.enviar_notificacion(evento_id, 'pago_completo', force=True)
     
     def procesar_notificaciones_programadas(self):
         """Procesa notificaciones programadas (recordatorios, calificaciones)"""

@@ -71,7 +71,8 @@ const Clientes = () => {
       cliente.nombre_completo?.toLowerCase().includes(busquedaLower) ||
       cliente.email?.toLowerCase().includes(busquedaLower) ||
       cliente.documento_identidad?.toString().includes(busqueda) ||
-      cliente.telefono?.includes(busqueda)
+      cliente.telefono?.includes(busqueda) ||
+      String(cliente.id).includes(busqueda)
     );
   });
 
@@ -323,24 +324,49 @@ const Clientes = () => {
                     gap: '0.75rem',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div
+                        style={{
+                          width: '2.5rem',
+                          height: '2.5rem',
+                          borderRadius: '50%',
+                          backgroundColor: '#6366f120',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <User size={18} color="#6366f1" />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#111827' }}>{cliente.nombre_completo || '-'}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                          ID #{cliente.id}
+                          {cliente.fecha_registro && (
+                            <span style={{ marginLeft: '0.5rem' }}>
+                              · Registrado {new Date(cliente.fecha_registro).toLocaleDateString('es-EC', { year: 'numeric', month: 'short', day: 'numeric' })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <span
                       style={{
-                        width: '2.5rem',
-                        height: '2.5rem',
-                        borderRadius: '50%',
-                        backgroundColor: '#6366f120',
-                        display: 'flex',
+                        display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        padding: '0.25rem 0.5rem',
+                        backgroundColor: (cliente.cantidad_eventos || 0) > 0 ? '#dbeafe' : '#f3f4f6',
+                        color: (cliente.cantidad_eventos || 0) > 0 ? '#1d4ed8' : '#6b7280',
+                        borderRadius: '0.375rem',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
                       }}
                     >
-                      <User size={18} color="#6366f1" />
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: '600', color: '#111827' }}>{cliente.nombre_completo || '-'}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{cliente.documento_identidad || '-'}</div>
-                    </div>
+                      <Calendar size={14} style={{ marginRight: '0.25rem' }} />
+                      {cliente.cantidad_eventos ?? 0} eventos
+                    </span>
                   </div>
                   <div style={{ display: 'grid', gap: '0.5rem' }}>
                     <div style={{ fontSize: '0.85rem' }}>
@@ -422,8 +448,17 @@ const Clientes = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', width: '70px' }}>
+                    ID
+                  </th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Cliente
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
+                    Fecha registro
+                  </th>
+                  <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', width: '90px' }}>
+                    Eventos
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600' }}>
                     Documento
@@ -445,13 +480,16 @@ const Clientes = () => {
               <tbody>
                 {clientesFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                    <td colSpan="9" style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
                       {busqueda ? 'No se encontraron clientes con ese criterio' : 'No hay clientes disponibles'}
                     </td>
                   </tr>
                 ) : (
                   clientesFiltrados.map((cliente) => (
                     <tr key={cliente.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '1rem', color: '#6b7280', fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                        #{cliente.id}
+                      </td>
                       <td style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div
@@ -471,6 +509,29 @@ const Clientes = () => {
                             <div style={{ fontWeight: '500' }}>{cliente.nombre_completo || '-'}</div>
                           </div>
                         </div>
+                      </td>
+                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                        {cliente.fecha_registro
+                          ? new Date(cliente.fecha_registro).toLocaleDateString('es-EC', { year: 'numeric', month: 'short', day: 'numeric' })
+                          : '-'}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minWidth: '28px',
+                            padding: '0.25rem 0.5rem',
+                            backgroundColor: (cliente.cantidad_eventos || 0) > 0 ? '#dbeafe' : '#f3f4f6',
+                            color: (cliente.cantidad_eventos || 0) > 0 ? '#1d4ed8' : '#6b7280',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {cliente.cantidad_eventos ?? 0}
+                        </span>
                       </td>
                       <td style={{ padding: '1rem' }}>{cliente.documento_identidad || '-'}</td>
                       <td style={{ padding: '1rem' }}>{cliente.email || '-'}</td>
@@ -1215,13 +1276,16 @@ const Clientes = () => {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '0.5rem',
-                    backgroundColor: '#fef3c7',
+                    backgroundColor: '#dbeafe',
                     padding: '0.5rem 1rem',
                     borderRadius: '2rem',
                   }}>
-                    <Award size={18} color="#d97706" />
-                    <span style={{ fontWeight: '600', color: '#92400e' }}>
-                      {clienteSeleccionado.cantidad_eventos_completados} evento{clienteSeleccionado.cantidad_eventos_completados > 1 ? 's' : ''}
+                    <Calendar size={18} color="#1d4ed8" />
+                    <span style={{ fontWeight: '600', color: '#1d4ed8' }}>
+                      {(clienteSeleccionado.cantidad_eventos ?? 0)} evento{(clienteSeleccionado.cantidad_eventos ?? 0) !== 1 ? 's' : ''}
+                      {(clienteSeleccionado.cantidad_eventos_completados ?? 0) > 0 && (
+                        <span style={{ opacity: 0.9, fontWeight: 500 }}> ({clienteSeleccionado.cantidad_eventos_completados} completado{(clienteSeleccionado.cantidad_eventos_completados ?? 0) !== 1 ? 's' : ''})</span>
+                      )}
                     </span>
                   </div>
                 )}

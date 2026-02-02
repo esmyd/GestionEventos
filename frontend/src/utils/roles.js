@@ -1,4 +1,7 @@
 export const ROLES = {
+  /** Creador/vendedor del software: controla suscripción y config. del sistema (una instancia) */
+  ADMIN_SISTEMA: 'administrador_sistema',
+  /** Administrador de la empresa (cliente que usa el software): usuarios, roles y permisos */
   ADMIN: 'administrador',
   MANAGER: 'gerente_general',
   COORDINATOR: 'coordinador',
@@ -6,34 +9,47 @@ export const ROLES = {
 };
 
 export const MODULES = {
-  COTIZADOR: 'cotizador',
+  COTIZADOR: 'cotizador', /*Cotizador*/
   DASHBOARD: 'dashboard',
-  EVENTOS: 'eventos',
-  CALENDARIO: 'calendario',
-  PORTAL_CLIENTE: 'portal_cliente',
-  PERFIL: 'perfil',
-  CLIENTES: 'clientes',
-  PRODUCTOS: 'productos',
-  CATEGORIAS: 'categorias',
-  PLANES: 'planes',
-  PAGOS: 'pagos',
-  CUENTAS: 'cuentas',
-  INVENTARIO: 'inventario',
-  SALONES: 'salones',
-  REPORTES: 'reportes',
-  USUARIOS: 'usuarios',
-  PERMISOS: 'permisos',
+  EVENTOS: 'eventos', /*Eventos*/
+  CALENDARIO: 'calendario', /*Calendario*/
+  PORTAL_CLIENTE: 'portal_cliente', /*Portal del cliente*/
+  PERFIL: 'perfil', /*Perfil*/
+  CLIENTES: 'clientes', /*Clientes*/
+  PRODUCTOS: 'productos', /*Productos*/
+  CATEGORIAS: 'categorias', /*Categorías*/
+  PLANES: 'planes', /*Paquetes*/
+  PAGOS: 'pagos', /*Pagos*/
+  CUENTAS: 'cuentas', /*Cuentas*/
+  INVENTARIO: 'inventario', /*Inventario*/
+  SALONES: 'salones', /*Salones*/
+  REPORTES: 'reportes', /*Reportes*/
+  USUARIOS: 'usuarios', /*Usuarios*/
+  PERMISOS: 'permisos', /*Roles y Permisos*/
+  ADMIN_SUSCRIPCION: 'admin_suscripcion', /*Admin Suscripción*/
+  MI_PLAN: 'mi_plan', /*Mi Plan*/
   NOTIFICACIONES_NATIVAS: 'notificaciones_nativas',
   INTEGRACIONES: 'integraciones',
   WHATSAPP_CHAT: 'whatsapp_chat',
   WHATSAPP_METRICAS: 'whatsapp_metricas',
   WHATSAPP_TEMPLATES: 'whatsapp_templates',
-  CONFIG_DATOS: 'config_datos',
-  CARGA_MASIVA: 'carga_masiva',
+  CONFIG_DATOS: 'config_datos',/*Configuración del sistema*/
+  CARGA_MASIVA: 'carga_masiva',/*Carga masiva de datos*/
+  // Próximas implementaciones (placeholders)
+  ENVIO_SUGERENCIA: 'envio_sugerencia',/*Envío de sugerencia*/
+  PROVEEDORES: 'proveedores',
+  FACTURACION_ELECTRONICA: 'facturacion_electronica',
+  CONTRATOS: 'contratos',
+  RESERVAS_ONLINE: 'reservas_online',
+  CRM_AVANZADO: 'crm_avanzado',
+  INTEGRACION_CONTABILIDAD: 'integracion_contabilidad',
+  SITIO_WEB_EVENTOS: 'sitio_web_eventos',
+  INSTAGRAM: 'instagram',
 };
 
 export const PERMISSIONS = {
   EVENTOS_EDITAR_ESTADO: 'eventos:editar_estado',
+  EVENTOS_FINALIZAR: 'eventos:finalizar',
   EVENTOS_AGREGAR_PRODUCTO: 'eventos:agregar_producto',
   EVENTOS_ELIMINAR_PRODUCTO: 'eventos:eliminar_producto',
   EVENTOS_ELIMINAR: 'eventos:eliminar',
@@ -56,6 +72,8 @@ export const PERMISSIONS = {
 };
 
 const ROLE_ALIASES = {
+  administrador_sistema: ROLES.ADMIN_SISTEMA,
+  'administrador sistema': ROLES.ADMIN_SISTEMA,
   admin: ROLES.ADMIN,
   administrador: ROLES.ADMIN,
   administrator: ROLES.ADMIN,
@@ -69,6 +87,7 @@ const ROLE_ALIASES = {
 };
 
 const ROLE_LABELS = {
+  [ROLES.ADMIN_SISTEMA]: 'Administrador del sistema',
   [ROLES.ADMIN]: 'Administrador',
   [ROLES.MANAGER]: 'Gerente General',
   [ROLES.COORDINATOR]: 'Coordinador',

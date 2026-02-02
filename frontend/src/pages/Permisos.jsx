@@ -2,18 +2,20 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { usuariosService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
-import { MODULES, PERMISSIONS } from '../utils/roles';
+import { useAuth } from '../context/AuthContext';
+import { MODULES, PERMISSIONS, ROLES } from '../utils/roles';
 
 const MODULOS = [
   { key: MODULES.COTIZADOR, label: 'Cotizador' },
   { key: MODULES.DASHBOARD, label: 'Dashboard' },
   { key: MODULES.EVENTOS, label: 'Eventos' },
+  { key: MODULES.CALENDARIO, label: 'Calendario' },
   { key: MODULES.PORTAL_CLIENTE, label: 'Portal cliente' },
   { key: MODULES.PERFIL, label: 'Perfil' },
   { key: MODULES.CLIENTES, label: 'Clientes' },
   { key: MODULES.PRODUCTOS, label: 'Productos' },
   { key: MODULES.CATEGORIAS, label: 'Categorías' },
-  { key: MODULES.PLANES, label: 'Planes' },
+  { key: MODULES.PLANES, label: 'Paquetes' },
   { key: MODULES.PAGOS, label: 'Pagos' },
   { key: MODULES.CUENTAS, label: 'Cuentas' },
   { key: MODULES.INVENTARIO, label: 'Inventario' },
@@ -22,16 +24,29 @@ const MODULOS = [
   { key: MODULES.REPORTES, label: 'Reportes' },
   { key: MODULES.USUARIOS, label: 'Usuarios' },
   { key: MODULES.PERMISOS, label: 'Roles y Permisos' },
+  { key: MODULES.MI_PLAN, label: 'Mi Plan' },
+  { key: MODULES.ADMIN_SUSCRIPCION, label: 'Admin Suscripción' },
   { key: MODULES.INTEGRACIONES, label: 'Integraciones' },
   { key: MODULES.WHATSAPP_CHAT, label: 'WhatsApp Chat' },
   { key: MODULES.WHATSAPP_METRICAS, label: 'Panel WhatsApp/Email' },
   { key: MODULES.WHATSAPP_TEMPLATES, label: 'Plantillas WhatsApp' },
   { key: MODULES.CARGA_MASIVA, label: 'Carga masiva' },
-  { key: MODULES.CONFIG_DATOS, label: 'Limpieza de datos' },
+  { key: MODULES.CONFIG_DATOS, label: 'Config. Sistema' },
+  // Próximas implementaciones
+  { key: MODULES.ENVIO_SUGERENCIA, label: 'Envío de Sugerencia (próximamente)' },
+  { key: MODULES.PROVEEDORES, label: 'Proveedores (próximamente)' },
+  { key: MODULES.FACTURACION_ELECTRONICA, label: 'Facturación Electrónica (próximamente)' },
+  { key: MODULES.CONTRATOS, label: 'Contratos Digitales (próximamente)' },
+  { key: MODULES.RESERVAS_ONLINE, label: 'Reservas Online (próximamente)' },
+  { key: MODULES.CRM_AVANZADO, label: 'CRM Avanzado (próximamente)' },
+  { key: MODULES.INTEGRACION_CONTABILIDAD, label: 'Integración Contable (próximamente)' },
+  { key: MODULES.SITIO_WEB_EVENTOS, label: 'Sitio Web de Eventos (próximamente)' },
+  { key: MODULES.INSTAGRAM, label: 'Instagram (próximamente)' },
 ];
 
 const ACCIONES = [
   { key: PERMISSIONS.EVENTOS_EDITAR_ESTADO, label: 'Eventos · Editar estado' },
+  { key: PERMISSIONS.EVENTOS_FINALIZAR, label: 'Eventos · Finalizar evento' },
   { key: PERMISSIONS.EVENTOS_AGREGAR_PRODUCTO, label: 'Eventos · Agregar producto' },
   { key: PERMISSIONS.EVENTOS_ELIMINAR_PRODUCTO, label: 'Eventos · Eliminar producto' },
   { key: PERMISSIONS.EVENTOS_ELIMINAR, label: 'Eventos · Eliminar' },
@@ -48,15 +63,20 @@ const ACCIONES = [
   { key: PERMISSIONS.CUENTAS_CREAR, label: 'Cuentas · Crear' },
   { key: PERMISSIONS.CUENTAS_EDITAR, label: 'Cuentas · Editar' },
   { key: PERMISSIONS.CUENTAS_ELIMINAR, label: 'Cuentas · Eliminar' },
-  { key: PERMISSIONS.PLANES_CREAR, label: 'Planes · Crear' },
-  { key: PERMISSIONS.PLANES_EDITAR, label: 'Planes · Editar' },
-  { key: PERMISSIONS.PLANES_ELIMINAR, label: 'Planes · Eliminar' },
+  { key: PERMISSIONS.PLANES_CREAR, label: 'Paquetes · Crear' },
+  { key: PERMISSIONS.PLANES_EDITAR, label: 'Paquetes · Editar' },
+  { key: PERMISSIONS.PLANES_ELIMINAR, label: 'Paquetes · Eliminar' },
 ];
 
+/** Módulos solo visibles para administrador_sistema (se gestionan por BD) */
+const MODULOS_SISTEMA = [MODULES.ADMIN_SUSCRIPCION, MODULES.CONFIG_DATOS];
+
 const Permisos = () => {
+  const { usuario: usuarioActual } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]);
+  const esAdminSistema = usuarioActual?.rol === ROLES.ADMIN_SISTEMA;
   const [loading, setLoading] = useState(true);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
   const [permisosSeleccionados, setPermisosSeleccionados] = useState([]);
@@ -190,6 +210,21 @@ const Permisos = () => {
     return usuarioSeleccionado.nombre_completo || usuarioSeleccionado.nombre_usuario;
   }, [usuarioSeleccionado]);
 
+  const usuariosVisibles = useMemo(() => {
+    if (esAdminSistema) return usuarios;
+    return usuarios.filter((u) => u.rol !== ROLES.ADMIN_SISTEMA);
+  }, [usuarios, esAdminSistema]);
+
+  const rolesVisibles = useMemo(() => {
+    if (esAdminSistema) return roles;
+    return roles.filter((r) => r !== ROLES.ADMIN_SISTEMA);
+  }, [roles, esAdminSistema]);
+
+  const modulosVisibles = useMemo(() => {
+    if (esAdminSistema) return MODULOS;
+    return MODULOS.filter((m) => !MODULOS_SISTEMA.includes(m.key));
+  }, [esAdminSistema]);
+
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando usuarios...</div>;
   }
@@ -201,6 +236,11 @@ const Permisos = () => {
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Roles y Permisos</h1>
         <p style={{ color: '#6b7280' }}>
           Define permisos por rol y permisos personalizados por usuario.
+          {!esAdminSistema && (
+            <span style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.9rem' }}>
+              Los permisos del administrador del sistema se gestionan exclusivamente por base de datos.
+            </span>
+          )}
         </p>
         <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem' }}>
           <button
@@ -243,7 +283,7 @@ const Permisos = () => {
               Roles
             </div>
             <div style={{ maxHeight: '560px', overflowY: 'auto' }}>
-              {roles.map((rol) => {
+              {rolesVisibles.map((rol) => {
                 const activo = rolSeleccionado === rol;
                 return (
                   <button
@@ -277,7 +317,7 @@ const Permisos = () => {
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              {MODULOS.map((modulo) => (
+              {modulosVisibles.map((modulo) => (
                 <label
                   key={modulo.key}
                   style={{
@@ -374,7 +414,7 @@ const Permisos = () => {
               Usuarios
             </div>
             <div style={{ maxHeight: '560px', overflowY: 'auto' }}>
-              {usuarios.map((usuario) => {
+              {usuariosVisibles.map((usuario) => {
                 const activo = usuarioSeleccionado?.id === usuario.id;
                 return (
                   <button
@@ -409,7 +449,7 @@ const Permisos = () => {
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              {MODULOS.map((modulo) => (
+              {modulosVisibles.map((modulo) => (
                 <label
                   key={modulo.key}
                   style={{

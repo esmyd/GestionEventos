@@ -11,8 +11,25 @@ class NotificacionModelo:
     def __init__(self):
         self.base_datos = BaseDatos()
     
+    def _asegurar_botones_whatsapp(self):
+        """Asegura que exista la columna botones_whatsapp"""
+        try:
+            consulta = """
+            SELECT COLUMN_NAME FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'configuracion_notificaciones'
+            AND COLUMN_NAME = 'botones_whatsapp'
+            """
+            existe = self.base_datos.obtener_uno(consulta)
+            if not existe:
+                self.base_datos.ejecutar_consulta(
+                    "ALTER TABLE configuracion_notificaciones ADD COLUMN botones_whatsapp TEXT NULL"
+                )
+        except Exception:
+            pass
+
     def obtener_configuracion(self, tipo_notificacion):
         """Obtiene la configuración de una notificación por tipo"""
+        self._asegurar_botones_whatsapp()
         if tipo_notificacion == "recordatorio_evento":
             self._asegurar_recordatorio_evento()
         if tipo_notificacion == "evento_creado":
@@ -152,11 +169,27 @@ class NotificacionModelo:
     
     def actualizar_configuracion(self, tipo_notificacion, datos):
         """Actualiza la configuración de una notificación"""
+        self._asegurar_botones_whatsapp()
+        botones_json = None
+        bt = datos.get("botones_whatsapp")
+        if isinstance(bt, list):
+            import json
+            botones_json = json.dumps(bt[:3], ensure_ascii=False) if bt else None
+        elif isinstance(bt, str) and bt.strip():
+            try:
+                import json
+                parsed = json.loads(bt.strip())
+                botones_json = json.dumps(parsed[:3], ensure_ascii=False) if parsed else None
+            except Exception:
+                botones_json = None
+        else:
+            botones_json = None
         consulta = """
         UPDATE configuracion_notificaciones 
         SET nombre = %s, descripcion = %s, activo = %s, 
             enviar_email = %s, enviar_whatsapp = %s, dias_antes = %s,
-            plantilla_email = %s, plantilla_whatsapp = %s
+            plantilla_email = %s, plantilla_whatsapp = %s,
+            botones_whatsapp = %s
         WHERE tipo_notificacion = %s
         """
         parametros = (
@@ -168,6 +201,7 @@ class NotificacionModelo:
             datos.get('dias_antes', 0),
             datos.get('plantilla_email'),
             datos.get('plantilla_whatsapp'),
+            botones_json,
             tipo_notificacion
         )
         return self.base_datos.ejecutar_consulta(consulta, parametros)

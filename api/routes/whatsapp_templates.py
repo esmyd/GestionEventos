@@ -22,7 +22,7 @@ whatsapp = IntegracionWhatsApp()
 
 @whatsapp_templates_bp.route("", methods=["GET"], strict_slashes=False)
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_rol("administrador", "gerente_general", "administrador_sistema")
 def listar_templates():
     try:
         templates = modelo.listar()

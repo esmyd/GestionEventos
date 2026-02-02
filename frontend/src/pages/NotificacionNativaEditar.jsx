@@ -5,6 +5,17 @@ import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
 import { useNombrePlataforma } from '../hooks/useNombrePlataforma';
 
+// Botones disponibles en el chatbot WhatsApp (sincronizados con whatsapp_chat.py)
+const BOTONES_CHATBOT = [
+  { id: 'menu:evento', titulo: 'Consultar mi evento' },
+  { id: 'menu:registrar_pago', titulo: 'Registrar un pago' },
+  { id: 'menu:pagos', titulo: 'Consultar mis pagos' },
+  { id: 'menu:direccion', titulo: 'Direcciones' },
+  { id: 'menu:horario', titulo: 'Horarios' },
+  { id: 'menu:contacto', titulo: 'Contactos' },
+  { id: 'menu:crear', titulo: 'Crear evento' },
+];
+
 const NotificacionNativaEditar = () => {
   const { tipo } = useParams();
   const navigate = useNavigate();
@@ -18,6 +29,7 @@ const NotificacionNativaEditar = () => {
     enviar_whatsapp: true,
     plantilla_email: '',
     plantilla_whatsapp: '',
+    botones_whatsapp: [],
   });
   const [layoutHeader, setLayoutHeader] = useState('');
   const [layoutFooter, setLayoutFooter] = useState('');
@@ -123,6 +135,11 @@ const NotificacionNativaEditar = () => {
       const extracted = extractProfessionalTemplate(cleanEmail);
       if (extracted.header) setLayoutHeader(extracted.header);
       if (extracted.footer) setLayoutFooter(extracted.footer);
+      let botones = config.botones_whatsapp;
+      if (typeof botones === 'string' && botones.trim()) {
+        try { botones = JSON.parse(botones); } catch { botones = []; }
+      }
+      if (!Array.isArray(botones)) botones = [];
       setFormTemplate({
         nombre: config.nombre || '',
         descripcion: config.descripcion || '',
@@ -130,6 +147,7 @@ const NotificacionNativaEditar = () => {
         enviar_whatsapp: Boolean(config.enviar_whatsapp),
         plantilla_email: extracted.body || cleanEmail,
         plantilla_whatsapp: config.plantilla_whatsapp || '',
+        botones_whatsapp: botones,
       });
       if (!baseHeader) setBaseHeader(headerMatch?.[1]?.trim() || layoutHeader);
       if (!baseFooter) setBaseFooter(footerMatch?.[1]?.trim() || layoutFooter);
@@ -285,6 +303,69 @@ const NotificacionNativaEditar = () => {
                   onChange={(e) => setFormTemplate((prev) => ({ ...prev, plantilla_whatsapp: e.target.value }))}
                   style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
                 />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: '#374151' }}>
+                  Botones WhatsApp (opcional, máx 3)
+                </label>
+                <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                  Seleccione botones del chatbot. El cliente los verá en el mensaje y al pulsarlos se ejecutará la acción correspondiente.
+                </p>
+                {(formTemplate.botones_whatsapp || []).map((btn, idx) => {
+                  const idsSeleccionados = (formTemplate.botones_whatsapp || []).map((b) => b.id).filter(Boolean);
+                  const disponibles = BOTONES_CHATBOT.filter((opt) => !idsSeleccionados.includes(opt.id) || opt.id === btn.id);
+                  const opcionActual = BOTONES_CHATBOT.find((o) => o.id === btn.id) || (btn.id && btn.titulo ? { id: btn.id, titulo: btn.titulo } : null);
+                  return (
+                    <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                      <select
+                        value={btn.id || ''}
+                        onChange={(e) => {
+                          const sel = BOTONES_CHATBOT.find((o) => o.id === e.target.value);
+                          const next = [...(formTemplate.botones_whatsapp || [])];
+                          if (sel) {
+                            next[idx] = { id: sel.id, titulo: sel.titulo };
+                          } else {
+                            next.splice(idx, 1);
+                          }
+                          setFormTemplate((prev) => ({ ...prev, botones_whatsapp: next }));
+                        }}
+                        style={{ flex: 1, padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem', minWidth: 0 }}
+                      >
+                        <option value="">— Seleccionar botón —</option>
+                        {disponibles.map((opt) => (
+                          <option key={opt.id} value={opt.id}>
+                            {opt.titulo}
+                          </option>
+                        ))}
+                        {opcionActual && !BOTONES_CHATBOT.find((o) => o.id === opcionActual.id) && (
+                          <option value={btn.id}>{btn.titulo || btn.id}</option>
+                        )}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = (formTemplate.botones_whatsapp || []).filter((_, i) => i !== idx);
+                          setFormTemplate((prev) => ({ ...prev, botones_whatsapp: next }));
+                        }}
+                        style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #dc2626', background: '#fee2e2', color: '#991b1b', cursor: 'pointer', flexShrink: 0 }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+                {(formTemplate.botones_whatsapp || []).length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = [...(formTemplate.botones_whatsapp || []), { id: '', titulo: '' }];
+                      setFormTemplate((prev) => ({ ...prev, botones_whatsapp: next }));
+                    }}
+                    style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #22c55e', background: '#dcfce7', color: '#166534', cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    + Agregar botón
+                  </button>
+                )}
               </div>
             </div>
           </div>

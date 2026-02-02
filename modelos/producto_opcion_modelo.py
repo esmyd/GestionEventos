@@ -8,9 +8,37 @@ from utilidades.logger import obtener_logger
 class ProductoOpcionModelo:
     """Clase para gestionar opciones de productos"""
     
+    _columnas_cache = None
+
     def __init__(self):
         self.base_datos = BaseDatos()
         self.logger = obtener_logger()
+        self._asegurar_columnas_opciones()
+
+    def _producto_opciones_tiene_columna(self, nombre):
+        if self._columnas_cache is None:
+            try:
+                columnas = self.base_datos.obtener_todos("SHOW COLUMNS FROM producto_opciones")
+                self._columnas_cache = {col.get("Field") for col in columnas if col.get("Field")}
+            except Exception as e:
+                self.logger.warning(f"No se pudieron cargar columnas de producto_opciones: {e}")
+                self._columnas_cache = set()
+        return nombre in self._columnas_cache
+
+    def _asegurar_columnas_opciones(self):
+        """Asegura que existan las columnas pedir_cantidad, cantidad_max_multiples, minimo_multiples"""
+        for col, def_sql in [
+            ("pedir_cantidad", "ALTER TABLE producto_opciones ADD COLUMN pedir_cantidad TINYINT(1) DEFAULT 0 AFTER orden"),
+            ("cantidad_max_multiples", "ALTER TABLE producto_opciones ADD COLUMN cantidad_max_multiples INT NULL AFTER orden"),
+            ("minimo_multiples", "ALTER TABLE producto_opciones ADD COLUMN minimo_multiples INT NULL AFTER orden"),
+        ]:
+            if not self._producto_opciones_tiene_columna(col):
+                try:
+                    self.base_datos.ejecutar_consulta(def_sql)
+                    self._columnas_cache = None
+                    self.logger.info(f"Columna {col} agregada a producto_opciones")
+                except Exception as e:
+                    self.logger.warning(f"No se pudo crear columna {col} en producto_opciones: {e}")
     
     # ==========================================
     # GESTIÓN DE OPCIONES DE PRODUCTOS
@@ -27,11 +55,23 @@ class ProductoOpcionModelo:
         """
         if not datos.get('producto_id') or not datos.get('nombre_grupo') or not datos.get('opciones'):
             raise ValueError("producto_id, nombre_grupo y opciones son requeridos")
+
+        def _to_int_or_none(v):
+            if v is None or (isinstance(v, str) and v.strip() == ''):
+                return None
+            try:
+                return int(v)
+            except (ValueError, TypeError):
+                return None
+
+        pedir_cantidad = bool(datos.get('pedir_cantidad', False))
+        cantidad_max = _to_int_or_none(datos.get('cantidad_max_multiples'))
+        minimo = _to_int_or_none(datos.get('minimo_multiples'))
         
         consulta = """
             INSERT INTO producto_opciones 
-            (producto_id, nombre_grupo, opciones, permite_multiple, requerido, orden)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            (producto_id, nombre_grupo, opciones, permite_multiple, requerido, orden, pedir_cantidad, cantidad_max_multiples, minimo_multiples)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         parametros = (
             datos['producto_id'],
@@ -39,7 +79,10 @@ class ProductoOpcionModelo:
             datos['opciones'],
             datos.get('permite_multiple', False),
             datos.get('requerido', True),
-            datos.get('orden', 0)
+            datos.get('orden', 0),
+            pedir_cantidad,
+            cantidad_max,
+            minimo
         )
         
         if self.base_datos.ejecutar_consulta(consulta, parametros):
@@ -61,7 +104,9 @@ class ProductoOpcionModelo:
         """
         consulta = """
             SELECT id, producto_id, nombre_grupo, opciones, permite_multiple, 
-                   requerido, orden, activo
+                   requerido, orden, activo,
+                   COALESCE(pedir_cantidad, 0) as pedir_cantidad,
+                   cantidad_max_multiples, minimo_multiples
             FROM producto_opciones
             WHERE producto_id = %s AND activo = 1
             ORDER BY orden ASC, id ASC
@@ -129,6 +174,20 @@ class ProductoOpcionModelo:
         if 'orden' in datos:
             campos.append('orden = %s')
             valores.append(datos['orden'])
+
+        if 'pedir_cantidad' in datos:
+            campos.append('pedir_cantidad = %s')
+            valores.append(1 if datos['pedir_cantidad'] else 0)
+
+        if 'cantidad_max_multiples' in datos:
+            val = datos['cantidad_max_multiples']
+            campos.append('cantidad_max_multiples = %s')
+            valores.append(int(val) if val is not None and str(val).strip() != '' else None)
+
+        if 'minimo_multiples' in datos:
+            val = datos['minimo_multiples']
+            campos.append('minimo_multiples = %s')
+            valores.append(int(val) if val is not None and str(val).strip() != '' else None)
         
         if not campos:
             return False
@@ -266,6 +325,8 @@ class ProductoOpcionModelo:
         consulta = """
             SELECT eps.*, 
                    po.nombre_grupo, po.opciones, po.permite_multiple, po.requerido,
+                   COALESCE(po.pedir_cantidad, 0) as pedir_cantidad,
+                   po.cantidad_max_multiples, po.minimo_multiples,
                    p.nombre as producto_nombre,
                    u.nombre_completo as confirmado_por_nombre
             FROM evento_producto_selecciones eps

@@ -65,6 +65,7 @@ def actualizar_configuracion(tipo_notificacion):
             "dias_antes": data.get("dias_antes", configuracion.get("dias_antes", 0)),
             "plantilla_email": data.get("plantilla_email", configuracion.get("plantilla_email")),
             "plantilla_whatsapp": data.get("plantilla_whatsapp", configuracion.get("plantilla_whatsapp")),
+            "botones_whatsapp": data.get("botones_whatsapp", configuracion.get("botones_whatsapp")),
         }
         actualizado = modelo.actualizar_configuracion(tipo_notificacion, datos_actualizados)
         if actualizado:
@@ -116,7 +117,12 @@ def proximas_notificaciones_evento(evento_id):
         hoy = datetime.now().date()
         
         # Tipos de notificación manuales que siempre se muestran (días_antes=0)
-        tipos_manuales = ["recordatorio_evento", "recordatorio_valores_pendientes"]
+        tipos_manuales = [
+            "recordatorio_evento",
+            "recordatorio_valores_pendientes",
+            "abono_recibido",
+            "pago_completo",
+        ]
         
         for config in configuraciones or []:
             if not config.get("activo"):
@@ -286,9 +292,26 @@ def forzar_notificacion_evento(evento_id):
                 logger.warning(f"Error al enviar solicitud de calificación: {error}")
                 return jsonify({"error": error or "No se pudo enviar la solicitud", "success": False}), 400
         
+        # Para abono_recibido, obtener último pago y pasar datos
+        datos_adicionales = None
+        if tipo == "abono_recibido":
+            from modelos.pago_modelo import PagoModelo
+            pagos = (PagoModelo().obtener_pagos_por_evento(evento_id) or [])
+            if pagos:
+                ultimo = pagos[0]  # Ordenados por fecha descendente
+                datos_adicionales = {
+                    "monto": float(ultimo.get("monto", 0)),
+                    "fecha_pago": str(ultimo.get("fecha_pago", ""))[:10] if ultimo.get("fecha_pago") else "",
+                    "metodo_pago": (ultimo.get("metodo_pago") or "").replace("_", " ").title(),
+                }
+            else:
+                return jsonify({"error": "No hay pagos registrados para este evento"}), 400
+
         # Para otros tipos de notificación, usar el sistema estándar
         sistema = SistemaNotificaciones()
-        enviado = sistema.enviar_notificacion(evento_id, tipo, force=True, canal_preferido=canal)
+        enviado = sistema.enviar_notificacion(
+            evento_id, tipo, datos_adicionales=datos_adicionales, force=True, canal_preferido=canal
+        )
         logger.info(
             f"Forzar envio resultado para evento {evento_id} tipo {tipo}: {'enviado' if enviado else 'fallido'}"
         )

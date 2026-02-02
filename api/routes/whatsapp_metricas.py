@@ -92,6 +92,11 @@ def actualizar_config():
 
         precio_whatsapp = parse_decimal(data.get("precio_whatsapp"))
         precio_email = parse_decimal(data.get("precio_email"))
+        # Precios por tipo de mensaje
+        precio_whatsapp_marketing = parse_decimal(data.get("precio_whatsapp_marketing")) if data.get("precio_whatsapp_marketing") is not None else None
+        precio_whatsapp_utility = parse_decimal(data.get("precio_whatsapp_utility")) if data.get("precio_whatsapp_utility") is not None else None
+        precio_whatsapp_service = parse_decimal(data.get("precio_whatsapp_service")) if data.get("precio_whatsapp_service") is not None else None
+        
         whatsapp_desactivado = bool(data.get("whatsapp_desactivado"))
         maximo_whatsapp = data.get("maximo_whatsapp")
         maximo_email = data.get("maximo_email")
@@ -115,7 +120,10 @@ def actualizar_config():
             precio_email, 
             whatsapp_desactivado=whatsapp_desactivado,
             maximo_whatsapp=maximo_whatsapp,
-            maximo_email=maximo_email
+            maximo_email=maximo_email,
+            precio_whatsapp_marketing=precio_whatsapp_marketing,
+            precio_whatsapp_utility=precio_whatsapp_utility,
+            precio_whatsapp_service=precio_whatsapp_service,
         )
         if actualizado:
             return jsonify({"message": "Configuracion actualizada"}), 200
@@ -123,6 +131,28 @@ def actualizar_config():
     except Exception as e:
         logger.error(f"Error al actualizar config métricas: {str(e)}")
         return jsonify({"error": "Error al actualizar config"}), 500
+
+
+@whatsapp_metricas_bp.route("/clientes/<int:cliente_id>/mensajes", methods=["GET"])
+@requiere_autenticacion
+@requiere_rol("administrador", "gerente_general")
+def mensajes_cliente(cliente_id):
+    try:
+        fecha_desde = request.args.get("fecha_desde")
+        fecha_hasta = request.args.get("fecha_hasta")
+        limit = request.args.get("limit", type=int) or 500
+        mensajes = modelo.obtener_mensajes_por_cliente(
+            cliente_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, limit=min(limit, 1000)
+        )
+        for m in mensajes or []:
+            if m.get("fecha_creacion") and hasattr(m["fecha_creacion"], "isoformat"):
+                m["fecha_creacion"] = m["fecha_creacion"].isoformat()
+            elif m.get("fecha_creacion") and isinstance(m["fecha_creacion"], str):
+                pass
+        return jsonify({"mensajes": mensajes or []}), 200
+    except Exception as e:
+        logger.error(f"Error al obtener mensajes cliente: {str(e)}")
+        return jsonify({"error": "Error al obtener mensajes"}), 500
 
 
 @whatsapp_metricas_bp.route("/clientes/<int:cliente_id>/control", methods=["PATCH"])

@@ -10,8 +10,20 @@ class WhatsAppMetricasModelo:
 
     def obtener_config(self):
         self._asegurar_columnas_limites()
+        self._asegurar_columnas_precios_tipo()
         consulta = "SELECT * FROM whatsapp_metricas_config ORDER BY id ASC LIMIT 1"
-        return self.base_datos.obtener_uno(consulta) or {"precio_whatsapp": 0, "precio_email": 0, "maximo_whatsapp": None, "maximo_email": None}
+        config = self.base_datos.obtener_uno(consulta) or {}
+        return {
+            "precio_whatsapp": config.get("precio_whatsapp") or 0,
+            "precio_whatsapp_marketing": config.get("precio_whatsapp_marketing") or config.get("precio_whatsapp") or 0,
+            "precio_whatsapp_utility": config.get("precio_whatsapp_utility") or config.get("precio_whatsapp") or 0,
+            "precio_whatsapp_service": config.get("precio_whatsapp_service") or 0,
+            "precio_email": config.get("precio_email") or 0,
+            "maximo_whatsapp": config.get("maximo_whatsapp"),
+            "maximo_email": config.get("maximo_email"),
+            "whatsapp_desactivado": config.get("whatsapp_desactivado") or 0,
+            "id": config.get("id"),
+        }
 
     def _columna_existe(self, tabla, columna):
         consulta = """
@@ -73,15 +85,34 @@ class WhatsAppMetricasModelo:
         except Exception:
             pass
 
-    def actualizar_config(self, precio_whatsapp, precio_email, whatsapp_desactivado=0, maximo_whatsapp=None, maximo_email=None):
+    def _asegurar_columnas_precios_tipo(self):
+        """Agrega columnas para precios por tipo de mensaje (marketing, utility, service)"""
+        try:
+            columnas = [
+                ("precio_whatsapp_marketing", "DECIMAL(10,4) DEFAULT NULL"),
+                ("precio_whatsapp_utility", "DECIMAL(10,4) DEFAULT NULL"),
+                ("precio_whatsapp_service", "DECIMAL(10,4) DEFAULT 0"),
+            ]
+            for columna, tipo in columnas:
+                if not self._columna_existe("whatsapp_metricas_config", columna):
+                    self.base_datos.ejecutar_consulta(
+                        f"ALTER TABLE whatsapp_metricas_config ADD COLUMN {columna} {tipo}"
+                    )
+        except Exception:
+            pass
+
+    def actualizar_config(self, precio_whatsapp, precio_email, whatsapp_desactivado=0, maximo_whatsapp=None, maximo_email=None,
+                          precio_whatsapp_marketing=None, precio_whatsapp_utility=None, precio_whatsapp_service=None):
         self._asegurar_columna_whatsapp_desactivado()
         self._asegurar_columnas_limites()
+        self._asegurar_columnas_precios_tipo()
         existente = self.obtener_config()
         if existente and existente.get("id"):
             consulta = """
             UPDATE whatsapp_metricas_config
             SET precio_whatsapp = %s, precio_email = %s, whatsapp_desactivado = %s, 
-                maximo_whatsapp = %s, maximo_email = %s
+                maximo_whatsapp = %s, maximo_email = %s,
+                precio_whatsapp_marketing = %s, precio_whatsapp_utility = %s, precio_whatsapp_service = %s
             WHERE id = %s
             """
             return self.base_datos.ejecutar_consulta(
@@ -91,12 +122,16 @@ class WhatsAppMetricasModelo:
                     int(bool(whatsapp_desactivado)), 
                     maximo_whatsapp if maximo_whatsapp is not None else None,
                     maximo_email if maximo_email is not None else None,
+                    precio_whatsapp_marketing,
+                    precio_whatsapp_utility,
+                    precio_whatsapp_service,
                     existente.get("id")
                 )
             )
         consulta = """
-        INSERT INTO whatsapp_metricas_config (precio_whatsapp, precio_email, whatsapp_desactivado, maximo_whatsapp, maximo_email)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO whatsapp_metricas_config (precio_whatsapp, precio_email, whatsapp_desactivado, maximo_whatsapp, maximo_email,
+            precio_whatsapp_marketing, precio_whatsapp_utility, precio_whatsapp_service)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         return self.base_datos.ejecutar_consulta(
             consulta, (
@@ -104,7 +139,10 @@ class WhatsAppMetricasModelo:
                 precio_email, 
                 int(bool(whatsapp_desactivado)),
                 maximo_whatsapp if maximo_whatsapp is not None else None,
-                maximo_email if maximo_email is not None else None
+                maximo_email if maximo_email is not None else None,
+                precio_whatsapp_marketing,
+                precio_whatsapp_utility,
+                precio_whatsapp_service,
             )
         )
 
@@ -233,23 +271,49 @@ class WhatsAppMetricasModelo:
         whatsapp_out = int(whatsapp.get("whatsapp_out") or 0)
         whatsapp_sistema = int(whatsapp.get("whatsapp_sistema") or 0)
         whatsapp_campana = int(whatsapp.get("whatsapp_campana") or 0)
-        whatsapp_notificaciones = whatsapp_sistema + whatsapp_campana  # Sistema + campañas
+        whatsapp_bot = int(whatsapp.get("whatsapp_bot") or 0)
+        whatsapp_humano = int(whatsapp.get("whatsapp_humano") or 0)
+        whatsapp_notificaciones = whatsapp_sistema  # Solo notificaciones del sistema (utility)
+        whatsapp_service = whatsapp_bot + whatsapp_humano  # Chat (service - gratis en ventana 24h)
         
-        # Obtener costos reales almacenados
-        costo_whatsapp_total = float(whatsapp.get("costo_whatsapp_total") or 0) if tiene_costo_chat else 0.0
+        # Obtener configuración de precios
+        config = self.obtener_config()
+        precio_marketing = float(config.get("precio_whatsapp_marketing") or config.get("precio_whatsapp") or 0)
+        precio_utility = float(config.get("precio_whatsapp_utility") or config.get("precio_whatsapp") or 0)
+        precio_service = float(config.get("precio_whatsapp_service") or 0)
+        
+        # Calcular costos por tipo
+        costo_marketing = whatsapp_campana * precio_marketing
+        costo_utility = whatsapp_notificaciones * precio_utility
+        costo_service = whatsapp_service * precio_service
+        
+        # Obtener costos reales almacenados (si existen)
+        costo_whatsapp_almacenado = float(whatsapp.get("costo_whatsapp_total") or 0) if tiene_costo_chat else 0.0
         costo_email_total = float(email.get("costo_email_total") or 0) if tiene_costo_email else 0.0
+        
+        # Usar costo calculado si no hay almacenado
+        costo_whatsapp_total = costo_whatsapp_almacenado if costo_whatsapp_almacenado > 0 else (costo_marketing + costo_utility + costo_service)
         
         return {
             "whatsapp_out": whatsapp_out,  # Total salientes (todos desde whatsapp_mensajes)
             "whatsapp_in": int(whatsapp.get("whatsapp_in") or 0),  # Mensajes entrantes del cliente
-            "whatsapp_chat_out": whatsapp_out - whatsapp_notificaciones,  # Chat (bot + humano, sin sistema)
-            "whatsapp_notificaciones": whatsapp_notificaciones,  # Notificaciones automáticas (sistema + campañas)
-            "whatsapp_bot": int(whatsapp.get("whatsapp_bot") or 0),
-            "whatsapp_humano": int(whatsapp.get("whatsapp_humano") or 0),
+            "whatsapp_chat_out": whatsapp_service,  # Chat (bot + humano) - SERVICE
+            "whatsapp_notificaciones": whatsapp_notificaciones,  # Notificaciones sistema - UTILITY
+            "whatsapp_campana": whatsapp_campana,  # Campañas - MARKETING
+            "whatsapp_bot": whatsapp_bot,
+            "whatsapp_humano": whatsapp_humano,
             "whatsapp_sistema": whatsapp_notificaciones,  # Mantener compatibilidad
             "email_out": int(email.get("email_out") or 0),
-            "costo_whatsapp_total": costo_whatsapp_total,  # Costo total desde whatsapp_mensajes
-            "costo_email_total": costo_email_total,  # Costo total desde historial_notificaciones
+            # Costos desglosados
+            "costo_marketing": round(costo_marketing, 4),
+            "costo_utility": round(costo_utility, 4),
+            "costo_service": round(costo_service, 4),
+            "costo_whatsapp_total": round(costo_whatsapp_total, 4),
+            "costo_email_total": round(costo_email_total, 4),
+            # Precios configurados
+            "precio_marketing": precio_marketing,
+            "precio_utility": precio_utility,
+            "precio_service": precio_service,
         }
 
     def obtener_metricas_clientes(self, fecha_desde=None, fecha_hasta=None):
@@ -328,3 +392,41 @@ class WhatsAppMetricasModelo:
             costo_whatsapp=", SUM(COALESCE(hn.costo_whatsapp, 0)) as costo_whatsapp_total" if tiene_costo_whatsapp else "",
         )
         return self.base_datos.obtener_todos(consulta)
+
+    def obtener_mensajes_por_cliente(self, cliente_id, fecha_desde=None, fecha_hasta=None, limit=500):
+        """Lista de mensajes WhatsApp enviados/recibidos para un cliente en el rango de fechas."""
+        telefono_cliente = None
+        row = self.base_datos.obtener_uno(
+            "SELECT u.telefono FROM clientes c JOIN usuarios u ON c.usuario_id = u.id WHERE c.id = %s",
+            (cliente_id,),
+        )
+        if row and row.get("telefono"):
+            telefono_cliente = str(row["telefono"]).replace("+", "").replace(" ", "").replace("-", "")
+        filtro_fecha = ""
+        params = [cliente_id]
+        if fecha_desde and fecha_hasta:
+            filtro_fecha = " AND wm.fecha_creacion BETWEEN %s AND %s"
+            params.extend([fecha_desde, f"{fecha_hasta} 23:59:59"])
+        elif fecha_desde:
+            filtro_fecha = " AND wm.fecha_creacion >= %s"
+            params.append(fecha_desde)
+        elif fecha_hasta:
+            filtro_fecha = " AND wm.fecha_creacion <= %s"
+            params.append(f"{fecha_hasta} 23:59:59")
+        cond_telefono = ""
+        if telefono_cliente:
+            cond_telefono = " OR REPLACE(REPLACE(REPLACE(wc.telefono, '+', ''), ' ', ''), '-', '') = %s"
+            params.append(telefono_cliente)
+        params.append(limit)
+        consulta = """
+        SELECT wm.id, wm.conversacion_id, wm.fecha_creacion, wm.direccion, wm.origen,
+               LEFT(wm.mensaje, 500) as mensaje, wm.estado,
+               wm.costo_unitario, wm.costo_total, wm.media_type
+        FROM whatsapp_mensajes wm
+        JOIN whatsapp_conversaciones wc ON wm.conversacion_id = wc.id
+        WHERE (wc.cliente_id = %s """ + cond_telefono + """)
+        """ + filtro_fecha + """
+        ORDER BY wm.fecha_creacion DESC
+        LIMIT %s
+        """
+        return self.base_datos.obtener_todos(consulta, tuple(params))

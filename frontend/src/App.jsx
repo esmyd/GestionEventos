@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ModulosProvider } from './hooks/useModulos';
 import Login from './pages/Login';
 import Inicio from './pages/Inicio';
 import Layout from './components/Layout';
@@ -32,6 +33,10 @@ import WhatsAppMetricas from './pages/WhatsAppMetricas';
 import ConfiguracionesDatos from './pages/ConfiguracionesDatos';
 import WhatsAppPlantillas from './pages/WhatsAppPlantillas';
 import CargaMasiva from './pages/CargaMasiva';
+import PanelComun from './pages/PanelComun';
+import MiPlan from './pages/MiPlan';
+import AdminSuscripcion from './pages/AdminSuscripcion';
+import EnConstruccion from './pages/EnConstruccion';
 
 // Componente para proteger rutas
 const ProtectedRoute = ({ children }) => {
@@ -74,7 +79,7 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  return !isAuthenticated ? children : <Navigate to="/inicio" />;
+  return !isAuthenticated ? children : <Navigate to="/panel" />;
 };
 
 function AppRoutes() {
@@ -97,15 +102,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* Redirigir dashboard al inicio */}
-        <Route path="dashboard" element={<Navigate to="/inicio" replace />} />
+        {/* Redirigir dashboard e inicio al panel común */}
+        <Route path="dashboard" element={<Navigate to="/panel" replace />} />
+        <Route path="inicio" element={<Navigate to="/panel" replace />} />
 
-        {/* Inicio - Todos los roles autenticados */}
+        {/* Panel común - Todos los roles autenticados (incl. administrador del sistema) */}
         <Route
-          path="inicio"
+          path="panel"
           element={
-            <RoleProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
-              <Inicio />
+            <RoleProtectedRoute allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
+              <PanelComun />
             </RoleProtectedRoute>
           }
         />
@@ -134,7 +140,7 @@ function AppRoutes() {
         <Route
           path="perfil"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.PERFIL} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
+            <RoleProtectedRoute moduleKey={MODULES.PERFIL} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
               <Perfil />
             </RoleProtectedRoute>
           }
@@ -204,7 +210,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Planes - Solo admin, gerente y coordinador */}
+        {/* Paquetes - Solo admin, gerente y coordinador */}
         <Route
           path="planes"
           element={
@@ -262,11 +268,11 @@ function AppRoutes() {
           }
         />
 
-        {/* Reportes - Solo admin, gerente y coordinador */}
+        {/* Reportes - Admin sistema, admin, gerente y coordinador */}
         <Route
           path="reportes"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.REPORTES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.REPORTES} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Reportes />
             </RoleProtectedRoute>
           }
@@ -332,7 +338,7 @@ function AppRoutes() {
         <Route
           path="configuraciones/limpieza-datos"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.CONFIG_DATOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.CONFIG_DATOS} allowedRoles={[ROLES.ADMIN_SISTEMA]}>
               <ConfiguracionesDatos />
             </RoleProtectedRoute>
           }
@@ -352,11 +358,42 @@ function AppRoutes() {
         <Route
           path="permisos"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.PERMISOS} allowedRoles={[ROLES.ADMIN]}>
+            <RoleProtectedRoute moduleKey={MODULES.PERMISOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN]}>
               <Permisos />
             </RoleProtectedRoute>
           }
         />
+
+        {/* Mi Plan - Ver plan, beneficios y uso (módulo controlado por plan) */}
+        <Route
+          path="mi-plan"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.MI_PLAN} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
+              <MiPlan />
+            </RoleProtectedRoute>
+          }
+        />
+
+        {/* Admin Suscripción - Solo administrador del sistema (creador/vendedor del software) */}
+        <Route
+          path="admin/suscripcion"
+          element={
+            <RoleProtectedRoute moduleKey={MODULES.ADMIN_SUSCRIPCION} allowedRoles={[ROLES.ADMIN_SISTEMA]}>
+              <AdminSuscripcion />
+            </RoleProtectedRoute>
+          }
+        />
+
+        {/* Próximas implementaciones - Placeholders con mensaje en construcción */}
+        <Route path="proximas/envio-sugerencia" element={<RoleProtectedRoute moduleKey={MODULES.ENVIO_SUGERENCIA} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/proveedores" element={<RoleProtectedRoute moduleKey={MODULES.PROVEEDORES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/facturacion-electronica" element={<RoleProtectedRoute moduleKey={MODULES.FACTURACION_ELECTRONICA} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/contratos" element={<RoleProtectedRoute moduleKey={MODULES.CONTRATOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/reservas-online" element={<RoleProtectedRoute moduleKey={MODULES.RESERVAS_ONLINE} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/crm-avanzado" element={<RoleProtectedRoute moduleKey={MODULES.CRM_AVANZADO} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/integracion-contabilidad" element={<RoleProtectedRoute moduleKey={MODULES.INTEGRACION_CONTABILIDAD} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/sitio-web-eventos" element={<RoleProtectedRoute moduleKey={MODULES.SITIO_WEB_EVENTOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
+        <Route path="proximas/instagram" element={<RoleProtectedRoute moduleKey={MODULES.INSTAGRAM} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}><EnConstruccion /></RoleProtectedRoute>} />
       </Route>
     </Routes>
   );
@@ -365,9 +402,11 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
+      <ModulosProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </ModulosProvider>
     </AuthProvider>
   );
 }

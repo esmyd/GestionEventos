@@ -15,7 +15,7 @@ config_general = ConfiguracionGeneralModelo()
 
 @configuraciones_bp.route("/limpiar-datos-prueba", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_rol("administrador_sistema")
 def limpiar_datos_prueba():
     """
     Elimina datos operativos de prueba:
@@ -84,7 +84,7 @@ def actualizar_nombre_plataforma():
 
 @configuraciones_bp.route("/general", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_rol("administrador", "gerente_general", "administrador_sistema")
 def obtener_configuracion_general():
     try:
         configuracion = config_general.obtener_configuracion() or {}

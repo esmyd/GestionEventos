@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { eventosService, pagosService, planesService, productosService, usuariosService, notificacionesNativasService, cuentasService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2, Eye, Check, Ban, Landmark } from 'lucide-react';
+import { ArrowLeft, Edit, DollarSign, X, Calendar, User, MapPin, Users, Clock, Package, FileText, Trash2, Eye, Check, Ban, Landmark, Bell, ListChecks } from 'lucide-react';
 import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
@@ -24,7 +24,6 @@ const EventoDetalle = () => {
   const [serviciosEvento, setServiciosEvento] = useState([]);
   const [cargandoServiciosEvento, setCargandoServiciosEvento] = useState(false);
   const [actualizandoServicioId, setActualizandoServicioId] = useState(null);
-  const [generandoServicios, setGenerandoServicios] = useState(false);
   const [productosPlan, setProductosPlan] = useState([]);
   const [cargandoProductosPlan, setCargandoProductosPlan] = useState(false);
   const [totalPagado, setTotalPagado] = useState(0);
@@ -69,7 +68,10 @@ const EventoDetalle = () => {
     numero_referencia: '',
     observaciones: '',
   });
+  const [reciboFilePago, setReciboFilePago] = useState(null);
   const [guardandoPago, setGuardandoPago] = useState(false);
+  const [subiendoRecibo, setSubiendoRecibo] = useState(false);
+  const [reciboFileDetalle, setReciboFileDetalle] = useState(null);
   const [coordinadores, setCoordinadores] = useState([]);
   const [cargandoCoordinadores, setCargandoCoordinadores] = useState(false);
   const [asignandoCoordinador, setAsignandoCoordinador] = useState(false);
@@ -100,6 +102,7 @@ const EventoDetalle = () => {
     metodo_pago: 'efectivo',
     observaciones: '',
   });
+  const [tabDetalleActivo, setTabDetalleActivo] = useState('informacion'); // informacion | recordatorios | financiero
 
   const eventoCancelado = evento?.estado === 'cancelado';
   const eventoCompletado = evento?.estado === 'completado';
@@ -108,13 +111,13 @@ const EventoDetalle = () => {
   const puedeAgregarProducto = hasPermission(usuario, PERMISSIONS.EVENTOS_AGREGAR_PRODUCTO, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeActualizarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_ACTUALIZAR_SERVICIOS, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeDescartarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_DESCARTAR_SERVICIO, [ROLES.ADMIN, ROLES.MANAGER]);
-  const puedeGenerarServicios = hasPermission(usuario, PERMISSIONS.EVENTOS_GENERAR_SERVICIOS, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeCrearServicioPersonalizado = hasPermission(usuario, PERMISSIONS.EVENTOS_GENERAR_SERVICIOS, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeEliminarProducto = hasPermission(usuario, PERMISSIONS.EVENTOS_ELIMINAR_PRODUCTO, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeEliminarEvento = hasPermission(usuario, PERMISSIONS.EVENTOS_ELIMINAR, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeFinalizarEventoPermiso = hasPermission(usuario, PERMISSIONS.EVENTOS_FINALIZAR, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
   const puedeAsignarCoordinador = hasPermission(usuario, PERMISSIONS.EVENTOS_ASIGNAR_COORDINADOR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeNotificarPago = Boolean(evento?.email || evento?.telefono);
-  const puedeRegistrarPago = hasPermission(usuario, PERMISSIONS.PAGOS_REGISTRAR, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeRegistrarPago = (usuario?.rol === ROLES.CLIENT || hasPermission(usuario, PERMISSIONS.PAGOS_REGISTRAR, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]));
   const puedeReembolsar = hasPermission(usuario, PERMISSIONS.PAGOS_REEMBOLSAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeAprobarPago = hasPermission(usuario, PERMISSIONS.PAGOS_APROBAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeAnularPago = hasPermission(usuario, PERMISSIONS.PAGOS_ANULAR, [ROLES.ADMIN, ROLES.MANAGER]);
@@ -453,33 +456,6 @@ const EventoDetalle = () => {
     }
   };
 
-  const handleGenerarServicios = async () => {
-    if (!evento?.plan_id) {
-      setError('El evento no tiene plan asociado.');
-      return;
-    }
-    try {
-      setGenerandoServicios(true);
-      setError(''); // Limpiar error previo
-      const data = await eventosService.generarServicios(evento.id_evento || evento.id);
-      const servicios = data.servicios || [];
-      setServiciosEvento(servicios);
-      if (servicios.length === 0) {
-        setError('El plan seleccionado no tiene servicios configurados. Por favor, configura los servicios del plan primero.');
-      } else {
-        setError('');
-        success(`Servicios generados exitosamente: ${servicios.length} servicio(s)`);
-      }
-    } catch (err) {
-      console.error('Error al generar servicios:', err);
-      const errorMessage = err.response?.data?.error || 'Error al generar servicios';
-      setError(errorMessage);
-      showError(errorMessage);
-    } finally {
-      setGenerandoServicios(false);
-    }
-  };
-
   const handleCrearServicioPersonalizado = async () => {
     if (!formServicioPersonalizado.nombre || !formServicioPersonalizado.nombre.trim()) {
       setErrorServicioPersonalizado('El nombre del servicio es requerido');
@@ -779,13 +755,23 @@ const EventoDetalle = () => {
         origen: 'web', // Identificar que el pago viene de la aplicación web
       };
 
-      await pagosService.create(pagoData);
+      const respuesta = await pagosService.create(pagoData);
+      const pagoCreado = respuesta?.pago;
 
-      // Recargar pagos y evento
+      if (pagoCreado?.id && reciboFilePago) {
+        try {
+          await pagosService.uploadRecibo(pagoCreado.id, reciboFilePago);
+          success('Pago y recibo registrados correctamente');
+        } catch (errRecibo) {
+          console.error('Error al subir recibo:', errRecibo);
+          showError('Pago guardado pero no se pudo adjuntar el recibo. Puede adjuntarlo después.');
+        }
+        setReciboFilePago(null);
+      }
+
       await cargarPagos();
       await cargarEvento();
 
-      // Cerrar modal y resetear formulario
       setMostrarModalPago(false);
       setFormPago({
         monto: '',
@@ -796,7 +782,7 @@ const EventoDetalle = () => {
         observaciones: '',
       });
       setError('');
-      success(formPago.tipo_pago === 'reembolso' ? 'Reembolso registrado exitosamente' : 'Pago registrado exitosamente');
+      if (!reciboFilePago) success(formPago.tipo_pago === 'reembolso' ? 'Reembolso registrado exitosamente' : 'Pago registrado exitosamente');
     } catch (err) {
       console.error('Error al registrar pago:', err);
       setError(err.response?.data?.error || 'Error al registrar el pago');
@@ -886,7 +872,7 @@ const EventoDetalle = () => {
     }
   };
 
-  const puedeFinalizarEvento = (evento?.estado === 'confirmado' || evento?.estado === 'en_proceso') && saldoPendiente <= 0;
+  const puedeFinalizarEvento = puedeFinalizarEventoPermiso && (evento?.estado === 'confirmado' || evento?.estado === 'en_proceso') && saldoPendiente <= 0;
 
   // Funciones para pago de daños
   const abrirModalPagoDanos = () => {
@@ -987,23 +973,25 @@ const EventoDetalle = () => {
         >
           {error || 'Evento no encontrado'}
         </div>
-        <button
-          onClick={() => navigate('/eventos')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#6366f1',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.375rem',
-            cursor: 'pointer',
-          }}
-        >
-          <ArrowLeft size={20} />
-          Volver a Eventos
-        </button>
+        {usuario?.rol !== ROLES.CLIENT && (
+          <button
+            onClick={() => navigate('/eventos')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#6366f1',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.375rem',
+              cursor: 'pointer',
+            }}
+          >
+            <ArrowLeft size={20} />
+            Volver a Eventos
+          </button>
+        )}
       </div>
     );
   }
@@ -1013,32 +1001,67 @@ const EventoDetalle = () => {
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
-        <button
-          onClick={() => navigate('/eventos')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: isMobile ? '0.4rem 0.75rem' : '0.5rem 1rem',
-            backgroundColor: 'transparent',
-            color: '#6366f1',
-            border: '1px solid #6366f1',
-            borderRadius: '0.375rem',
-            cursor: 'pointer',
-            marginBottom: '1rem',
-            fontSize: isMobile ? '0.875rem' : '1rem',
-          }}
-        >
-          <ArrowLeft size={isMobile ? 14 : 16} />
-          Volver
-        </button>
-        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        {usuario?.rol !== ROLES.CLIENT && (
+          <button
+            onClick={() => navigate('/eventos')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: isMobile ? '0.4rem 0.75rem' : '0.5rem 1rem',
+              backgroundColor: 'transparent',
+              color: '#6366f1',
+              border: '1px solid #6366f1',
+              borderRadius: '0.375rem',
+              cursor: 'pointer',
+              marginBottom: '1rem',
+              fontSize: isMobile ? '0.875rem' : '1rem',
+            }}
+          >
+            <ArrowLeft size={isMobile ? 14 : 16} />
+            Volver
+          </button>
+        )}
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
             <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
               {evento.nombre_evento || 'Evento'}
             </h1>
             <p style={{ color: '#6b7280', fontSize: isMobile ? '0.875rem' : '1rem' }}>Detalle del evento</p>
           </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'stretch' : 'flex-end', gap: '1rem', width: isMobile ? '100%' : 'auto' }}>
+            {/* Información Financiera - arriba a la derecha */}
+            <div
+              style={{
+                background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
+                padding: '1.5rem 1.75rem',
+                borderRadius: '0.75rem',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #e2e8f0',
+                minWidth: isMobile ? 'auto' : '260px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '2px solid #e2e8f0' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '0.5rem', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <DollarSign size={20} color="white" />
+                </div>
+                <span style={{ fontSize: '1rem', fontWeight: '700', color: '#1e293b', letterSpacing: '-0.02em' }}>Información Financiera</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '0.5rem' }}>
+                  <span style={{ color: '#64748b', fontSize: '0.8125rem', fontWeight: '500' }}>Total del Evento</span>
+                  <span style={{ fontWeight: '700', fontSize: '1.125rem', color: '#1e293b' }}>{formatearMoneda(parseFloat(evento.total) || 0)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', backgroundColor: 'rgba(16, 185, 129, 0.08)', borderRadius: '0.5rem', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                  <span style={{ color: '#047857', fontSize: '0.8125rem', fontWeight: '600' }}>Total Pagado</span>
+                  <span style={{ fontWeight: '700', fontSize: '1.125rem', color: '#059669' }}>{formatearMoneda(totalPagado)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', backgroundColor: saldoPendiente > 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.08)', borderRadius: '0.5rem', border: saldoPendiente > 0 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(16, 185, 129, 0.2)' }}>
+                  <span style={{ color: saldoPendiente > 0 ? '#b45309' : '#047857', fontSize: '0.8125rem', fontWeight: '600' }}>Saldo Pendiente</span>
+                  <span style={{ fontWeight: '700', fontSize: '1.125rem', color: saldoPendiente > 0 ? '#d97706' : '#059669' }}>{formatearMoneda(saldoPendiente)}</span>
+                </div>
+              </div>
+            </div>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
             {puedeFinalizarEvento && (
               <button
@@ -1134,6 +1157,7 @@ const EventoDetalle = () => {
               </button>
             )}
           </div>
+          </div>
         </div>
       </div>
 
@@ -1151,109 +1175,235 @@ const EventoDetalle = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: isMobile ? '1rem' : '1.5rem', marginBottom: isMobile ? '1.5rem' : '2rem' }}>
-        {/* Información del evento */}
+      {/* Tabs para detalles del evento */}
+      <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            borderBottom: '2px solid #e5e7eb',
+            gap: 0,
+            marginBottom: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          {[
+            { id: 'informacion', label: 'Información', icon: Calendar },
+            { id: 'opciones', label: 'Opciones del Cliente', icon: ListChecks },
+            { id: 'recordatorios', label: 'Recordatorios', icon: Bell },
+            { id: 'financiero', label: 'Financiero', icon: DollarSign },
+          ].map((tab) => {
+            const IconTab = tab.icon;
+            const activo = tabDetalleActivo === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setTabDetalleActivo(tab.id)}
+                style={{
+                  padding: '0.75rem 1.25rem',
+                  border: 'none',
+                  borderBottom: activo ? '2px solid #4f46e5' : '2px solid transparent',
+                  marginBottom: '-2px',
+                  backgroundColor: activo ? 'white' : 'transparent',
+                  color: activo ? '#4f46e5' : '#6b7280',
+                  fontWeight: activo ? 600 : 500,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                <IconTab size={18} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {tabDetalleActivo === 'informacion' && (
         <div
           style={{
             backgroundColor: 'white',
-            padding: isMobile ? '1rem' : '1.5rem',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            borderRadius: '0.75rem',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
             border: '1px solid #e5e7eb',
+            overflow: 'hidden',
           }}
         >
-          <h2 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: '600', marginBottom: isMobile ? '1rem' : '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Calendar size={isMobile ? 18 : 20} color="#6366f1" />
-            Información del Evento
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <User size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Cliente</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{evento.nombre_cliente || '-'}</div>
-              </div>
+          {/* Header con acento de color */}
+          <div
+            style={{
+              padding: isMobile ? '1.25rem 1rem' : '1.5rem 1.5rem',
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              borderBottom: '3px solid #6366f1',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+            }}
+          >
+            <div
+              style={{
+                width: isMobile ? 40 : 44,
+                height: isMobile ? 40 : 44,
+                borderRadius: '0.5rem',
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)',
+              }}
+            >
+              <Calendar size={isMobile ? 20 : 22} color="white" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <MapPin size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Tipo de Evento</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{evento.tipo_evento || '-'}</div>
-              </div>
+            <div>
+              <h2 style={{ fontSize: isMobile ? '1.15rem' : '1.35rem', fontWeight: '700', margin: 0, color: '#1e293b', letterSpacing: '-0.02em' }}>
+                Información del Evento
+              </h2>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#64748b' }}>Detalles generales</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <Calendar size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Fecha</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{formatearFecha(evento.fecha_evento)}</div>
+          </div>
+
+          {/* Contenido en grid */}
+          <div
+            style={{
+              padding: isMobile ? '1rem' : '1.5rem',
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+              gap: isMobile ? '0.75rem' : '1rem',
+            }}
+          >
+            {[
+              { icon: User, iconBg: '#eef2ff', iconColor: '#4f46e5', label: 'Cliente', value: evento.nombre_cliente || '-' },
+              { icon: MapPin, iconBg: '#fef3c7', iconColor: '#d97706', label: 'Tipo de Evento', value: evento.tipo_evento || '-' },
+              { icon: Calendar, iconBg: '#dcfce7', iconColor: '#16a34a', label: 'Fecha del evento', value: formatearFecha(evento.fecha_evento) },
+              { icon: Calendar, iconBg: '#f3e8ff', iconColor: '#7c3aed', label: 'Fecha de creación', value: formatearFecha(evento.fecha_creacion) },
+              { icon: User, iconBg: '#e0f2fe', iconColor: '#0284c7', label: 'Creado por', value: obtenerCreadorEvento() },
+              { icon: Users, iconBg: '#fce7f3', iconColor: '#db2777', label: 'Nº Invitados', value: evento.numero_invitados ?? '-' },
+              { icon: Clock, iconBg: '#fef9c3', iconColor: '#ca8a04', label: 'Hora Inicio', value: formatearHora(evento.hora_inicio) },
+              { icon: Clock, iconBg: '#fef9c3', iconColor: '#ca8a04', label: 'Hora Fin', value: formatearHora(evento.hora_fin) },
+              ...(evento.nombre_salon || evento.salon
+                ? [{ icon: MapPin, iconBg: '#e0e7ff', iconColor: '#4338ca', label: 'Salón', value: evento.nombre_salon || evento.salon }]
+                : []),
+            ].map((item, idx) => {
+              const IconComp = item.icon;
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '1rem',
+                    backgroundColor: '#fafbfc',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #f1f5f9',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '0.5rem',
+                      backgroundColor: item.iconBg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <IconComp size={20} color={item.iconColor} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#1e293b' }}>{item.value}</div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Estado - badge destacado */}
+            <div
+              style={{
+                gridColumn: isMobile ? '1' : '1 / -1',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1rem',
+                backgroundColor: '#fafbfc',
+                borderRadius: '0.5rem',
+                border: '1px solid #f1f5f9',
+              }}
+            >
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '0.5rem',
+                  backgroundColor: `${getEstadoColor(evento.estado)}18`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Calendar size={20} color={getEstadoColor(evento.estado)} />
               </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <Calendar size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Fecha de creación</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{formatearFecha(evento.fecha_creacion)}</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <User size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Creado por</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{obtenerCreadorEvento()}</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Estado</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                  Estado
+                </div>
                 <span
                   style={{
-                    padding: '0.375rem 0.875rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
+                    display: 'inline-block',
+                    padding: '0.4rem 1rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.8125rem',
+                    fontWeight: '700',
                     backgroundColor: `${getEstadoColor(evento.estado)}20`,
                     color: getEstadoColor(evento.estado),
                     textTransform: 'capitalize',
+                    border: `1px solid ${getEstadoColor(evento.estado)}40`,
                   }}
                 >
                   {evento.estado || '-'}
                 </span>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <Users size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Número de Invitados</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{evento.numero_invitados || 0}</div>
+
+            {/* Coordinador */}
+            <div
+              style={{
+                gridColumn: isMobile ? '1' : '1 / -1',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1rem',
+                backgroundColor: '#fafbfc',
+                borderRadius: '0.5rem',
+                border: '1px solid #f1f5f9',
+              }}
+            >
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '0.5rem',
+                  backgroundColor: '#e0f2fe',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <User size={20} color="#0284c7" />
               </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <Clock size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Hora de Inicio</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{formatearHora(evento.hora_inicio)}</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <Clock size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Hora de Fin</div>
-                <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{formatearHora(evento.hora_fin)}</div>
-              </div>
-            </div>
-            {evento.nombre_salon || evento.salon ? (
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                <MapPin size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Salón</div>
-                  <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{evento.nombre_salon || evento.salon || '-'}</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                  Coordinador
                 </div>
-              </div>
-            ) : null}
-            <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-              <User size={18} color="#6b7280" style={{ marginTop: '0.125rem', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Coordinador</div>
                 {puedeAsignarCoordinador ? (
                   <select
                     value={evento.coordinador_id || ''}
@@ -1261,10 +1411,13 @@ const EventoDetalle = () => {
                     disabled={cargandoCoordinadores || asignandoCoordinador}
                     style={{
                       padding: '0.5rem 0.75rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.875rem',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.9rem',
                       minWidth: '220px',
+                      backgroundColor: 'white',
+                      fontWeight: '600',
+                      color: '#1e293b',
                     }}
                   >
                     <option value="">Sin asignar</option>
@@ -1275,14 +1428,15 @@ const EventoDetalle = () => {
                     ))}
                   </select>
                 ) : (
-                  <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{obtenerNombreCoordinador()}</div>
+                  <div style={{ fontWeight: '600', fontSize: '0.95rem', color: '#1e293b' }}>{obtenerNombreCoordinador()}</div>
                 )}
               </div>
             </div>
           </div>
         </div>
+        )}
 
-        {/* Recordatorios programados */}
+        {tabDetalleActivo === 'recordatorios' && (
         <div
           style={{
             backgroundColor: 'white',
@@ -1293,7 +1447,7 @@ const EventoDetalle = () => {
           }}
         >
           <h2 style={{ fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: '600', marginBottom: isMobile ? '1rem' : '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Calendar size={isMobile ? 18 : 20} color="#6366f1" />
+            <Bell size={isMobile ? 18 : 20} color="#6366f1" />
             Recordatorios programados
           </h2>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem', color: '#6b7280', fontSize: '0.85rem' }}>
@@ -1783,64 +1937,15 @@ const EventoDetalle = () => {
             </div>
           )}
         </div>
+        )}
 
-        {/* Información financiera */}
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '1.5rem',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <DollarSign size={20} color="#10b981" />
-            Información Financiera
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ paddingBottom: '1rem', borderBottom: '1px solid #e5e7eb' }}>
-              <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Total del Evento</div>
-              <div style={{ fontWeight: '700', fontSize: '1.5rem', color: '#1f2937' }}>
-                {formatearMoneda(parseFloat(evento.total) || 0)}
-              </div>
-            </div>
-            <div>
-              <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Total Pagado</div>
-              <div style={{ fontWeight: '700', fontSize: '1.5rem', color: '#10b981' }}>
-                {formatearMoneda(totalPagado)}
-              </div>
-            </div>
-            <div style={{ paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-              <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Saldo Pendiente</div>
-              <div style={{ fontWeight: '700', fontSize: '1.5rem', color: '#f59e0b' }}>
-                {formatearMoneda(Math.max(0, (parseFloat(evento.total) || 0) - totalPagado))}
-              </div>
-            </div>
-            {totalPagado > 0 && (
-              <div style={{ marginTop: '0.5rem' }}>
-                <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                  Progreso: {((totalPagado / (parseFloat(evento.total) || 1)) * 100).toFixed(1)}%
-                </div>
-                <div style={{ width: '100%', height: '8px', backgroundColor: '#e5e7eb', borderRadius: '9999px', marginTop: '0.5rem', overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      width: `${Math.min(100, (totalPagado / (parseFloat(evento.total) || 1)) * 100)}%`,
-                      height: '100%',
-                      backgroundColor: '#10b981',
-                      transition: 'width 0.3s',
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
-      {/* Plan y Productos Adicionales */}
+      {/* Plan, Servicios y Observaciones - solo en tab Información */}
+      {tabDetalleActivo === 'informacion' && (
+      <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-        {/* Plan */}
+        {/* Paquete */}
         {evento.nombre_plan || evento.plan_id ? (
           <div
             style={{
@@ -1853,16 +1958,16 @@ const EventoDetalle = () => {
           >
             <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Package size={20} color="#6366f1" />
-              Plan
+              Paquete
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Nombre del Plan</div>
+                <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Nombre del Paquete</div>
                 <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{evento.nombre_plan || '-'}</div>
               </div>
-              {evento.precio_plan !== undefined && evento.precio_plan !== null && (
+              {evento.precio_plan !== undefined && evento.precio_plan !== null && usuario?.rol !== ROLES.CLIENT && (
                 <div>
-                  <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Precio del Plan</div>
+                  <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Precio del Paquete</div>
                   <div style={{ fontWeight: '600', fontSize: '1.1rem', color: '#6366f1' }}>
                     {formatearMoneda(parseFloat(evento.precio_plan) || 0)}
                   </div>
@@ -1871,7 +1976,7 @@ const EventoDetalle = () => {
               {evento.plan_incluye && (
                 <div>
                   <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                    Consideraciones del Plan
+                    Consideraciones del Paquete
                   </div>
                   <div style={{ fontWeight: '500', fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>
                     {evento.plan_incluye}
@@ -1880,13 +1985,13 @@ const EventoDetalle = () => {
               )}
               <div>
                 <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                  Productos y servicios del plan
+                  Productos y servicios del paquete
                 </div>
                 {cargandoProductosPlan ? (
                   <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>Cargando...</div>
                 ) : productosPlan.length === 0 ? (
                   <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                    No hay productos asociados al plan.
+                    No hay productos asociados al paquete.
                   </div>
                 ) : (
                   <div style={{ overflowX: 'auto' }}>
@@ -1896,15 +2001,19 @@ const EventoDetalle = () => {
                           <th style={{ padding: '0.5rem', textAlign: 'left', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
                             Producto
                           </th>
-                          <th style={{ padding: '0.5rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
-                            Cantidad
-                          </th>
-                          <th style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
-                            Precio Unit.
-                          </th>
-                          <th style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
-                            Subtotal
-                          </th>
+                          {usuario?.rol !== ROLES.CLIENT && (
+                            <>
+                              <th style={{ padding: '0.5rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
+                                Cantidad
+                              </th>
+                              <th style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
+                                Precio Unit.
+                              </th>
+                              <th style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
+                                Subtotal
+                              </th>
+                            </>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -1916,15 +2025,19 @@ const EventoDetalle = () => {
                               <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#374151' }}>
                                 {item.nombre_producto || '-'}
                               </td>
-                              <td style={{ padding: '0.5rem', textAlign: 'center', fontSize: '0.85rem', color: '#374151' }}>
-                                {cantidad}
-                              </td>
-                              <td style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.85rem', color: '#374151' }}>
-                                {formatearMoneda(precio)}
-                              </td>
-                              <td style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '500', color: '#374151' }}>
-                                {formatearMoneda(cantidad * precio)}
-                              </td>
+                              {usuario?.rol !== ROLES.CLIENT && (
+                                <>
+                                  <td style={{ padding: '0.5rem', textAlign: 'center', fontSize: '0.85rem', color: '#374151' }}>
+                                    {cantidad > 0 ? cantidad : '-'}
+                                  </td>
+                                  <td style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.85rem', color: '#374151' }}>
+                                    {formatearMoneda(precio)}
+                                  </td>
+                                  <td style={{ padding: '0.5rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '500', color: '#374151' }}>
+                                    {formatearMoneda(cantidad * precio)}
+                                  </td>
+                                </>
+                              )}
                             </tr>
                           );
                         })}
@@ -1937,7 +2050,8 @@ const EventoDetalle = () => {
           </div>
         ) : null}
 
-        {/* Servicios del Evento */}
+        {/* Servicios del Evento - no visible para cliente */}
+        {usuario?.rol !== ROLES.CLIENT && (
         <div
           style={{
             backgroundColor: 'white',
@@ -1972,37 +2086,18 @@ const EventoDetalle = () => {
                   + Agregar servicio
                 </button>
               )}
-              {puedeGenerarServicios && evento?.plan_id && !eventoFinalizado && (
-                <button
-                  type="button"
-                  onClick={handleGenerarServicios}
-                  disabled={eventoFinalizado || generandoServicios}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: eventoFinalizado ? '#9ca3af' : '#6366f1',
-                    color: 'white',
-                    borderRadius: '0.375rem',
-                    border: 'none',
-                    cursor: eventoFinalizado || generandoServicios ? 'not-allowed' : 'pointer',
-                    fontWeight: '500',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  {generandoServicios ? 'Generando...' : 'Generar servicios'}
-                </button>
-              )}
             </div>
           </div>
           <div style={{ marginBottom: '1rem' }}>
             <div style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.35rem' }}>
-              Avance: {progresoServicios}%
+              Avance de confirmaciones de ítems: {evento?.progreso_confirmaciones ?? evento?.porcentaje_avance_confirmaciones ?? 0}%
             </div>
             <div style={{ width: '100%', height: '8px', backgroundColor: '#e5e7eb', borderRadius: '9999px', overflow: 'hidden' }}>
               <div
                 style={{
-                  width: `${progresoServicios}%`,
+                  width: `${evento?.progreso_confirmaciones ?? evento?.porcentaje_avance_confirmaciones ?? 0}%`,
                   height: '100%',
-                  backgroundColor: progresoServicios >= 100 ? '#10b981' : '#6366f1',
+                  backgroundColor: (evento?.progreso_confirmaciones ?? evento?.porcentaje_avance_confirmaciones ?? 0) >= 100 ? '#10b981' : '#6366f1',
                   transition: 'width 0.3s',
                 }}
               />
@@ -2147,6 +2242,7 @@ const EventoDetalle = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Observaciones */}
         {evento.observaciones ? (
@@ -2169,17 +2265,66 @@ const EventoDetalle = () => {
           </div>
         ) : null}
       </div>
-
-      {/* Confirmaciones de Opciones del Cliente */}
-      {evento?.id_evento && (
-        <EventoConfirmaciones
-          eventoId={evento.id_evento}
-          puedeEditar={puedeAgregarProducto && !eventoFinalizado}
-          compacto={true}
-        />
+      </>
       )}
 
-      {/* Productos Adicionales */}
+        {tabDetalleActivo === 'opciones' && evento?.id_evento && (
+        <div
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '0.75rem',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+            border: '1px solid #e5e7eb',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              padding: isMobile ? '1.25rem 1rem' : '1.5rem 1.5rem',
+              background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+              borderBottom: '3px solid #f59e0b',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+            }}
+          >
+            <div
+              style={{
+                width: isMobile ? 40 : 44,
+                height: isMobile ? 40 : 44,
+                borderRadius: '0.5rem',
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(245, 158, 11, 0.35)',
+              }}
+            >
+              <ListChecks size={isMobile ? 20 : 22} color="white" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: isMobile ? '1.15rem' : '1.35rem', fontWeight: '700', margin: 0, color: '#1e293b', letterSpacing: '-0.02em' }}>
+                Opciones del Cliente
+              </h2>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#92400e' }}>
+                Confirmación de selecciones para productos del evento
+              </p>
+            </div>
+          </div>
+          <div style={{ padding: isMobile ? '1rem' : '1.5rem' }}>
+            <EventoConfirmaciones
+              eventoId={evento.id_evento}
+              puedeEditar={(puedeAgregarProducto || usuario?.rol === ROLES.CLIENT) && !eventoFinalizado && evento?.estado !== 'en_proceso'}
+              compacto={false}
+              onConfirmacionGuardada={cargarEvento}
+            />
+          </div>
+        </div>
+        )}
+
+      {/* Productos Adicionales y Pagos - solo en tab Financiero */}
+      {tabDetalleActivo === 'financiero' && (
+      <>
       <div
         style={{
           backgroundColor: 'white',
@@ -2237,7 +2382,7 @@ const EventoDetalle = () => {
                       {producto.nombre_producto || producto.nombre || '-'}
                     </td>
                     <td style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.875rem', color: '#374151' }}>
-                      {producto.cantidad || 0}
+                      {producto.cantidad > 0 ? producto.cantidad : '-'}
                     </td>
                     <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', color: '#374151' }}>
                       {formatearMoneda(parseFloat(producto.precio_unitario || producto.precio || 0))}
@@ -2772,7 +2917,7 @@ const EventoDetalle = () => {
                             <DollarSign size={16} />
                           </button>
                         )}
-                        {pago.estado_pago === 'en_revision' && (
+                        {pago.estado_pago === 'en_revision' && usuario?.rol !== ROLES.CLIENT && (
                           <>
                             <button
                               onClick={() => solicitarConfirmacionEstadoPago(pago, 'aprobado')}
@@ -2817,6 +2962,8 @@ const EventoDetalle = () => {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Modal para registrar pago */}
       {mostrarModalPago && puedeRegistrarPago && (
@@ -3028,12 +3175,35 @@ const EventoDetalle = () => {
                     }}
                   />
                 </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem' }}>
+                    Recibo de pago (opcional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf,application/pdf"
+                    onChange={(e) => setReciboFilePago(e.target.files?.[0] || null)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                    }}
+                  />
+                  {reciboFilePago && (
+                    <span style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.25rem', display: 'block' }}>
+                      {reciboFilePago.name}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                 <button
                   type="button"
-                  onClick={() => setMostrarModalPago(false)}
+                  onClick={() => { setMostrarModalPago(false); setReciboFilePago(null); }}
                   disabled={guardandoPago}
                   style={{
                     flex: 1,
@@ -3085,46 +3255,220 @@ const EventoDetalle = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(15, 23, 42, 0.5)',
+            backdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1100,
             padding: '1rem',
           }}
-          onClick={() => setMostrarModalPagoDetalle(false)}
+          onClick={() => { setMostrarModalPagoDetalle(false); setReciboFileDetalle(null); }}
         >
           <div
             style={{
               backgroundColor: 'white',
-              borderRadius: '0.5rem',
-              padding: '2rem',
+              borderRadius: '1rem',
+              padding: 0,
               width: '100%',
-              maxWidth: '520px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              maxWidth: '440px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Detalle del pago</h2>
-              <button
-                onClick={() => setMostrarModalPagoDetalle(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                <X size={20} color="#6b7280" />
-              </button>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
+                padding: '1.5rem 1.5rem 2rem',
+                color: 'white',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <DollarSign size={24} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '700', margin: 0 }}>Detalle del pago</h2>
+                    <p style={{ fontSize: '0.8rem', opacity: 0.9, margin: '0.2rem 0 0' }}>ID #{pagoDetalle.id}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setMostrarModalPagoDetalle(false); setReciboFileDetalle(null); }}
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    cursor: 'pointer',
+                    padding: '0.4rem',
+                    color: 'white',
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div style={{ marginTop: '1.5rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: '600', opacity: 0.9, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Monto</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '800', marginTop: '0.25rem' }}>{formatearMoneda(pagoDetalle.monto || 0)}</div>
+              </div>
             </div>
 
-            <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.95rem' }}>
-              <div><strong>ID:</strong> {pagoDetalle.id}</div>
-              <div><strong>Fecha:</strong> {formatearFecha(pagoDetalle.fecha_pago)}</div>
-              <div><strong>Tipo:</strong> {pagoDetalle.tipo_pago || '-'}</div>
-              <div><strong>Método:</strong> {pagoDetalle.metodo_pago || '-'}</div>
-              <div><strong>Estado:</strong> {obtenerLabelEstadoPago(pagoDetalle.estado_pago)}</div>
-              <div><strong>Referencia:</strong> {pagoDetalle.numero_referencia || '-'}</div>
-              <div><strong>Observación:</strong> {pagoDetalle.observaciones || '-'}</div>
-              <div><strong>Monto:</strong> {formatearMoneda(pagoDetalle.monto || 0)}</div>
-              <div><strong>Origen:</strong> {pagoDetalle.origen || '-'}</div>
+            <div style={{ padding: '1.25rem 1.5rem' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  marginBottom: '1.25rem',
+                  backgroundColor: pagoDetalle.estado_pago === 'aprobado' ? '#d1fae5' : pagoDetalle.estado_pago === 'rechazado' ? '#fee2e2' : '#fef3c7',
+                  color: pagoDetalle.estado_pago === 'aprobado' ? '#065f46' : pagoDetalle.estado_pago === 'rechazado' ? '#991b1b' : '#92400e',
+                }}
+              >
+                {obtenerLabelEstadoPago(pagoDetalle.estado_pago)}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem 1.25rem', fontSize: '0.9rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.2rem' }}>Fecha</div>
+                  <div style={{ fontWeight: '500', color: '#0f172a' }}>{formatearFecha(pagoDetalle.fecha_pago)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.2rem' }}>Tipo</div>
+                  <div style={{ fontWeight: '500', color: '#0f172a' }}>{pagoDetalle.tipo_pago || '—'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.2rem' }}>Método</div>
+                  <div style={{ fontWeight: '500', color: '#0f172a' }}>{pagoDetalle.metodo_pago || '—'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.2rem' }}>Origen</div>
+                  <div style={{ fontWeight: '500', color: '#0f172a' }}>{pagoDetalle.origen || '—'}</div>
+                </div>
+                {(pagoDetalle.numero_referencia || pagoDetalle.observaciones) && (
+                  <>
+                    {pagoDetalle.numero_referencia ? (
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.2rem' }}>Referencia</div>
+                        <div style={{ fontWeight: '500', color: '#0f172a' }}>{pagoDetalle.numero_referencia}</div>
+                      </div>
+                    ) : null}
+                    {pagoDetalle.observaciones ? (
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.2rem' }}>Observación</div>
+                        <div style={{ fontWeight: '500', color: '#0f172a' }}>{pagoDetalle.observaciones}</div>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </div>
+
+              <div
+                style={{
+                  marginTop: '1.5rem',
+                  paddingTop: '1.25rem',
+                  borderTop: '1px solid #e2e8f0',
+                }}
+              >
+                <div style={{ fontSize: '0.8rem', fontWeight: '600', color: '#334155', marginBottom: '0.75rem' }}>Recibo de pago</div>
+                {pagoDetalle.recibo_ruta ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const blob = await pagosService.getReciboBlob(pagoDetalle.id);
+                          const url = URL.createObjectURL(blob);
+                          window.open(url, '_blank');
+                        } catch (e) {
+                          showError('No se pudo abrir el recibo');
+                        }
+                      }}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        padding: '0.5rem 1rem',
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                      }}
+                    >
+                      <FileText size={16} />
+                      Ver recibo
+                    </button>
+                  </div>
+                ) : null}
+                <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf,application/pdf"
+                    onChange={(e) => setReciboFileDetalle(e.target.files?.[0] || null)}
+                    id="input-recibo-detalle-pago"
+                    style={{ display: 'none' }}
+                  />
+                  <label
+                    htmlFor="input-recibo-detalle-pago"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#f1f5f9',
+                      color: '#475569',
+                      border: '1px dashed #94a3b8',
+                      borderRadius: '0.5rem',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    <FileText size={16} />
+                    {reciboFileDetalle ? reciboFileDetalle.name : 'Elegir archivo'}
+                  </label>
+                  {reciboFileDetalle ? (
+                    <button
+                      type="button"
+                      disabled={subiendoRecibo}
+                      onClick={async () => {
+                        if (!reciboFileDetalle) return;
+                        try {
+                          setSubiendoRecibo(true);
+                          await pagosService.uploadRecibo(pagoDetalle.id, reciboFileDetalle);
+                          const data = await pagosService.getById(pagoDetalle.id);
+                          setPagoDetalle(data.pago);
+                          setReciboFileDetalle(null);
+                          await cargarPagos();
+                          success('Recibo adjuntado correctamente');
+                        } catch (e) {
+                          showError(e.response?.data?.error || e.message || 'Error al subir recibo');
+                        } finally {
+                          setSubiendoRecibo(false);
+                        }
+                      }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        backgroundColor: subiendoRecibo ? '#94a3b8' : '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        cursor: subiendoRecibo ? 'not-allowed' : 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {subiendoRecibo ? 'Subiendo...' : 'Subir recibo'}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3987,7 +4331,8 @@ const EventoDetalle = () => {
                 />
               </div>
 
-              {/* Checkbox de daños */}
+              {/* Checkbox de daños - solo para administradores/coordinadores, no para clientes */}
+              {usuario?.rol !== ROLES.CLIENT && (
               <div style={{ 
                 padding: '1rem', 
                 backgroundColor: formFinalizacion.tiene_danos ? '#fef2f2' : '#f9fafb', 
@@ -4087,6 +4432,7 @@ const EventoDetalle = () => {
                   </div>
                 )}
               </div>
+              )}
             </div>
 
             {/* Botones */}
@@ -4110,7 +4456,7 @@ const EventoDetalle = () => {
               <button
                 type="button"
                 onClick={handleFinalizarEvento}
-                disabled={finalizandoEvento || (formFinalizacion.tiene_danos && !formFinalizacion.descripcion_danos.trim())}
+                disabled={finalizandoEvento || (usuario?.rol !== ROLES.CLIENT && formFinalizacion.tiene_danos && !formFinalizacion.descripcion_danos.trim())}
                 style={{
                   padding: '0.65rem 1.25rem',
                   backgroundColor: finalizandoEvento ? '#9ca3af' : '#8b5cf6',

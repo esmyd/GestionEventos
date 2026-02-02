@@ -267,12 +267,12 @@ const Calendario = () => {
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}
-                        title={`${evento.nombre_evento || 'Evento'} (${evento.estado})${evento.porcentaje_avance_servicios !== undefined && evento.porcentaje_avance_servicios !== null ? ` - Avance: ${evento.porcentaje_avance_servicios}%` : ''}`}
+                        title={`${evento.nombre_evento || 'Evento'} (${evento.estado})${(evento.porcentaje_avance_confirmaciones ?? evento.porcentaje_avance_servicios) != null ? ` - Avance confirmaciones: ${evento.porcentaje_avance_confirmaciones ?? evento.porcentaje_avance_servicios}%` : ''}`}
                       >
                         {evento.nombre_evento || 'Evento'} ({evento.estado})
-                        {evento.porcentaje_avance_servicios !== undefined && evento.porcentaje_avance_servicios !== null && (
+                        {(evento.porcentaje_avance_confirmaciones ?? evento.porcentaje_avance_servicios) != null && (
                           <span style={{ marginLeft: '0.25rem', fontSize: '0.65rem', opacity: 0.9 }}>
-                            • {evento.porcentaje_avance_servicios}%
+                            • {evento.porcentaje_avance_confirmaciones ?? evento.porcentaje_avance_servicios}%
                           </span>
                         )}
                       </div>

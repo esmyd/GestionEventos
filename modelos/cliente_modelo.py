@@ -128,13 +128,15 @@ class ClienteModelo:
         return self.base_datos.obtener_uno(consulta, (usuario_id,))
     
     def obtener_todos_clientes(self):
-        """Obtiene todos los clientes con edad calculada"""
+        """Obtiene todos los clientes con edad, fecha_registro y cantidad de eventos"""
+        subquery_eventos = "(SELECT COUNT(*) FROM eventos e WHERE e.id_cliente = c.id) AS cantidad_eventos"
         if self._tiene_campos_extendidos():
-            consulta = """
+            consulta = f"""
             SELECT 
                 c.id, c.usuario_id, c.documento_identidad, c.direccion, c.fecha_registro,
                 c.fecha_nacimiento, c.pais, c.provincia, c.ciudad,
                 c.fecha_ultimo_evento, c.cantidad_eventos_completados,
+                {subquery_eventos},
                 u.nombre_completo, u.email, u.telefono,
                 CASE 
                     WHEN c.fecha_nacimiento IS NOT NULL 
@@ -146,12 +148,13 @@ class ClienteModelo:
             ORDER BY u.nombre_completo
             """
         else:
-            consulta = """
+            consulta = f"""
             SELECT 
                 c.id, c.usuario_id, c.documento_identidad, c.direccion, c.fecha_registro,
                 NULL AS fecha_nacimiento, 'Ecuador' AS pais, 'Guayas' AS provincia, 
                 'Guayaquil' AS ciudad, NULL AS fecha_ultimo_evento, 
                 0 AS cantidad_eventos_completados,
+                {subquery_eventos},
                 u.nombre_completo, u.email, u.telefono,
                 NULL AS edad
             FROM clientes c

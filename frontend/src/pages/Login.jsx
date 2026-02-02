@@ -76,7 +76,7 @@ const Login = () => {
       const result = await login(nombreUsuario, contrasena);
 
       if (result.success) {
-        navigate('/dashboard');
+        navigate('/panel');
       } else {
         setError(result.error || 'Error al iniciar sesión');
       }

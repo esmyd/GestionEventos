@@ -20,8 +20,8 @@ export const useNombrePlataforma = () => {
     let activo = true;
     const cargar = async () => {
       try {
-        const data = await configuracionesService.getNombrePlataforma();
-        const nombreApi = (data?.nombre_plataforma || '').trim() || DEFAULT_NAME;
+        const data = await configuracionesService.getGeneralPublic();
+        const nombreApi = (data?.configuracion?.nombre_plataforma || data?.nombre_plataforma || '').trim() || DEFAULT_NAME;
         if (activo) {
           setNombrePlataformaState(nombreApi);
           localStorage.setItem(STORAGE_KEY, nombreApi);

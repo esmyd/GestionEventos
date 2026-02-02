@@ -39,13 +39,21 @@ const EventoNuevo = () => {
     return today.toISOString().split('T')[0];
   };
 
+  // Normalizar fecha a YYYY-MM-DD para input type="date" (el backend puede devolver "2026-01-31" o "2026-01-31 00:00:00")
+  const normalizarFecha = (fecha) => {
+    if (!fecha) return '';
+    const str = String(fecha);
+    const match = str.match(/^(\d{4}-\d{2}-\d{2})/);
+    return match ? match[1] : str;
+  };
+
   const [formData, setFormData] = useState({
     cliente_id: '',
     plan_id: '',
     id_salon: '',
     nombre_evento: '',
     tipo_evento: '',
-    fecha_evento: getTodayDate(), // Precargar con fecha de hoy
+    fecha_evento: '', // Sin valor por defecto: el usuario debe elegir la fecha del evento (evitar confusión con fecha de creación)
     hora_inicio: '20:00',
     hora_fin: '02:00',
     numero_invitados: '50',
@@ -176,7 +184,7 @@ const EventoNuevo = () => {
         id_salon: evento.id_salon ? String(evento.id_salon) : '',
         nombre_evento: evento.nombre_evento || '',
         tipo_evento: evento.tipo_evento || '',
-        fecha_evento: evento.fecha_evento || getTodayDate(),
+        fecha_evento: normalizarFecha(evento.fecha_evento) || getTodayDate(),
         hora_inicio: normalizarHora(evento.hora_inicio),
         hora_fin: normalizarHora(evento.hora_fin),
         numero_invitados: evento.numero_invitados ? String(evento.numero_invitados) : '',
@@ -435,7 +443,7 @@ const EventoNuevo = () => {
 
     // Validar duración máxima según el plan
     if (duracionMaximaPlan && duracionHoras > duracionMaximaPlan) {
-      return { valido: false, mensaje: `El evento no puede durar más de ${duracionMaximaPlan} horas según el plan seleccionado` };
+      return { valido: false, mensaje: `El evento no puede durar más de ${duracionMaximaPlan} horas según el paquete seleccionado` };
     }
 
     return { valido: true };
@@ -455,12 +463,12 @@ const EventoNuevo = () => {
 
     // Validar contra capacidad máxima del plan
     if (capacidadMaximaPlan && numInvitados > capacidadMaximaPlan) {
-      return { valido: false, mensaje: `El número de invitados no puede superar la capacidad máxima del plan (${capacidadMaximaPlan})` };
+      return { valido: false, mensaje: `El número de invitados no puede superar la capacidad máxima del paquete (${capacidadMaximaPlan})` };
     }
 
     // Validar contra capacidad mínima del plan
     if (capacidadMinimaPlan && numInvitados < capacidadMinimaPlan) {
-      return { valido: false, mensaje: `El número de invitados no puede ser menor que la capacidad mínima del plan (${capacidadMinimaPlan})` };
+      return { valido: false, mensaje: `El número de invitados no puede ser menor que la capacidad mínima del paquete (${capacidadMinimaPlan})` };
     }
 
     // Validar contra capacidad del salón
@@ -683,7 +691,12 @@ const EventoNuevo = () => {
         return;
       }
 
-      // Validar fecha
+      // Validar fecha (requerida y >= hoy)
+      if (!formData.fecha_evento) {
+        setError('Debes seleccionar la fecha del evento');
+        setLoading(false);
+        return;
+      }
       if (!validarFecha(formData.fecha_evento)) {
         setError('La fecha del evento debe ser igual o mayor a la fecha de hoy');
         setLoading(false);
@@ -847,12 +860,12 @@ const EventoNuevo = () => {
   const planPlaceholder = !invitadosValidos
     ? 'Ingresa número de invitados'
     : planes.length === 0 && cargandoDatos
-    ? 'Cargando planes...'
+    ? 'Cargando paquetes...'
     : planes.length === 0
-    ? 'No hay planes disponibles'
+    ? 'No hay paquetes disponibles'
     : planesDisponibles.length === 0
-    ? `No hay planes para ${numeroInvitados} invitados`
-    : 'Seleccione un plan';
+    ? `No hay paquetes para ${numeroInvitados} invitados`
+    : 'Seleccione un paquete';
   const planSelectDisabled = !invitadosValidos || planes.length === 0 || planesDisponibles.length === 0;
   const salonPlaceholder = !invitadosValidos
     ? 'Ingresa número de invitados'
@@ -1102,7 +1115,7 @@ const EventoNuevo = () => {
               <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
                 {capacidadSalon
                   ? `Capacidad del salón seleccionado: ${capacidadSalon} personas`
-                  : 'Los planes se filtran según esta cantidad'}
+                  : 'Los paquetes se filtran según esta cantidad'}
               </div>
             </div>
 
@@ -1147,7 +1160,7 @@ const EventoNuevo = () => {
               )}
             </div>
 
-            {/* 3. Plan */}
+            {/* 3. Paquete */}
             <div>
               <label
                 style={{
@@ -1158,7 +1171,7 @@ const EventoNuevo = () => {
                   color: '#374151',
                 }}
               >
-                Plan disponible
+                Paquete disponible
               </label>
               <select
                 name="plan_id"
@@ -1579,7 +1592,7 @@ const EventoNuevo = () => {
           {/* Resumen de Precios */}
           <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f3f4f6', borderRadius: '0.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Precio Plan:</span>
+              <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Precio Paquete:</span>
               <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>
                 {new Intl.NumberFormat('es-CO', {
                   style: 'currency',

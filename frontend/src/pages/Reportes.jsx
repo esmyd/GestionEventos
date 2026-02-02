@@ -336,7 +336,7 @@ const Reportes = ({
         <AlertCircle size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} />
         <p style={{ color: '#ef4444', marginBottom: '1rem' }}>{error}</p>
         <button
-          onClick={cargarReportes}
+          onClick={() => cargarReportes()}
           style={{
             padding: '0.6rem 1.25rem',
             backgroundColor: '#6366f1',
@@ -783,7 +783,7 @@ const Reportes = ({
             color="#6366f1"
           />
           <ProgressBar
-            label="Planes activos"
+            label="Paquetes activos"
             valor={`${metricas.recursos?.planes?.activos || 0} / ${metricas.recursos?.planes?.total || 0}`}
             total={metricas.recursos?.planes?.total || 1}
             color="#8b5cf6"

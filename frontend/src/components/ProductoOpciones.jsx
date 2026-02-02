@@ -4,7 +4,8 @@ import { useToast } from '../hooks/useToast';
 import { Plus, Edit2, Trash2, X, Save, ListChecks, AlertCircle } from 'lucide-react';
 
 /**
- * Componente para gestionar las opciones de un producto que requieren confirmación del cliente
+ * Componente para gestionar las opciones/variaciones de un producto.
+ * Secuencia: primero se crea el producto, luego se agregan las variaciones aquí.
  * 
  * @param {Object} props
  * @param {number} props.productoId - ID del producto
@@ -25,7 +26,10 @@ const ProductoOpciones = ({ productoId, productoNombre, puedeEditar = false, onC
     opciones: '',
     permite_multiple: false,
     requerido: true,
-    orden: 0
+    orden: 0,
+    pedir_cantidad: false,
+    cantidad_max_multiples: '',
+    minimo_multiples: ''
   });
 
   useEffect(() => {
@@ -53,7 +57,10 @@ const ProductoOpciones = ({ productoId, productoNombre, puedeEditar = false, onC
       opciones: '',
       permite_multiple: false,
       requerido: true,
-      orden: opciones.length
+      orden: opciones.length,
+      pedir_cantidad: false,
+      cantidad_max_multiples: '',
+      minimo_multiples: ''
     });
     setOpcionEditando(null);
     setMostrarFormulario(true);
@@ -65,7 +72,10 @@ const ProductoOpciones = ({ productoId, productoNombre, puedeEditar = false, onC
       opciones: opcion.opciones,
       permite_multiple: opcion.permite_multiple,
       requerido: opcion.requerido,
-      orden: opcion.orden
+      orden: opcion.orden,
+      pedir_cantidad: Boolean(opcion.pedir_cantidad),
+      cantidad_max_multiples: opcion.cantidad_max_multiples != null ? String(opcion.cantidad_max_multiples) : '',
+      minimo_multiples: opcion.minimo_multiples != null ? String(opcion.minimo_multiples) : ''
     });
     setOpcionEditando(opcion);
     setMostrarFormulario(true);
@@ -79,7 +89,10 @@ const ProductoOpciones = ({ productoId, productoNombre, puedeEditar = false, onC
       opciones: '',
       permite_multiple: false,
       requerido: true,
-      orden: 0
+      orden: 0,
+      pedir_cantidad: false,
+      cantidad_max_multiples: '',
+      minimo_multiples: ''
     });
   };
 
@@ -444,7 +457,7 @@ const ProductoOpciones = ({ productoId, productoNombre, puedeEditar = false, onC
                       )}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                         <input
                           type="checkbox"
@@ -461,7 +474,60 @@ const ProductoOpciones = ({ productoId, productoNombre, puedeEditar = false, onC
                         />
                         <span style={{ fontSize: '0.875rem' }}>Permite selección múltiple</span>
                       </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={formData.pedir_cantidad}
+                          onChange={(e) => setFormData({ ...formData, pedir_cantidad: e.target.checked })}
+                        />
+                        <span style={{ fontSize: '0.875rem' }}>Pedir cantidad</span>
+                      </label>
                     </div>
+
+                    {formData.permite_multiple && (
+                      <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                        <div style={{ minWidth: 140 }}>
+                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.35rem' }}>
+                            Cantidad máxima de opciones
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={formData.cantidad_max_multiples}
+                            onChange={(e) => setFormData({ ...formData, cantidad_max_multiples: e.target.value })}
+                            placeholder="Sin límite"
+                            style={{
+                              width: '100%',
+                              padding: '0.5rem 0.75rem',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '0.375rem',
+                              fontSize: '0.95rem'
+                            }}
+                          />
+                          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Máximo que puede seleccionar</span>
+                        </div>
+                        <div style={{ minWidth: 140 }}>
+                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.35rem' }}>
+                            Mínimo de opciones
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={formData.minimo_multiples}
+                            onChange={(e) => setFormData({ ...formData, minimo_multiples: e.target.value })}
+                            placeholder="0"
+                            style={{
+                              width: '100%',
+                              padding: '0.5rem 0.75rem',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '0.375rem',
+                              fontSize: '0.95rem'
+                            }}
+                          />
+                          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Mínimo obligatorio</span>
+                        </div>
+                      </div>
+                    )}
 
                     <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                       <button

@@ -31,6 +31,10 @@ api.interceptors.request.use(
         console.warn('No hay token disponible para:', config.url);
       }
     }
+    // Si el body es FormData, quitar Content-Type para que se envíe multipart/form-data con boundary
+    if (config.data && typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => {
@@ -510,6 +514,21 @@ export const pagosService = {
     const response = await api.get(`/pagos/evento/${eventoId}/total`);
     return response.data;
   },
+
+  uploadRecibo: async (pagoId, file) => {
+    if (!file || !(file instanceof File)) {
+      throw new Error('Debe seleccionar un archivo');
+    }
+    const formData = new FormData();
+    formData.append('recibo', file, file.name || 'recibo');
+    const response = await api.post(`/pagos/${pagoId}/recibo`, formData);
+    return response.data;
+  },
+
+  getReciboBlob: async (pagoId) => {
+    const response = await api.get(`/pagos/${pagoId}/recibo`, { responseType: 'blob' });
+    return response.data;
+  },
 };
 
 export const cargaMasivaService = {
@@ -774,6 +793,10 @@ export const whatsappChatService = {
     const response = await api.post(`/whatsapp_chat/conversations/${conversationId}/marcar-leido`);
     return response.data;
   },
+  reenviarFallidos: async (conversationId) => {
+    const response = await api.post(`/whatsapp_chat/conversations/${conversationId}/reenviar-fallidos`);
+    return response.data;
+  },
   getNoLeidos: async () => {
     const response = await api.get('/whatsapp_chat/no-leidos');
     return response.data;
@@ -787,6 +810,10 @@ export const whatsappMetricasService = {
   },
   getClientes: async (params = {}) => {
     const response = await api.get('/whatsapp_metricas/clientes', { params });
+    return response.data;
+  },
+  getMensajesCliente: async (clienteId, params = {}) => {
+    const response = await api.get(`/whatsapp_metricas/clientes/${clienteId}/mensajes`, { params });
     return response.data;
   },
   updateConfig: async (payload) => {

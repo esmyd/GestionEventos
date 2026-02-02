@@ -78,6 +78,8 @@ const Salones = () => {
     return Number.isFinite(numero) ? numero : null;
   };
 
+  const salonActivo = (s) => s.activo === true || s.activo === 1;
+
   const salonesFiltrados = salones
     .filter((salon) => {
       if (!busqueda) return true;
@@ -89,8 +91,8 @@ const Salones = () => {
       );
     })
     .filter((salon) => {
-      if (filtroEstado === 'activos') return salon.activo !== false;
-      if (filtroEstado === 'inactivos') return salon.activo === false;
+      if (filtroEstado === 'activos') return salonActivo(salon);
+      if (filtroEstado === 'inactivos') return !salonActivo(salon);
       return true;
     })
     .filter((salon) => {
@@ -171,7 +173,7 @@ const Salones = () => {
       ubicacion: salon.ubicacion || '',
       descripcion: salon.descripcion || '',
       precio_base: salon.precio_base || '',
-      activo: salon.activo !== false,
+      activo: !!(salon.activo === true || salon.activo === 1),
     });
     setErrorFormulario('');
     setMostrarModalEditar(true);
@@ -581,11 +583,11 @@ const Salones = () => {
                     borderRadius: '9999px',
                     fontSize: '0.75rem',
                     fontWeight: '500',
-                    backgroundColor: salon.activo !== false ? '#10b98120' : '#ef444420',
-                    color: salon.activo !== false ? '#10b981' : '#ef4444',
+                    backgroundColor: salonActivo(salon) ? '#10b98120' : '#ef444420',
+                    color: salonActivo(salon) ? '#10b981' : '#ef4444',
                   }}
                 >
-                  {salon.activo !== false ? 'Activo' : 'Inactivo'}
+                  {salonActivo(salon) ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1212,11 +1214,11 @@ const Salones = () => {
                       borderRadius: '9999px',
                       fontSize: '0.75rem',
                       fontWeight: '500',
-                      backgroundColor: salonSeleccionado.activo !== false ? '#10b98120' : '#ef444420',
-                      color: salonSeleccionado.activo !== false ? '#10b981' : '#ef4444',
+                      backgroundColor: salonActivo(salonSeleccionado) ? '#10b98120' : '#ef444420',
+                      color: salonActivo(salonSeleccionado) ? '#10b981' : '#ef4444',
                     }}
                   >
-                    {salonSeleccionado.activo !== false ? 'Activo' : 'Inactivo'}
+                    {salonActivo(salonSeleccionado) ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
               </div>

@@ -1,0 +1,14 @@
+# ALTERNATIVA 1: Si el backend Python está en la misma raíz
+# Colocar este archivo en public_html/.htaccess
+
+RewriteEngine On
+
+# Redirigir /api/* al backend Python
+RewriteCond %{REQUEST_URI} ^/api
+RewriteRule ^api/(.*)$ /GestionEventos/wsgi.py/$1 [L,P]
+
+# Para React Router - servir index.html si el archivo no existe
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api
+RewriteRule ^ index.html [L]

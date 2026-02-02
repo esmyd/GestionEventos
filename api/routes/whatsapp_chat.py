@@ -132,6 +132,21 @@ def marcar_leido(conversacion_id):
         return jsonify({"error": "Error al marcar como leído"}), 500
 
 
+@whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/reenviar-fallidos", methods=["POST"])
+@requiere_autenticacion
+@requiere_rol("administrador", "gerente_general", "coordinador")
+def reenviar_fallidos(conversacion_id):
+    """Envía la plantilla de re-apertura 24h y reenvía los mensajes que fallaron por ventana 24h."""
+    try:
+        exito, error_msg = service.reenviar_mensajes_fallidos(conversacion_id)
+        if exito:
+            return jsonify({"message": "Plantilla enviada y mensajes fallidos reenviados (si había alguno)"}), 200
+        return jsonify({"error": error_msg or "No se pudo reenviar"}), 400
+    except Exception as e:
+        logger.error(f"Error al reenviar mensajes fallidos: {str(e)}")
+        return jsonify({"error": "Error al reenviar mensajes fallidos"}), 500
+
+
 @whatsapp_chat_bp.route("/no-leidos", methods=["GET"])
 @requiere_autenticacion
 @requiere_rol("administrador", "gerente_general", "coordinador")

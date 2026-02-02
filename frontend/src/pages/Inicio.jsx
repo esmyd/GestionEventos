@@ -295,7 +295,7 @@ const Inicio = () => {
       return;
     }
     if (!formData.plan_id && !formData.salon_id) {
-      showError('Selecciona un plan o un salon para continuar.');
+      showError('Selecciona un paquete o un salon para continuar.');
       return;
     }
 
@@ -307,8 +307,28 @@ const Inicio = () => {
 
     try {
       setCotizacionLoading(true);
-      const clienteData = await clientesService.getMe();
-      const clienteId = clienteData.cliente?.id || clienteData.cliente?.cliente_id;
+      let clienteId = null;
+      const meResponse = await clientesService.getMe();
+      clienteId = meResponse.cliente?.id || meResponse.cliente?.cliente_id;
+
+      if (!clienteId && usuarioId) {
+        try {
+          const createResp = await clientesService.create({
+            usuario_id: usuarioId,
+            documento_identidad: usuario?.documento_identidad || 'PENDIENTE',
+          });
+          clienteId = createResp.cliente?.id || createResp.cliente?.cliente_id;
+        } catch (createErr) {
+          setClienteData((prev) => ({
+            ...prev,
+            nombre_completo: usuario?.nombre_completo || prev.nombre_completo,
+            telefono: usuario?.telefono || prev.telefono,
+          }));
+          setMostrarCompletarCliente(true);
+          return;
+        }
+      }
+
       if (!clienteId) {
         setClienteData((prev) => ({
           ...prev,
@@ -318,6 +338,7 @@ const Inicio = () => {
         setMostrarCompletarCliente(true);
         return;
       }
+
       const eventoId = await crearEventoConExtras(clienteId);
       if (eventoId) {
         success('Cotizacion creada. Ya puedes descargarla desde tu cuenta.');
@@ -325,15 +346,6 @@ const Inicio = () => {
         showError('No se pudo crear la cotizacion. Intenta nuevamente.');
       }
     } catch (err) {
-      if (err.response?.status === 404) {
-        setClienteData((prev) => ({
-          ...prev,
-          nombre_completo: usuario?.nombre_completo || prev.nombre_completo,
-          telefono: usuario?.telefono || prev.telefono,
-        }));
-        setMostrarCompletarCliente(true);
-        return;
-      }
       const errorMessage = err.response?.data?.error || 'Error al enviar la cotizacion';
       showError(errorMessage);
     } finally {
@@ -455,10 +467,10 @@ const Inicio = () => {
     advertencias.push('El número de invitados supera la capacidad del salón seleccionado.');
   }
   if (capacidadMinimaPlan && invitadosNumero > 0 && invitadosNumero < capacidadMinimaPlan) {
-    advertencias.push('El número de invitados es menor a la capacidad mínima del plan.');
+    advertencias.push('El número de invitados es menor a la capacidad mínima del paquete.');
   }
   if (capacidadMaximaPlan && invitadosNumero > capacidadMaximaPlan) {
-    advertencias.push('El número de invitados supera la capacidad máxima del plan.');
+    advertencias.push('El número de invitados supera la capacidad máxima del paquete.');
   }
 
   const inputStyle = {
@@ -517,8 +529,8 @@ const Inicio = () => {
     boxShadow: '0 12px 30px -24px rgba(15, 23, 42, 0.3)',
   };
 
-  const navButtonLabel = isAuthenticated ? 'Panel administrativo' : 'Iniciar sesión';
-  const navButtonLink = isAuthenticated ? '/dashboard' : '/login';
+  const navButtonLabel = isAuthenticated ? 'Panel' : 'Iniciar sesión';
+  const navButtonLink = isAuthenticated ? '/panel' : '/login';
 
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando cotizador...</div>;
@@ -599,91 +611,48 @@ const Inicio = () => {
         </div>
       </header>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ padding: '2.5rem 1.5rem 0' }}>
+        <div style={{ padding: '2.5rem 1.5rem 0', display: 'flex', flexDirection: 'column' }}>
         <div
           style={{
             background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #6366f1 100%)',
             borderRadius: '1.5rem',
-            padding: '2.5rem',
+            padding: '1.5rem 2rem',
+            order: -2,
             color: 'white',
             position: 'relative',
             overflow: 'hidden',
-            marginBottom: '2rem',
+            marginBottom: '1.5rem',
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'radial-gradient(circle at top right, rgba(255,255,255,0.25), transparent 45%)',
-              opacity: 0.6,
-            }}
-          />
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ maxWidth: '640px' }}>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '999px',
-                  backgroundColor: 'rgba(255,255,255,0.16)',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                }}
-              >
-                <Calculator size={16} />
-                Cotizador en linea
-              </span>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: '700', margin: '0.85rem 0 0.5rem' }}>
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Calculator size={28} />
+            <div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: '700', margin: 0 }}>
                 Cotiza tu evento en minutos
               </h1>
-              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1rem' }}>
-                Elige plan, salon y servicios adicionales. Te mostramos un estimado claro y rapido antes de solicitar tu cotizacion formal.
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', margin: '0.25rem 0 0' }}>
+                Elige paquete, salon y servicios. Estimado claro y rapido.
               </p>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-                {['Sin registro', 'Estimado inmediato', 'Descarga al registrarte'].map((item) => (
-                  <span
-                    key={item}
-                    style={{
-                      backgroundColor: 'rgba(255,255,255,0.18)',
-                      padding: '0.45rem 0.85rem',
-                      borderRadius: '999px',
-                      fontSize: '0.85rem',
-                      fontWeight: '600',
-                    }}
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
             </div>
-
-            {isRoleAllowed(usuario?.rol, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]) && (
-              <Link
-                to="/dashboard"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.85rem 1.6rem',
-                  backgroundColor: 'white',
-                  color: '#1e1b4b',
-                  borderRadius: '0.75rem',
-                  textDecoration: 'none',
-                  fontWeight: '700',
-                  boxShadow: '0 12px 24px -16px rgba(15,23,42,0.6)',
-                }}
-              >
-                Ir al Dashboard
-              </Link>
-            )}
           </div>
         </div>
 
-        <section id="servicios" style={{ marginTop: '3rem' }}>
+        {error && (
+          <div
+            style={{
+              padding: '1rem',
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              borderRadius: '0.75rem',
+              marginBottom: '1.5rem',
+              border: '1px solid #fecaca',
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <section id="servicios" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
             <h2 style={sectionTitleStyle}>Experiencias que dejan huella</h2>
             <p style={sectionSubtitleStyle}>
@@ -692,22 +661,10 @@ const Inicio = () => {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
             {[
-              {
-                titulo: 'Planeación integral',
-                descripcion: 'Acompañamiento en cada fase: concepto, logística y coordinación en sitio.',
-              },
-              {
-                titulo: 'Ambientes memorables',
-                descripcion: 'Decoración, iluminación y detalles diseñados a la medida de tu estilo.',
-              },
-              {
-                titulo: 'Proveedores premium',
-                descripcion: 'Aliados en catering, música y fotografía para una experiencia perfecta.',
-              },
-              {
-                titulo: 'Gestión transparente',
-                descripcion: 'Cronogramas claros, reportes y seguimiento en tiempo real.',
-              },
+              { titulo: 'Planeación integral', descripcion: 'Acompañamiento en cada fase: concepto, logística y coordinación en sitio.' },
+              { titulo: 'Ambientes memorables', descripcion: 'Decoración, iluminación y detalles diseñados a la medida de tu estilo.' },
+              { titulo: 'Proveedores premium', descripcion: 'Aliados en catering, música y fotografía para una experiencia perfecta.' },
+              { titulo: 'Gestión transparente', descripcion: 'Cronogramas claros, reportes y seguimiento en tiempo real.' },
             ].map((item) => (
               <div key={item.titulo} style={featureCardStyle}>
                 <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '700', color: '#0f172a' }}>{item.titulo}</h3>
@@ -717,7 +674,7 @@ const Inicio = () => {
           </div>
         </section>
 
-        <section id="proceso" style={{ marginTop: '3rem' }}>
+        <section id="proceso" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
           <div style={{ marginBottom: '1.5rem' }}>
             <h2 style={sectionTitleStyle}>Un proceso claro y elegante</h2>
             <p style={sectionSubtitleStyle}>
@@ -732,9 +689,7 @@ const Inicio = () => {
               { titulo: '4. Disfruta', descripcion: 'Coordinamos en sitio para que vivas tu evento sin estrés.' },
             ].map((item) => (
               <div key={item.titulo} style={featureCardStyle}>
-                <div style={{ fontWeight: '700', fontSize: '1rem', color: '#1e1b4b', marginBottom: '0.35rem' }}>
-                  {item.titulo}
-                </div>
+                <div style={{ fontWeight: '700', fontSize: '1rem', color: '#1e1b4b', marginBottom: '0.35rem' }}>{item.titulo}</div>
                 <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>{item.descripcion}</p>
               </div>
             ))}
@@ -756,22 +711,8 @@ const Inicio = () => {
               border: '1px solid #c7d2fe',
             }}
           >
-            <div>
-              Para descargar la cotización, necesitamos que te registres o inicies sesión.
-            </div>
-            <button
-              type="button"
-              onClick={handleIrLogin}
-              style={{
-                padding: '0.65rem 1.4rem',
-                backgroundColor: '#4f46e5',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.55rem',
-                cursor: 'pointer',
-                fontWeight: '600',
-              }}
-            >
+            <div>Para descargar la cotización, necesitamos que te registres o inicies sesión.</div>
+            <button type="button" onClick={handleIrLogin} style={{ padding: '0.65rem 1.4rem', backgroundColor: '#4f46e5', color: 'white', border: 'none', borderRadius: '0.55rem', cursor: 'pointer', fontWeight: '600' }}>
               Iniciar sesión
             </button>
           </div>
@@ -1092,7 +1033,7 @@ const Inicio = () => {
           </div>
         )}
 
-        <section id="cotizador" style={{ marginTop: '3rem' }}>
+        <section id="cotizador" style={{ marginTop: '0', marginBottom: '2rem', order: -1 }} data-order-first>
           <div style={{ marginBottom: '1.25rem' }}>
             <h2 style={sectionTitleStyle}>Cotizador rápido</h2>
             <p style={sectionSubtitleStyle}>
@@ -1161,14 +1102,14 @@ const Inicio = () => {
             <div>
               <label style={labelStyle}>
                 <FileText size={16} />
-                Plan
+                Paquete
               </label>
               <select
                 value={formData.plan_id}
                 onChange={(e) => setFormData({ ...formData, plan_id: e.target.value })}
                 style={inputStyle}
               >
-                <option value="">Selecciona un plan</option>
+                <option value="">Selecciona un paquete</option>
                 {planes.map((plan) => (
                   <option key={plan.id} value={plan.id}>
                     {plan.nombre} - {formatearMoneda(plan.precio_base || plan.precio)}
@@ -1214,7 +1155,7 @@ const Inicio = () => {
                   {planSugerido && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                       <div>
-                        <div style={{ fontWeight: '600' }}>Plan sugerido</div>
+                        <div style={{ fontWeight: '600' }}>Paquete sugerido</div>
                         <div style={{ color: '#64748b', fontSize: '0.9rem' }}>
                           {planSugerido.nombre} · Capacidad {planSugerido.capacidad_minima || 0}
                           {planSugerido.capacidad_maxima ? `-${planSugerido.capacidad_maxima}` : '+'}
@@ -1233,7 +1174,7 @@ const Inicio = () => {
                           fontWeight: '600',
                         }}
                       >
-                        Usar plan
+                        Usar paquete
                       </button>
                     </div>
                   )}
@@ -1376,7 +1317,7 @@ const Inicio = () => {
           </div>
           <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1.5rem', color: '#1f2937' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Plan</span>
+              <span>Paquete</span>
               <span>{formatearMoneda(planSeleccionado?.precio_base || planSeleccionado?.precio)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>

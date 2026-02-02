@@ -299,11 +299,13 @@ class EventoModelo:
         consulta = """
         SELECT e.*, c.usuario_id, c.documento_identidad as documento_identidad_cliente,
                u.nombre_completo as nombre_cliente,
-               u_coor.nombre_completo as nombre_coordinador
+               u_coor.nombre_completo as nombre_coordinador,
+               p.nombre as nombre_plan
         FROM eventos e
         LEFT JOIN clientes c ON e.id_cliente = c.id
         LEFT JOIN usuarios u ON c.usuario_id = u.id
         LEFT JOIN usuarios u_coor ON e.coordinador_id = u_coor.id
+        LEFT JOIN planes p ON e.plan_id = p.id
         WHERE e.id_cliente = %s
         ORDER BY e.id_evento DESC
         """
@@ -342,6 +344,7 @@ class EventoModelo:
                 'id': evento.get('id_evento', evento.get('id')),
                 'id_evento': evento.get('id_evento', evento.get('id')),
                 'cliente_id': evento.get('id_cliente'),
+                'plan_id': evento.get('plan_id'),
                 'nombre_evento': evento.get('salon', 'Evento'),
                 'tipo_evento': evento.get('tipo_evento', 'Otro'),
                 'fecha_evento': fecha_evento,
@@ -353,6 +356,7 @@ class EventoModelo:
                 'saldo': float(evento.get('saldo', 0) or 0),
                 'saldo_pendiente': float(evento.get('saldo', 0) or 0),
                 'nombre_cliente': evento.get('nombre_cliente', 'N/A'),
+                'nombre_plan': evento.get('nombre_plan'),
                 'documento_identidad_cliente': evento.get('documento_identidad_cliente') or evento.get('documento_identidad'),
                 'coordinador_id': evento.get('coordinador_id'),
                 'nombre_coordinador': evento.get('nombre_coordinador')
@@ -367,12 +371,13 @@ class EventoModelo:
         consulta = """
         SELECT e.*, c.usuario_id, c.documento_identidad as documento_identidad_cliente,
                u.nombre_completo as nombre_cliente, s.nombre as nombre_salon,
-               u_coor.nombre_completo as nombre_coordinador
+               u_coor.nombre_completo as nombre_coordinador, p.nombre as nombre_plan
         FROM eventos e
         LEFT JOIN clientes c ON e.id_cliente = c.id
         LEFT JOIN usuarios u ON c.usuario_id = u.id
         LEFT JOIN usuarios u_coor ON e.coordinador_id = u_coor.id
         LEFT JOIN salones s ON e.id_salon = s.id_salon
+        LEFT JOIN planes p ON e.plan_id = p.id
         WHERE e.coordinador_id = %s
         ORDER BY e.id_evento DESC
         """
@@ -411,6 +416,7 @@ class EventoModelo:
                 'id': evento.get('id_evento', evento.get('id')),
                 'id_evento': evento.get('id_evento', evento.get('id')),
                 'cliente_id': evento.get('id_cliente'),
+                'plan_id': evento.get('plan_id'),
                 'salon': evento.get('salon', evento.get('nombre_salon')),
                 'nombre_evento': evento.get('salon', evento.get('nombre_evento', 'Evento')),
                 'tipo_evento': evento.get('tipo_evento', 'Otro'),
@@ -424,6 +430,7 @@ class EventoModelo:
                 'saldo': float(evento.get('saldo', 0) or 0),
                 'saldo_pendiente': float(evento.get('saldo', 0) or 0),
                 'nombre_cliente': evento.get('nombre_cliente', 'N/A'),
+                'nombre_plan': evento.get('nombre_plan'),
                 'documento_identidad_cliente': evento.get('documento_identidad_cliente') or evento.get('documento_identidad'),
                 'coordinador_id': evento.get('coordinador_id'),
                 'nombre_coordinador': evento.get('nombre_coordinador')
@@ -733,7 +740,49 @@ class EventoModelo:
         return self.base_datos.obtener_todos(consulta, (evento_id,))
 
     def obtener_servicios_evento(self, evento_id):
-        """Obtiene los servicios asociados a un evento"""
+        """Obtiene los servicios asociados a un evento.
+        Carga servicios desde: (1) productos del plan con tipo_servicio='servicio',
+        (2) servicios personalizados agregados para ese evento."""
+        from modelos.plan_modelo import PlanModelo
+        plan_modelo = PlanModelo()
+
+        # Obtener evento y plan_id
+        evento = self.base_datos.obtener_uno("SELECT id_evento, plan_id FROM eventos WHERE id_evento = %s", (evento_id,))
+        plan_id = (evento or {}).get('plan_id') if evento else None
+
+        # Sincronizar: crear evento_servicio por cada producto del plan con tipo_servicio='servicio'
+        # que aún no exista en evento_servicios
+        if plan_id:
+            productos_servicio = plan_modelo.obtener_productos_servicio_del_plan(plan_id) or []
+            servicios_existentes = self.base_datos.obtener_todos(
+                "SELECT id, nombre, orden FROM evento_servicios WHERE evento_id = %s",
+                (evento_id,)
+            )
+            nombres_existentes = {str(s.get('nombre', '')).strip().lower() for s in (servicios_existentes or [])}
+
+            orden_max = 0
+            for row in (servicios_existentes or []):
+                o = int(row.get('orden') or 0)
+                if o > orden_max:
+                    orden_max = o
+
+            for prod in productos_servicio:
+                nombre_prod = (prod.get('nombre_producto') or prod.get('nombre') or '').strip()
+                if not nombre_prod:
+                    continue
+                if nombre_prod.lower() in nombres_existentes:
+                    continue
+                orden_max += 1
+                try:
+                    ins = """
+                    INSERT INTO evento_servicios (evento_id, plan_servicio_id, nombre, orden, completado, descartado)
+                    VALUES (%s, NULL, %s, %s, 0, 0)
+                    """
+                    self.base_datos.ejecutar_consulta(ins, (evento_id, nombre_prod, orden_max))
+                    nombres_existentes.add(nombre_prod.lower())
+                except Exception:
+                    pass
+
         consulta = """
         SELECT id, evento_id, plan_servicio_id, nombre, orden, completado, descartado, fecha_actualizacion
         FROM evento_servicios

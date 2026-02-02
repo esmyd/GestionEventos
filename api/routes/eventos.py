@@ -5,7 +5,9 @@ from flask import Blueprint, request, jsonify
 from modelos.evento_modelo import EventoModelo
 from modelos.usuario_modelo import UsuarioModelo
 from modelos.pago_modelo import PagoModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from modelos.cliente_modelo import ClienteModelo
+from modelos.producto_opcion_modelo import ProductoOpcionModelo
+from api.middleware import requiere_autenticacion, requiere_rol, requiere_modulo, requiere_limite_no_excedido
 from utilidades.logger import obtener_logger
 from integraciones.sistema_notificaciones import SistemaNotificaciones
 
@@ -14,6 +16,7 @@ logger = obtener_logger()
 evento_modelo = EventoModelo()
 usuario_modelo = UsuarioModelo()
 pago_modelo = PagoModelo()
+opcion_modelo = ProductoOpcionModelo()
 
 
 @eventos_bp.route('', methods=['GET'])
@@ -34,13 +37,22 @@ def obtener_eventos():
         else:
             eventos = evento_modelo.obtener_todos_eventos(filtro_estado=filtro_estado, filtro_fecha=filtro_fecha)
         
-        # Calcular y agregar porcentaje de avance para cada evento
+        # Calcular y agregar porcentajes de avance para cada evento
         for evento in eventos:
             evento_id = evento.get('id_evento') or evento.get('id')
             if evento_id:
                 evento['progreso_servicios'] = evento_modelo.obtener_porcentaje_avance_servicios(evento_id)
-                # Mantener compatibilidad con nombre anterior
                 evento['porcentaje_avance_servicios'] = evento['progreso_servicios']
+                # Avance por confirmaciones de ítems del cliente (opciones de productos)
+                try:
+                    resumen_conf = opcion_modelo.obtener_resumen_confirmaciones_evento(evento_id)
+                    total = resumen_conf.get('total_confirmadas', 0) + resumen_conf.get('total_pendientes', 0)
+                    pct_conf = round((resumen_conf.get('total_confirmadas', 0) / total) * 100) if total > 0 else 0
+                    evento['porcentaje_avance_confirmaciones'] = pct_conf
+                    evento['progreso_confirmaciones'] = pct_conf
+                except Exception:
+                    evento['porcentaje_avance_confirmaciones'] = 0
+                    evento['progreso_confirmaciones'] = 0
         
         return jsonify({'eventos': eventos}), 200
     except Exception as e:
@@ -60,8 +72,17 @@ def obtener_evento(evento_id):
             evento['productos'] = productos
             # Obtener porcentaje de avance de servicios
             evento['progreso_servicios'] = evento_modelo.obtener_porcentaje_avance_servicios(evento_id)
-            # Mantener compatibilidad con nombre anterior
             evento['porcentaje_avance_servicios'] = evento['progreso_servicios']
+            # Avance por confirmaciones de ítems del cliente (opciones de productos)
+            try:
+                resumen_conf = opcion_modelo.obtener_resumen_confirmaciones_evento(evento_id)
+                total = resumen_conf.get('total_confirmadas', 0) + resumen_conf.get('total_pendientes', 0)
+                pct_conf = round((resumen_conf.get('total_confirmadas', 0) / total) * 100) if total > 0 else 0
+                evento['porcentaje_avance_confirmaciones'] = pct_conf
+                evento['progreso_confirmaciones'] = pct_conf
+            except Exception:
+                evento['porcentaje_avance_confirmaciones'] = 0
+                evento['progreso_confirmaciones'] = 0
             return jsonify({'evento': evento}), 200
         else:
             return jsonify({'error': 'Evento no encontrado'}), 404
@@ -73,6 +94,8 @@ def obtener_evento(evento_id):
 @eventos_bp.route('', methods=['POST'])
 @requiere_autenticacion
 @requiere_rol('administrador', 'gerente_general', 'coordinador', 'cliente')
+@requiere_modulo('eventos')
+@requiere_limite_no_excedido('eventos_mes')
 def crear_evento():
     """Crea un nuevo evento"""
     try:
@@ -350,8 +373,9 @@ def completar_evento(evento_id):
                 }), 400
         
         # Obtener usuario actual
-        usuario_id = request.usuario.get('id') if hasattr(request, 'usuario') else None
-        
+        usuario = getattr(request, 'usuario_actual', None) or getattr(request, 'usuario', None)
+        usuario_id = usuario.get('id') if usuario else None
+
         # Completar el evento
         exito, mensaje = evento_modelo.completar_evento_con_observaciones(
             evento_id, 

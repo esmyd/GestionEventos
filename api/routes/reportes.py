@@ -41,7 +41,7 @@ def _columna_existe(tabla, columna):
 
 @reportes_bp.route('/metricas', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general', 'coordinador')
 def obtener_metricas():
     """Obtiene todas las métricas del sistema"""
     try:
@@ -369,7 +369,7 @@ def obtener_metricas():
 
 @reportes_bp.route('/eventos-por-estado', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general', 'coordinador')
 def eventos_por_estado():
     """Obtiene resumen de eventos por estado"""
     try:
@@ -402,7 +402,7 @@ def eventos_por_estado():
 
 @reportes_bp.route('/resumen-financiero', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def resumen_financiero():
     """Obtiene resumen financiero del sistema"""
     try:
@@ -433,7 +433,7 @@ def resumen_financiero():
 
 @reportes_bp.route('/pagos-por-cuenta', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def pagos_por_cuenta():
     """Obtiene resumen de pagos agrupados por cuenta destino"""
     try:
@@ -559,7 +559,7 @@ def _generar_csv(datos, columnas, nombre_archivo):
 
 @reportes_bp.route('/descargar/eventos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general', 'coordinador')
 def descargar_eventos():
     """Descarga reporte de eventos en CSV"""
     try:
@@ -587,7 +587,7 @@ def descargar_eventos():
 
 @reportes_bp.route('/descargar/inventario', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general', 'coordinador')
 def descargar_inventario():
     """Descarga reporte de inventario en CSV"""
     try:
@@ -608,7 +608,7 @@ def descargar_inventario():
 
 @reportes_bp.route('/descargar/cardex', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def descargar_cardex():
     """Descarga reporte de movimientos de inventario (cardex) en CSV"""
     try:
@@ -676,7 +676,7 @@ def descargar_cardex():
 
 @reportes_bp.route('/descargar/notificaciones', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def descargar_notificaciones():
     """Descarga reporte de historial de notificaciones en CSV"""
     try:
@@ -766,7 +766,7 @@ def descargar_notificaciones():
 
 @reportes_bp.route('/descargar/clientes', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def descargar_clientes():
     """Descarga reporte de clientes en CSV"""
     try:
@@ -786,7 +786,7 @@ def descargar_clientes():
 
 @reportes_bp.route('/descargar/pagos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def descargar_pagos():
     """Descarga reporte de pagos en CSV"""
     try:
@@ -879,7 +879,7 @@ def descargar_pagos():
 
 @reportes_bp.route('/resumen-danos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general', 'coordinador')
 def obtener_resumen_danos():
     """Obtiene resumen de daños para el dashboard"""
     try:
@@ -927,7 +927,7 @@ def obtener_resumen_danos():
 
 @reportes_bp.route('/resumen-calificaciones', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general', 'coordinador')
 def obtener_resumen_calificaciones():
     """Obtiene resumen de calificaciones para el dashboard"""
     try:
@@ -985,7 +985,7 @@ def obtener_resumen_calificaciones():
 
 @reportes_bp.route('/descargar/danos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def descargar_danos():
     """Descarga reporte de daños en CSV"""
     try:
@@ -1047,7 +1047,7 @@ def descargar_danos():
 
 @reportes_bp.route('/descargar/calificaciones', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_rol('administrador_sistema', 'administrador', 'gerente_general')
 def descargar_calificaciones():
     """Descarga reporte de calificaciones en CSV"""
     try:

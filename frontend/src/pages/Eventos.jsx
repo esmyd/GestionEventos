@@ -1020,7 +1020,7 @@ const Eventos = () => {
                     Salón
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                    Plan
+                    Paquete
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
                     Invitados
@@ -1167,21 +1167,22 @@ const Eventos = () => {
                       </span>
                     </td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      {evento.porcentaje_avance_servicios !== undefined && evento.porcentaje_avance_servicios !== null ? (
+                      {(evento.porcentaje_avance_confirmaciones !== undefined && evento.porcentaje_avance_confirmaciones !== null) || (evento.porcentaje_avance_servicios !== undefined && evento.porcentaje_avance_servicios !== null) ? (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', minWidth: '80px' }}>
                           <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#374151' }}>
-                            {evento.porcentaje_avance_servicios}%
+                            {evento.porcentaje_avance_confirmaciones ?? evento.porcentaje_avance_servicios ?? 0}%
                           </div>
                           <div style={{ width: '100%', height: '6px', backgroundColor: '#e5e7eb', borderRadius: '9999px', overflow: 'hidden' }}>
                             <div
                               style={{
-                                width: `${evento.porcentaje_avance_servicios}%`,
+                                width: `${evento.porcentaje_avance_confirmaciones ?? evento.porcentaje_avance_servicios ?? 0}%`,
                                 height: '100%',
-                                backgroundColor: evento.porcentaje_avance_servicios >= 100 ? '#10b981' : '#6366f1',
+                                backgroundColor: (evento.porcentaje_avance_confirmaciones ?? evento.porcentaje_avance_servicios ?? 0) >= 100 ? '#10b981' : '#6366f1',
                                 transition: 'width 0.3s',
                               }}
                             />
                           </div>
+                          <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>Confirmaciones</div>
                         </div>
                       ) : (
                         <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>-</span>
