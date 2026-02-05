@@ -32,10 +32,8 @@ def login():
         usuario = auth.iniciar_sesion(nombre_usuario, contrasena)
         
         if usuario:
-            # No retornar la contraseña
-            permisos = permiso_modelo.obtener_permisos_usuario(usuario['id'])
-            if not permisos:
-                permisos = permiso_modelo.obtener_permisos_rol(usuario['rol'])
+            # Permisos efectivos: del usuario si tiene; si no, del rol asignado
+            permisos = permiso_modelo.obtener_permisos_efectivos(usuario['id'], usuario['rol'])
             usuario_response = {
                 'id': usuario['id'],
                 'nombre_usuario': usuario['nombre_usuario'],
@@ -113,10 +111,8 @@ def verificar():
         usuario = usuario_modelo.obtener_usuario_por_id(payload['user_id'])
         if not usuario:
             return jsonify({'authenticated': False, 'error': 'Usuario no encontrado'}), 401
-        
-        permisos = permiso_modelo.obtener_permisos_usuario(usuario['id'])
-        if not permisos:
-            permisos = permiso_modelo.obtener_permisos_rol(usuario['rol'])
+
+        permisos = permiso_modelo.obtener_permisos_efectivos(usuario['id'], usuario['rol'])
         usuario_response = {
             'id': usuario['id'],
             'nombre_usuario': usuario['nombre_usuario'],

@@ -3,7 +3,7 @@ Rutas para gestión de clientes
 """
 from flask import Blueprint, request, jsonify
 from modelos.cliente_modelo import ClienteModelo
-from api.middleware import requiere_autenticacion, requiere_rol, obtener_usuario_actual, requiere_modulo, requiere_limite_no_excedido
+from api.middleware import requiere_autenticacion, requiere_permiso, obtener_usuario_actual, requiere_modulo, requiere_limite_no_excedido
 from utilidades.logger import obtener_logger
 
 clientes_bp = Blueprint('clientes', __name__)
@@ -12,8 +12,7 @@ cliente_modelo = ClienteModelo()
 
 
 @clientes_bp.route('', methods=['GET'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('clientes')
 def obtener_clientes():
     """Obtiene todos los clientes"""
     try:
@@ -47,6 +46,7 @@ def obtener_cliente(cliente_id):
 
 
 @clientes_bp.route('', methods=['POST'])
+@requiere_permiso('clientes', 'clientes:crear')
 @requiere_modulo('clientes')
 @requiere_limite_no_excedido('clientes')
 def crear_cliente():
@@ -125,8 +125,7 @@ def obtener_cliente_actual():
 
 
 @clientes_bp.route('/<int:cliente_id>', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('clientes', 'clientes:editar')
 def actualizar_cliente(cliente_id):
     """Actualiza un cliente"""
     try:
@@ -186,8 +185,7 @@ def actualizar_cliente(cliente_id):
 
 
 @clientes_bp.route('/<int:cliente_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('clientes', 'clientes:eliminar')
 def eliminar_cliente(cliente_id):
     """Elimina un cliente"""
     try:

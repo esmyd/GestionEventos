@@ -12,8 +12,8 @@ const Eventos = () => {
   const { usuario: usuarioActual } = useAuth();
   const esCoordinador = hasRole(usuarioActual?.rol, [ROLES.COORDINATOR]);
   const esAdminOGerente = hasRole(usuarioActual?.rol, [ROLES.ADMIN, ROLES.MANAGER]);
-  const puedeEditarEstado = hasPermission(usuarioActual, PERMISSIONS.EVENTOS_EDITAR_ESTADO, [ROLES.ADMIN, ROLES.MANAGER]);
-  const puedeEditarEvento = hasRole(usuarioActual?.rol, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeEditarEstado = hasPermission(usuarioActual, PERMISSIONS.EVENTOS_EDITAR_ESTADO, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeEditarEvento = hasRole(usuarioActual?.rol, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
   const [isMobile, setIsMobile] = useState(false);
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -970,7 +970,7 @@ const Eventos = () => {
                         </button>
                       </div>
                     </details>
-                    {evento.estado !== 'completado' && puedeEditarEstado && (
+                    {puedeEditarEstado && (
                       <button
                         onClick={() => abrirModalEstado(evento)}
                         style={{
@@ -986,6 +986,7 @@ const Eventos = () => {
                           border: 'none',
                           cursor: 'pointer',
                         }}
+                        title="Actualizar estado"
                       >
                         <CheckCircle2 size={16} strokeWidth={2.5} />
                         Estado
@@ -1363,7 +1364,7 @@ const Eventos = () => {
                             </button>
                           </div>
                         </details>
-                        {evento.estado !== 'completado' && puedeEditarEstado && (
+                        {puedeEditarEstado && (
                           <button
                             onClick={() => abrirModalEstado(evento)}
                             style={{
@@ -1392,7 +1393,7 @@ const Eventos = () => {
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = 'none';
                             }}
-                            title="Cambiar estado"
+                            title="Actualizar estado"
                           >
                             <CheckCircle2 size={18} strokeWidth={2.5} />
                           </button>

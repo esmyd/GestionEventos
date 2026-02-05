@@ -3,7 +3,7 @@ Rutas para gestión de opciones de productos
 """
 from flask import Blueprint, request, jsonify, g
 from modelos.producto_opcion_modelo import ProductoOpcionModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 producto_opciones_bp = Blueprint('producto_opciones', __name__)
@@ -32,7 +32,7 @@ def obtener_opciones_producto(producto_id):
 
 @producto_opciones_bp.route('/productos/<int:producto_id>/opciones', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('productos')
 def crear_opcion_producto(producto_id):
     """Crea una nueva opción para un producto
     
@@ -92,7 +92,7 @@ def obtener_opcion(opcion_id):
 
 @producto_opciones_bp.route('/opciones/<int:opcion_id>', methods=['PUT'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('productos')
 def actualizar_opcion(opcion_id):
     """Actualiza una opción existente"""
     try:
@@ -115,7 +115,7 @@ def actualizar_opcion(opcion_id):
 
 @producto_opciones_bp.route('/opciones/<int:opcion_id>', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('productos')
 def eliminar_opcion(opcion_id):
     """Elimina (desactiva) una opción"""
     try:
@@ -236,7 +236,7 @@ def guardar_seleccion(evento_id):
 
 @producto_opciones_bp.route('/selecciones/<int:seleccion_id>', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('productos')
 def eliminar_seleccion(seleccion_id):
     """Elimina una selección"""
     try:

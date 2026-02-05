@@ -5,7 +5,7 @@ import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, Package, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2, ListChecks } from 'lucide-react';
-import { hasRole, ROLES } from '../utils/roles';
+import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 import ProductoOpciones from '../components/ProductoOpciones';
 
 const Productos = () => {
@@ -46,10 +46,11 @@ const Productos = () => {
   const [guardando, setGuardando] = useState(false);
   const [errorFormulario, setErrorFormulario] = useState('');
 
-  // Verificar permisos
-  const puedeCrear = hasRole(usuario?.rol, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
-  const puedeEditar = hasRole(usuario?.rol, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
-  const puedeEliminar = hasRole(usuario?.rol, [ROLES.ADMIN, ROLES.MANAGER]);
+  // Permisos desde Roles y Permisos (BD); si no hay permisos asignados, se usa fallback por rol
+  const fallbackProductos = [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR];
+  const puedeCrear = hasPermission(usuario, PERMISSIONS.PRODUCTOS_CREAR, fallbackProductos);
+  const puedeEditar = hasPermission(usuario, PERMISSIONS.PRODUCTOS_EDITAR, fallbackProductos);
+  const puedeEliminar = hasPermission(usuario, PERMISSIONS.PRODUCTOS_ELIMINAR, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]);
 
   useEffect(() => {
     cargarProductos();

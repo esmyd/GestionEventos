@@ -2,7 +2,7 @@
 Rutas para panel de métricas y control de envíos
 """
 from flask import Blueprint, jsonify, request
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from modelos.whatsapp_metricas_modelo import WhatsAppMetricasModelo
 from utilidades.logger import obtener_logger
 
@@ -14,7 +14,7 @@ modelo = WhatsAppMetricasModelo()
 
 @whatsapp_metricas_bp.route("/resumen", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_metricas")
 def resumen():
     try:
         fecha_desde = request.args.get("fecha_desde")
@@ -29,7 +29,7 @@ def resumen():
 
 @whatsapp_metricas_bp.route("/clientes", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_metricas")
 def clientes():
     try:
         fecha_desde = request.args.get("fecha_desde")
@@ -76,7 +76,7 @@ def clientes():
 
 @whatsapp_metricas_bp.route("/config", methods=["PUT"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_metricas")
 def actualizar_config():
     try:
         data = request.get_json() or {}
@@ -135,7 +135,7 @@ def actualizar_config():
 
 @whatsapp_metricas_bp.route("/clientes/<int:cliente_id>/mensajes", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_metricas")
 def mensajes_cliente(cliente_id):
     try:
         fecha_desde = request.args.get("fecha_desde")
@@ -157,7 +157,7 @@ def mensajes_cliente(cliente_id):
 
 @whatsapp_metricas_bp.route("/clientes/<int:cliente_id>/control", methods=["PATCH"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_metricas")
 def actualizar_control(cliente_id):
     try:
         data = request.get_json() or {}

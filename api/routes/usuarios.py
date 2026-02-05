@@ -4,7 +4,7 @@ Rutas para gestión de usuarios
 from flask import Blueprint, request, jsonify
 from modelos.usuario_modelo import UsuarioModelo
 from modelos.permiso_modelo import PermisoModelo
-from api.middleware import requiere_autenticacion, requiere_rol, obtener_usuario_actual, requiere_modulo, requiere_limite_no_excedido
+from api.middleware import requiere_autenticacion, requiere_permiso, obtener_usuario_actual, requiere_modulo, requiere_limite_no_excedido
 from utilidades.logger import obtener_logger
 
 usuarios_bp = Blueprint('usuarios', __name__)
@@ -14,8 +14,7 @@ permiso_modelo = PermisoModelo()
 
 
 @usuarios_bp.route('', methods=['GET'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'administrador_sistema')
+@requiere_permiso('usuarios')
 def obtener_usuarios():
     """Obtiene todos los usuarios. administrador_sistema ve todos; administrador/gerente no ve administrador_sistema."""
     try:
@@ -76,8 +75,7 @@ def obtener_usuario(usuario_id):
 
 
 @usuarios_bp.route('', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador')
+@requiere_permiso('usuarios', 'usuarios:crear')
 @requiere_modulo('usuarios_gestion')
 @requiere_limite_no_excedido('usuarios')
 def crear_usuario():
@@ -157,7 +155,7 @@ def actualizar_usuario(usuario_id):
 
 @usuarios_bp.route('/<int:usuario_id>', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador')
+@requiere_permiso('usuarios', 'usuarios:editar')
 def eliminar_usuario(usuario_id):
     """Elimina (desactiva) un usuario"""
     try:
@@ -197,7 +195,7 @@ def cambiar_contrasena(usuario_id):
 
 @usuarios_bp.route('/<int:usuario_id>/permisos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'administrador_sistema')
+@requiere_permiso('permisos')
 def obtener_permisos_usuario(usuario_id):
     """Obtiene permisos por usuario. administrador no puede ver permisos de administrador_sistema."""
     try:
@@ -207,7 +205,8 @@ def obtener_permisos_usuario(usuario_id):
         rol_actual = obtener_usuario_actual().get('rol') if obtener_usuario_actual() else None
         if usuario.get('rol') == 'administrador_sistema' and rol_actual != 'administrador_sistema':
             return jsonify({'error': 'Los permisos del administrador del sistema se gestionan por base de datos'}), 403
-        permisos = permiso_modelo.obtener_permisos_usuario(usuario_id)
+        # Permisos efectivos: del usuario si tiene asignados; si no, heredados del rol
+        permisos = permiso_modelo.obtener_permisos_efectivos(usuario_id, usuario.get('rol'))
         return jsonify({'permisos': permisos or []}), 200
     except Exception as e:
         logger.error(f"Error al obtener permisos: {str(e)}")
@@ -216,17 +215,13 @@ def obtener_permisos_usuario(usuario_id):
 
 @usuarios_bp.route('/<int:usuario_id>/permisos', methods=['PUT'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'administrador_sistema')
+@requiere_permiso('permisos')
 def actualizar_permisos_usuario(usuario_id):
-    """Actualiza permisos por usuario. administrador_sistema se gestiona solo por BD."""
+    """Actualiza permisos por usuario. administrador y administrador_sistema pueden guardar desde la página."""
     try:
         usuario = usuario_modelo.obtener_usuario_por_id(usuario_id)
         if not usuario:
             return jsonify({'error': 'Usuario no encontrado'}), 404
-        if usuario.get('rol') == 'administrador_sistema':
-            return jsonify({
-                'error': 'Los permisos del administrador del sistema se gestionan exclusivamente por base de datos'
-            }), 403
         data = request.get_json()
         permisos = data.get('permisos') if data else None
         if permisos is None or not isinstance(permisos, list):
@@ -243,15 +238,13 @@ def actualizar_permisos_usuario(usuario_id):
 
 @usuarios_bp.route('/<int:usuario_id>/permisos', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'administrador_sistema')
+@requiere_permiso('permisos')
 def eliminar_permisos_usuario(usuario_id):
-    """Elimina permisos personalizados. administrador_sistema se gestiona solo por BD."""
+    """Elimina permisos personalizados del usuario. administrador y administrador_sistema pueden desde la página."""
     try:
         usuario = usuario_modelo.obtener_usuario_por_id(usuario_id)
-        if usuario and usuario.get('rol') == 'administrador_sistema':
-            return jsonify({
-                'error': 'Los permisos del administrador del sistema se gestionan exclusivamente por base de datos'
-            }), 403
+        if not usuario:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
         resultado = permiso_modelo.eliminar_permisos_usuario(usuario_id)
         if resultado:
             return jsonify({'message': 'Permisos eliminados exitosamente'}), 200
@@ -263,7 +256,7 @@ def eliminar_permisos_usuario(usuario_id):
 
 @usuarios_bp.route('/roles', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'administrador_sistema')
+@requiere_permiso('permisos')
 def obtener_roles():
     """Obtiene los roles disponibles. administrador no ve administrador_sistema."""
     try:
@@ -279,7 +272,7 @@ def obtener_roles():
 
 @usuarios_bp.route('/roles/<string:rol>/permisos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'administrador_sistema')
+@requiere_permiso('permisos')
 def obtener_permisos_rol(rol):
     """Obtiene permisos por rol. administrador no puede ver permisos del rol administrador_sistema."""
     try:
@@ -295,14 +288,10 @@ def obtener_permisos_rol(rol):
 
 @usuarios_bp.route('/roles/<string:rol>/permisos', methods=['PUT'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'administrador_sistema')
+@requiere_permiso('permisos')
 def actualizar_permisos_rol(rol):
-    """Actualiza permisos por rol. administrador_sistema se gestiona solo por BD."""
+    """Actualiza permisos por rol. administrador y administrador_sistema pueden guardar desde la página."""
     try:
-        if rol == 'administrador_sistema':
-            return jsonify({
-                'error': 'Los permisos del administrador del sistema se gestionan exclusivamente por base de datos'
-            }), 403
         data = request.get_json()
         permisos = data.get('permisos') if data else None
         if permisos is None or not isinstance(permisos, list):
@@ -319,14 +308,10 @@ def actualizar_permisos_rol(rol):
 
 @usuarios_bp.route('/roles/<string:rol>/permisos', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'administrador_sistema')
+@requiere_permiso('permisos')
 def eliminar_permisos_rol(rol):
-    """Elimina permisos de rol. administrador_sistema se gestiona solo por BD."""
+    """Elimina permisos de rol. administrador y administrador_sistema pueden desde la página."""
     try:
-        if rol == 'administrador_sistema':
-            return jsonify({
-                'error': 'Los permisos del administrador del sistema se gestionan exclusivamente por base de datos'
-            }), 403
         resultado = permiso_modelo.eliminar_permisos_rol(rol)
         if resultado:
             return jsonify({'message': 'Permisos de rol eliminados exitosamente'}), 200

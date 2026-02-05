@@ -4,7 +4,7 @@ Rutas para gestión de inventario
 from flask import Blueprint, request, jsonify
 from modelos.inventario_modelo import InventarioModelo
 from modelos.producto_modelo import ProductoModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 inventario_bp = Blueprint('inventario', __name__)
@@ -15,7 +15,7 @@ producto_modelo = ProductoModelo()
 
 @inventario_bp.route('', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('inventario')
 def obtener_inventario():
     """Obtiene movimientos de inventario para un evento o productos con stock bajo"""
     try:
@@ -36,7 +36,7 @@ def obtener_inventario():
 
 @inventario_bp.route('/stock-bajo', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('inventario')
 def obtener_productos_stock_bajo():
     """Obtiene productos con stock bajo o agotado"""
     try:
@@ -49,7 +49,7 @@ def obtener_productos_stock_bajo():
 
 @inventario_bp.route('/validar-stock', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('inventario')
 def validar_stock():
     """Valida si hay stock suficiente para un producto"""
     try:
@@ -76,7 +76,7 @@ def validar_stock():
 
 @inventario_bp.route('/validar-stock-plan', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('inventario')
 def validar_stock_plan():
     """Valida si hay stock suficiente para todos los productos de un plan"""
     try:
@@ -106,7 +106,7 @@ def validar_stock_plan():
 
 @inventario_bp.route('/evento/<int:evento_id>/movimientos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('inventario')
 def obtener_movimientos_evento(evento_id):
     """Obtiene todos los movimientos de inventario para un evento"""
     try:
@@ -119,7 +119,7 @@ def obtener_movimientos_evento(evento_id):
 
 @inventario_bp.route('/producto/<int:producto_id>/stock', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('inventario')
 def obtener_stock_producto(producto_id):
     """Obtiene el stock disponible de un producto"""
     try:
@@ -134,7 +134,7 @@ def obtener_stock_producto(producto_id):
 
 @inventario_bp.route('/movimientos', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('inventario')
 def obtener_movimientos_cardex():
     """Obtiene todos los movimientos del cardex (movimientos_inventario)"""
     try:
@@ -194,7 +194,7 @@ def obtener_movimientos_cardex():
 
 @inventario_bp.route('/recalcular', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('inventario')
 def recalcular_inventario():
     """Recalcula el inventario basándose en los movimientos registrados"""
     try:

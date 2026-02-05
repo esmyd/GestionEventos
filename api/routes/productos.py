@@ -3,7 +3,7 @@ Rutas para gestión de productos
 """
 from flask import Blueprint, request, jsonify
 from modelos.producto_modelo import ProductoModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 productos_bp = Blueprint('productos', __name__)
@@ -45,8 +45,7 @@ def obtener_producto(producto_id):
 
 
 @productos_bp.route('', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('productos', 'productos:crear')
 def crear_producto():
     """Crea un nuevo producto"""
     try:
@@ -69,8 +68,7 @@ def crear_producto():
 
 
 @productos_bp.route('/<int:producto_id>', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('productos', 'productos:editar')
 def actualizar_producto(producto_id):
     """Actualiza un producto"""
     try:
@@ -101,8 +99,7 @@ def actualizar_producto(producto_id):
 
 
 @productos_bp.route('/<int:producto_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('productos', 'productos:eliminar')
 def eliminar_producto(producto_id):
     """Elimina (desactiva) un producto"""
     try:
@@ -117,8 +114,7 @@ def eliminar_producto(producto_id):
 
 
 @productos_bp.route('/<int:producto_id>/stock', methods=['PUT', 'PATCH'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('productos', 'productos:editar')
 def actualizar_stock(producto_id):
     """Actualiza el stock de un producto y registra el movimiento en cardex"""
     try:

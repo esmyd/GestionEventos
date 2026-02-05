@@ -3,7 +3,7 @@ Rutas para gestión de categorías
 """
 from flask import Blueprint, request, jsonify
 from modelos.categoria_modelo import CategoriaModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 categorias_bp = Blueprint('categorias', __name__)
@@ -40,8 +40,7 @@ def obtener_categoria(categoria_id):
 
 
 @categorias_bp.route('', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('categorias', 'categorias:crear')
 def crear_categoria():
     """Crea una nueva categoría"""
     try:
@@ -64,8 +63,7 @@ def crear_categoria():
 
 
 @categorias_bp.route('/<int:categoria_id>', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('categorias', 'categorias:editar')
 def actualizar_categoria(categoria_id):
     """Actualiza una categoría"""
     try:
@@ -85,8 +83,7 @@ def actualizar_categoria(categoria_id):
 
 
 @categorias_bp.route('/<int:categoria_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('categorias', 'categorias:eliminar')
 def eliminar_categoria(categoria_id):
     """Elimina una categoría"""
     try:

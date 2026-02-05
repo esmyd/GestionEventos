@@ -2,7 +2,7 @@
 Rutas para gestión y envío de plantillas WhatsApp
 """
 from flask import Blueprint, jsonify, request
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from modelos.whatsapp_templates_modelo import WhatsAppTemplatesModelo
 from modelos.whatsapp_chat_modelo import WhatsAppChatModelo
 from modelos.whatsapp_metricas_modelo import WhatsAppMetricasModelo
@@ -22,7 +22,7 @@ whatsapp = IntegracionWhatsApp()
 
 @whatsapp_templates_bp.route("", methods=["GET"], strict_slashes=False)
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "administrador_sistema")
+@requiere_permiso("whatsapp_templates")
 def listar_templates():
     try:
         templates = modelo.listar()
@@ -34,7 +34,7 @@ def listar_templates():
 
 @whatsapp_templates_bp.route("", methods=["POST"], strict_slashes=False)
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_templates")
 def crear_template():
     try:
         data = request.get_json() or {}
@@ -55,7 +55,7 @@ def crear_template():
 
 @whatsapp_templates_bp.route("/<int:template_id>", methods=["PUT"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_templates")
 def actualizar_template(template_id):
     try:
         data = request.get_json() or {}
@@ -75,7 +75,7 @@ def actualizar_template(template_id):
 
 @whatsapp_templates_bp.route("/<int:template_id>", methods=["DELETE"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_templates")
 def eliminar_template(template_id):
     try:
         eliminado = modelo.eliminar(template_id)
@@ -89,7 +89,7 @@ def eliminar_template(template_id):
 
 @whatsapp_templates_bp.route("/enviar", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("whatsapp_templates")
 def enviar_template():
     try:
         data = request.get_json() or {}

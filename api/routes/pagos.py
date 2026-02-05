@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from modelos.pago_modelo import PagoModelo
 from modelos.evento_modelo import EventoModelo
 from modelos.cliente_modelo import ClienteModelo
-from api.middleware import requiere_autenticacion, requiere_rol, obtener_usuario_actual
+from api.middleware import requiere_autenticacion, requiere_permiso, obtener_usuario_actual
 from utilidades.logger import obtener_logger
 
 pagos_bp = Blueprint('pagos', __name__)
@@ -54,8 +54,7 @@ def obtener_pago(pago_id):
 
 
 @pagos_bp.route('', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador', 'cliente')
+@requiere_permiso('pagos', 'pagos:registrar')
 def crear_pago():
     """Crea un nuevo pago o abono"""
     try:
@@ -136,8 +135,7 @@ def crear_pago():
 
 
 @pagos_bp.route('/<int:pago_id>/estado', methods=['PATCH'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('pagos', 'pagos:aprobar', 'pagos:anular')
 def actualizar_estado_pago(pago_id):
     """Actualiza el estado de un pago"""
     try:
@@ -223,16 +221,14 @@ def actualizar_estado_pago(pago_id):
 
 
 @pagos_bp.route('/<int:pago_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('pagos', 'pagos:eliminar')
 def eliminar_pago(pago_id):
     """Eliminar pagos no está permitido, solo anular"""
     return jsonify({'error': 'No se puede eliminar un pago. Usa anular.'}), 400
 
 
 @pagos_bp.route('/<int:pago_id>/cuenta', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('pagos')
 def actualizar_cuenta_pago(pago_id):
     """Actualiza la cuenta destino de un pago"""
     try:
@@ -294,8 +290,7 @@ ALLOWED_RECIBO_EXT = {'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'imag
 
 
 @pagos_bp.route('/<int:pago_id>/recibo', methods=['PUT', 'POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador', 'cliente')
+@requiere_permiso('pagos', 'pagos:registrar')
 def subir_recibo_pago(pago_id):
     """Sube o reemplaza el recibo (imagen o PDF) de un pago"""
     try:

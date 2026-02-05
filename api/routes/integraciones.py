@@ -2,7 +2,7 @@
 Rutas para configuración de integraciones externas
 """
 from flask import Blueprint, jsonify, request
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from modelos.integracion_modelo import IntegracionModelo
 from utilidades.logger import obtener_logger
 from integraciones.whatsapp_chat import WhatsAppChatService
@@ -14,8 +14,7 @@ modelo = IntegracionModelo()
 
 
 @integraciones_bp.route("/whatsapp", methods=["GET"])
-@requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "administrador_sistema")
+@requiere_permiso("integraciones")
 def obtener_whatsapp():
     try:
         integracion = modelo.obtener_integracion("whatsapp")
@@ -26,8 +25,7 @@ def obtener_whatsapp():
 
 
 @integraciones_bp.route("/whatsapp", methods=["PUT"])
-@requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "administrador_sistema")
+@requiere_permiso("integraciones")
 def actualizar_whatsapp():
     try:
         data = request.get_json() or {}
@@ -83,8 +81,7 @@ def whatsapp_webhook():
 
 
 @integraciones_bp.route("/whatsapp/test-webhook", methods=["GET"])
-@requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("integraciones")
 def probar_webhook_whatsapp():
     try:
         verify_token = request.args.get("verify_token")

@@ -5,7 +5,7 @@ import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, User, Eye, Edit, Trash2, X, Save, AlertCircle, CheckCircle2, Calendar, MapPin, Award } from 'lucide-react';
-import { hasRole, ROLES } from '../utils/roles';
+import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 
 const Clientes = () => {
   const { usuario } = useAuth();
@@ -40,10 +40,11 @@ const Clientes = () => {
   const [guardando, setGuardando] = useState(false);
   const [errorFormulario, setErrorFormulario] = useState('');
 
-  // Verificar permisos
-  const puedeCrear = hasRole(usuario?.rol, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
-  const puedeEditar = hasRole(usuario?.rol, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
-  const puedeEliminar = hasRole(usuario?.rol, [ROLES.ADMIN, ROLES.MANAGER]);
+  // Permisos desde Roles y Permisos (BD); si no hay permisos asignados, se usa fallback por rol
+  const fallbackClientes = [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR];
+  const puedeCrear = hasPermission(usuario, PERMISSIONS.CLIENTES_CREAR, fallbackClientes);
+  const puedeEditar = hasPermission(usuario, PERMISSIONS.CLIENTES_EDITAR, fallbackClientes);
+  const puedeEliminar = hasPermission(usuario, PERMISSIONS.CLIENTES_ELIMINAR, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]);
 
   useEffect(() => {
     cargarClientes();

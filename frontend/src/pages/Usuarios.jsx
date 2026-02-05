@@ -5,7 +5,7 @@ import { useToast } from '../hooks/useToast';
 import useIsMobile from '../hooks/useIsMobile';
 import ToastContainer from '../components/ToastContainer';
 import { Plus, Search, User, Eye, Edit, Trash2, X, Save, AlertCircle, Lock } from 'lucide-react';
-import { hasRole, ROLES } from '../utils/roles';
+import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 
 const Usuarios = () => {
   const { usuario: usuarioActual } = useAuth();
@@ -42,11 +42,13 @@ const Usuarios = () => {
   const [guardando, setGuardando] = useState(false);
   const [errorFormulario, setErrorFormulario] = useState('');
 
-  // Verificar permisos
-  const puedeCrear = hasRole(usuarioActual?.rol, [ROLES.ADMIN]);
-  const puedeEditar = hasRole(usuarioActual?.rol, [ROLES.ADMIN, ROLES.MANAGER]);
-  const puedeEliminar = hasRole(usuarioActual?.rol, [ROLES.ADMIN]);
-  const puedeCambiarContrasena = hasRole(usuarioActual?.rol, [ROLES.ADMIN, ROLES.MANAGER]);
+  // Permisos desde Roles y Permisos (BD); si no hay permisos asignados, se usa fallback por rol
+  const fallbackUsuariosAdmin = [ROLES.ADMIN_SISTEMA, ROLES.ADMIN];
+  const fallbackUsuariosManager = [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER];
+  const puedeCrear = hasPermission(usuarioActual, PERMISSIONS.USUARIOS_CREAR, fallbackUsuariosAdmin);
+  const puedeEditar = hasPermission(usuarioActual, PERMISSIONS.USUARIOS_EDITAR, fallbackUsuariosManager);
+  const puedeEliminar = hasPermission(usuarioActual, PERMISSIONS.USUARIOS_ELIMINAR, fallbackUsuariosAdmin);
+  const puedeCambiarContrasena = hasPermission(usuarioActual, PERMISSIONS.USUARIOS_CAMBIAR_CONTRASENA, fallbackUsuariosManager);
 
   useEffect(() => {
     cargarUsuarios();
@@ -227,8 +229,8 @@ const Usuarios = () => {
         activo: formData.activo,
       };
 
-      // Solo incluir rol si es administrador
-      if (hasRole(usuarioActual?.rol, [ROLES.ADMIN])) {
+      // Solo incluir rol si tiene permiso para editar usuarios (asignar rol)
+      if (puedeEditar) {
         usuarioData.rol = formData.rol;
       }
 
@@ -1123,7 +1125,7 @@ const Usuarios = () => {
                   </div>
                 </div>
 
-                {hasRole(usuarioActual?.rol, [ROLES.ADMIN]) && (
+                {puedeEditar && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
@@ -1159,7 +1161,7 @@ const Usuarios = () => {
                   </div>
                 )}
 
-                {!hasRole(usuarioActual?.rol, [ROLES.ADMIN]) && (
+                {!puedeEditar && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <input
                       type="checkbox"

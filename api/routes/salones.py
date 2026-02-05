@@ -3,7 +3,7 @@ Rutas para gestión de salones
 """
 from flask import Blueprint, request, jsonify
 from modelos.salon_modelo import SalonModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 salones_bp = Blueprint('salones', __name__)
@@ -39,8 +39,7 @@ def obtener_salon(salon_id):
 
 
 @salones_bp.route('', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('salones', 'salones:crear')
 def crear_salon():
     """Crea un nuevo salón"""
     try:
@@ -65,8 +64,7 @@ def crear_salon():
 
 
 @salones_bp.route('/<int:salon_id>', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('salones', 'salones:editar')
 def actualizar_salon(salon_id):
     """Actualiza un salón"""
     try:
@@ -86,8 +84,7 @@ def actualizar_salon(salon_id):
 
 
 @salones_bp.route('/<int:salon_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('salones', 'salones:eliminar')
 def eliminar_salon(salon_id):
     """Elimina (desactiva) un salón"""
     try:

@@ -7,7 +7,7 @@ from modelos.usuario_modelo import UsuarioModelo
 from modelos.pago_modelo import PagoModelo
 from modelos.cliente_modelo import ClienteModelo
 from modelos.producto_opcion_modelo import ProductoOpcionModelo
-from api.middleware import requiere_autenticacion, requiere_rol, requiere_modulo, requiere_limite_no_excedido
+from api.middleware import requiere_autenticacion, requiere_permiso, requiere_modulo, requiere_limite_no_excedido
 from utilidades.logger import obtener_logger
 from integraciones.sistema_notificaciones import SistemaNotificaciones
 
@@ -93,7 +93,7 @@ def obtener_evento(evento_id):
 
 @eventos_bp.route('', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador', 'cliente')
+@requiere_permiso('eventos')
 @requiere_modulo('eventos')
 @requiere_limite_no_excedido('eventos_mes')
 def crear_evento():
@@ -145,7 +145,7 @@ def crear_evento():
 
 @eventos_bp.route('/<int:evento_id>', methods=['PUT'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def actualizar_evento(evento_id):
     """Actualiza un evento"""
     try:
@@ -166,7 +166,7 @@ def actualizar_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('eventos')
 def eliminar_evento(evento_id):
     """Elimina un evento si no tiene pagos pendientes de reembolso"""
     try:
@@ -196,7 +196,7 @@ def eliminar_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/coordinador', methods=['PUT'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('eventos')
 def asignar_coordinador_evento(evento_id):
     """Asigna o elimina el coordinador de un evento"""
     try:
@@ -222,7 +222,7 @@ def asignar_coordinador_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/estado', methods=['PUT'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def actualizar_estado_evento(evento_id):
     """Actualiza el estado de un evento con validaciones"""
     try:
@@ -323,7 +323,7 @@ def actualizar_estado_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/completar', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def completar_evento(evento_id):
     """
     Completa un evento registrando observaciones y daños si aplica.
@@ -421,7 +421,7 @@ def obtener_danos_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/pago-danos', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def registrar_pago_danos(evento_id):
     """
     Registra el pago de daños de un evento.
@@ -466,7 +466,7 @@ def registrar_pago_danos(evento_id):
 
 @eventos_bp.route('/danos-pendientes', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def obtener_danos_pendientes():
     """Obtiene todos los eventos con daños pendientes de pago"""
     try:
@@ -485,7 +485,7 @@ def obtener_danos_pendientes():
 
 @eventos_bp.route('/<int:evento_id>/calificacion', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def registrar_calificacion_manual(evento_id):
     """
     Registra una calificación de forma manual para un evento completado.
@@ -544,7 +544,7 @@ def registrar_calificacion_manual(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/productos', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador', 'cliente')
+@requiere_permiso('eventos')
 def agregar_producto_evento(evento_id):
     """Agrega un producto a un evento"""
     try:
@@ -577,7 +577,7 @@ def agregar_producto_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/productos/<int:producto_id>', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def eliminar_producto_evento(evento_id, producto_id):
     """Elimina un producto de un evento"""
     try:
@@ -627,7 +627,7 @@ def obtener_servicios_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/servicios/<int:servicio_id>', methods=['PUT'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def actualizar_servicio_evento(evento_id, servicio_id):
     """Actualiza el estado de un servicio del evento"""
     try:
@@ -660,7 +660,7 @@ def actualizar_servicio_evento(evento_id, servicio_id):
 
 @eventos_bp.route('/<int:evento_id>/servicios', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def crear_servicio_personalizado(evento_id):
     """Crea un servicio personalizado para un evento"""
     try:
@@ -692,7 +692,7 @@ def crear_servicio_personalizado(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/servicios/<int:servicio_id>', methods=['DELETE'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def eliminar_servicio_evento(evento_id, servicio_id):
     """Elimina un servicio del evento (solo servicios personalizados)"""
     try:
@@ -725,7 +725,7 @@ def eliminar_servicio_evento(evento_id, servicio_id):
 
 @eventos_bp.route('/<int:evento_id>/servicios/generar', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('eventos')
 def generar_servicios_evento(evento_id):
     """Genera (reemplaza) los servicios del evento desde el plan"""
     try:
@@ -755,7 +755,7 @@ def generar_servicios_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>/calcular-total', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador', 'cliente')
+@requiere_permiso('eventos')
 def calcular_total_evento(evento_id):
     """Calcula y actualiza el total de un evento"""
     try:

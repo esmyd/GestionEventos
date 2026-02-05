@@ -3,7 +3,7 @@ Rutas para gestión de cuentas
 """
 from flask import Blueprint, request, jsonify
 from modelos.cuenta_modelo import CuentaModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 cuentas_bp = Blueprint('cuentas', __name__)
@@ -12,7 +12,7 @@ cuenta_modelo = CuentaModelo()
 
 
 @cuentas_bp.route('', methods=['GET'])
-@requiere_autenticacion
+@requiere_permiso('cuentas', 'cuentas:ver')
 def obtener_cuentas():
     """Obtiene todas las cuentas
     
@@ -43,7 +43,7 @@ def obtener_cuentas():
 
 
 @cuentas_bp.route('/<int:cuenta_id>', methods=['GET'])
-@requiere_autenticacion
+@requiere_permiso('cuentas', 'cuentas:ver')
 def obtener_cuenta(cuenta_id):
     """Obtiene una cuenta por ID"""
     try:
@@ -61,8 +61,7 @@ def obtener_cuenta(cuenta_id):
 
 
 @cuentas_bp.route('', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('cuentas', 'cuentas:crear')
 def crear_cuenta():
     """Crea una nueva cuenta
     
@@ -96,8 +95,7 @@ def crear_cuenta():
 
 
 @cuentas_bp.route('/<int:cuenta_id>', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('cuentas', 'cuentas:editar')
 def actualizar_cuenta(cuenta_id):
     """Actualiza una cuenta existente
     
@@ -128,8 +126,7 @@ def actualizar_cuenta(cuenta_id):
 
 
 @cuentas_bp.route('/<int:cuenta_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('cuentas', 'cuentas:eliminar')
 def eliminar_cuenta(cuenta_id):
     """Desactiva una cuenta (no elimina físicamente)"""
     try:
@@ -147,8 +144,7 @@ def eliminar_cuenta(cuenta_id):
 
 
 @cuentas_bp.route('/<int:cuenta_id>/activar', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('cuentas', 'cuentas:editar')
 def activar_cuenta(cuenta_id):
     """Reactiva una cuenta desactivada"""
     try:

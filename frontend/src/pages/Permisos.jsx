@@ -4,71 +4,172 @@ import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
 import { useAuth } from '../context/AuthContext';
 import { MODULES, PERMISSIONS, ROLES } from '../utils/roles';
+import {
+  Calendar,
+  CreditCard,
+  Users,
+  Package,
+  FolderTree,
+  FileText,
+  Landmark,
+  Building,
+  Shield,
+  BarChart3,
+  Settings,
+  MessageCircle,
+  Gauge,
+  Mail,
+  Upload,
+  ChevronRight,
+  Save,
+  RotateCcw,
+} from 'lucide-react';
 
-const MODULOS = [
+/** Módulos con sus acciones (agrupados para la UI). Orden: operaciones, catálogos, configuración, sistema. */
+const MODULOS_CON_ACCIONES = [
+  {
+    key: MODULES.EVENTOS,
+    label: 'Eventos',
+    icon: Calendar,
+    acciones: [
+      { key: PERMISSIONS.EVENTOS_EDITAR_ESTADO, label: 'Editar estado' },
+      { key: PERMISSIONS.EVENTOS_FINALIZAR, label: 'Finalizar evento' },
+      { key: PERMISSIONS.EVENTOS_AGREGAR_PRODUCTO, label: 'Agregar producto' },
+      { key: PERMISSIONS.EVENTOS_ELIMINAR_PRODUCTO, label: 'Eliminar producto' },
+      { key: PERMISSIONS.EVENTOS_ELIMINAR, label: 'Eliminar evento' },
+      { key: PERMISSIONS.EVENTOS_ACTUALIZAR_SERVICIOS, label: 'Actualizar servicios' },
+      { key: PERMISSIONS.EVENTOS_GENERAR_SERVICIOS, label: 'Generar servicios' },
+      { key: PERMISSIONS.EVENTOS_DESCARTAR_SERVICIO, label: 'Descartar servicio' },
+      { key: PERMISSIONS.EVENTOS_ASIGNAR_COORDINADOR, label: 'Asignar coordinador' },
+      { key: PERMISSIONS.EVENTOS_SOLICITAR_EVALUACION, label: 'Solicitar Evaluación' },
+      { key: PERMISSIONS.EVENTOS_CALIFICAR_MANUAL, label: 'Calificar Manual' },
+      { key: PERMISSIONS.EVENTOS_VER_INFORMACION, label: 'Pestaña Información' },
+      { key: PERMISSIONS.EVENTOS_VER_OPCIONES_CLIENTE, label: 'Pestaña Opciones del Cliente' },
+      { key: PERMISSIONS.EVENTOS_VER_RECORDATORIOS, label: 'Pestaña Recordatorios' },
+      { key: PERMISSIONS.EVENTOS_VER_FINANCIERO, label: 'Pestaña Financiero' },
+    ],
+  },
+  {
+    key: MODULES.PAGOS,
+    label: 'Pagos',
+    icon: CreditCard,
+    acciones: [
+      { key: PERMISSIONS.PAGOS_REGISTRAR, label: 'Registrar' },
+      { key: PERMISSIONS.PAGOS_REEMBOLSAR, label: 'Reembolsar' },
+      { key: PERMISSIONS.PAGOS_ELIMINAR, label: 'Eliminar' },
+      { key: PERMISSIONS.PAGOS_APROBAR, label: 'Aprobar' },
+      { key: PERMISSIONS.PAGOS_ANULAR, label: 'Anular' },
+    ],
+  },
+  {
+    key: MODULES.CLIENTES,
+    label: 'Clientes',
+    icon: Users,
+    acciones: [
+      { key: PERMISSIONS.CLIENTES_CREAR, label: 'Crear' },
+      { key: PERMISSIONS.CLIENTES_EDITAR, label: 'Editar' },
+      { key: PERMISSIONS.CLIENTES_ELIMINAR, label: 'Eliminar' },
+    ],
+  },
+  {
+    key: MODULES.SALONES,
+    label: 'Salones',
+    icon: Building,
+    acciones: [
+      { key: PERMISSIONS.SALONES_CREAR, label: 'Crear' },
+      { key: PERMISSIONS.SALONES_EDITAR, label: 'Editar' },
+      { key: PERMISSIONS.SALONES_ELIMINAR, label: 'Eliminar' },
+    ],
+  },
+  {
+    key: MODULES.PLANES,
+    label: 'Paquetes',
+    icon: FileText,
+    acciones: [
+      { key: PERMISSIONS.PLANES_CREAR, label: 'Crear' },
+      { key: PERMISSIONS.PLANES_EDITAR, label: 'Editar' },
+      { key: PERMISSIONS.PLANES_ELIMINAR, label: 'Eliminar' },
+    ],
+  },
+  {
+    key: MODULES.PRODUCTOS,
+    label: 'Productos',
+    icon: Package,
+    acciones: [
+      { key: PERMISSIONS.PRODUCTOS_CREAR, label: 'Crear' },
+      { key: PERMISSIONS.PRODUCTOS_EDITAR, label: 'Editar' },
+      { key: PERMISSIONS.PRODUCTOS_ELIMINAR, label: 'Eliminar' },
+    ],
+  },
+  {
+    key: MODULES.CATEGORIAS,
+    label: 'Categorías',
+    icon: FolderTree,
+    acciones: [
+      { key: PERMISSIONS.CATEGORIAS_CREAR, label: 'Crear' },
+      { key: PERMISSIONS.CATEGORIAS_EDITAR, label: 'Editar' },
+      { key: PERMISSIONS.CATEGORIAS_ELIMINAR, label: 'Eliminar' },
+    ],
+  },
+  {
+    key: MODULES.CUENTAS,
+    label: 'Cuentas',
+    icon: Landmark,
+    acciones: [
+      { key: PERMISSIONS.CUENTAS_VER, label: 'Ver' },
+      { key: PERMISSIONS.CUENTAS_CREAR, label: 'Crear' },
+      { key: PERMISSIONS.CUENTAS_EDITAR, label: 'Editar' },
+      { key: PERMISSIONS.CUENTAS_ELIMINAR, label: 'Eliminar' },
+    ],
+  },
+  {
+    key: MODULES.USUARIOS,
+    label: 'Usuarios',
+    icon: Settings,
+    acciones: [
+      { key: PERMISSIONS.USUARIOS_CREAR, label: 'Crear' },
+      { key: PERMISSIONS.USUARIOS_EDITAR, label: 'Editar' },
+      { key: PERMISSIONS.USUARIOS_ELIMINAR, label: 'Eliminar' },
+      { key: PERMISSIONS.USUARIOS_CAMBIAR_CONTRASENA, label: 'Cambiar contraseña' },
+    ],
+  },
+  {
+    key: MODULES.REPORTES,
+    label: 'Reportes',
+    icon: BarChart3,
+    acciones: [{ key: PERMISSIONS.REPORTES_EXPORTAR, label: 'Exportar / descargar' }],
+  },
+  {
+    key: MODULES.WHATSAPP_CHAT,
+    label: 'WhatsApp Chat',
+    icon: MessageCircle,
+    acciones: [
+      { key: PERMISSIONS.WHATSAPP_CHAT_ENVIAR_MENSAJE, label: 'Enviar mensaje' },
+      { key: PERMISSIONS.WHATSAPP_CHAT_MODO_HUMANO, label: 'Modo humano' },
+      { key: PERMISSIONS.WHATSAPP_CHAT_REINICIAR, label: 'Reiniciar' },
+    ],
+  },
+];
+
+/** Módulos que solo tienen acceso al menú (sin acciones granulares). */
+const MODULOS_SOLO_ACCESO = [
   { key: MODULES.COTIZADOR, label: 'Cotizador' },
   { key: MODULES.DASHBOARD, label: 'Dashboard' },
-  { key: MODULES.EVENTOS, label: 'Eventos' },
   { key: MODULES.CALENDARIO, label: 'Calendario' },
   { key: MODULES.PORTAL_CLIENTE, label: 'Portal cliente' },
   { key: MODULES.PERFIL, label: 'Perfil' },
-  { key: MODULES.CLIENTES, label: 'Clientes' },
-  { key: MODULES.PRODUCTOS, label: 'Productos' },
-  { key: MODULES.CATEGORIAS, label: 'Categorías' },
-  { key: MODULES.PLANES, label: 'Paquetes' },
-  { key: MODULES.PAGOS, label: 'Pagos' },
-  { key: MODULES.CUENTAS, label: 'Cuentas' },
   { key: MODULES.INVENTARIO, label: 'Inventario' },
-  { key: MODULES.SALONES, label: 'Salones' },
   { key: MODULES.NOTIFICACIONES_NATIVAS, label: 'Notificaciones' },
-  { key: MODULES.REPORTES, label: 'Reportes' },
-  { key: MODULES.USUARIOS, label: 'Usuarios' },
   { key: MODULES.PERMISOS, label: 'Roles y Permisos' },
   { key: MODULES.MI_PLAN, label: 'Mi Plan' },
   { key: MODULES.ADMIN_SUSCRIPCION, label: 'Admin Suscripción' },
   { key: MODULES.INTEGRACIONES, label: 'Integraciones' },
-  { key: MODULES.WHATSAPP_CHAT, label: 'WhatsApp Chat' },
   { key: MODULES.WHATSAPP_METRICAS, label: 'Panel WhatsApp/Email' },
   { key: MODULES.WHATSAPP_TEMPLATES, label: 'Plantillas WhatsApp' },
   { key: MODULES.CARGA_MASIVA, label: 'Carga masiva' },
   { key: MODULES.CONFIG_DATOS, label: 'Config. Sistema' },
-  // Próximas implementaciones
-  { key: MODULES.ENVIO_SUGERENCIA, label: 'Envío de Sugerencia (próximamente)' },
-  { key: MODULES.PROVEEDORES, label: 'Proveedores (próximamente)' },
-  { key: MODULES.FACTURACION_ELECTRONICA, label: 'Facturación Electrónica (próximamente)' },
-  { key: MODULES.CONTRATOS, label: 'Contratos Digitales (próximamente)' },
-  { key: MODULES.RESERVAS_ONLINE, label: 'Reservas Online (próximamente)' },
-  { key: MODULES.CRM_AVANZADO, label: 'CRM Avanzado (próximamente)' },
-  { key: MODULES.INTEGRACION_CONTABILIDAD, label: 'Integración Contable (próximamente)' },
-  { key: MODULES.SITIO_WEB_EVENTOS, label: 'Sitio Web de Eventos (próximamente)' },
-  { key: MODULES.INSTAGRAM, label: 'Instagram (próximamente)' },
 ];
 
-const ACCIONES = [
-  { key: PERMISSIONS.EVENTOS_EDITAR_ESTADO, label: 'Eventos · Editar estado' },
-  { key: PERMISSIONS.EVENTOS_FINALIZAR, label: 'Eventos · Finalizar evento' },
-  { key: PERMISSIONS.EVENTOS_AGREGAR_PRODUCTO, label: 'Eventos · Agregar producto' },
-  { key: PERMISSIONS.EVENTOS_ELIMINAR_PRODUCTO, label: 'Eventos · Eliminar producto' },
-  { key: PERMISSIONS.EVENTOS_ELIMINAR, label: 'Eventos · Eliminar' },
-  { key: PERMISSIONS.EVENTOS_ACTUALIZAR_SERVICIOS, label: 'Eventos · Actualizar servicios' },
-  { key: PERMISSIONS.EVENTOS_GENERAR_SERVICIOS, label: 'Eventos · Generar servicios' },
-  { key: PERMISSIONS.EVENTOS_DESCARTAR_SERVICIO, label: 'Eventos · Descartar servicio' },
-  { key: PERMISSIONS.EVENTOS_ASIGNAR_COORDINADOR, label: 'Eventos · Asignar coordinador' },
-  { key: PERMISSIONS.PAGOS_REGISTRAR, label: 'Pagos · Registrar' },
-  { key: PERMISSIONS.PAGOS_REEMBOLSAR, label: 'Pagos · Reembolsar' },
-  { key: PERMISSIONS.PAGOS_ELIMINAR, label: 'Pagos · Eliminar' },
-  { key: PERMISSIONS.PAGOS_APROBAR, label: 'Pagos · Aprobar' },
-  { key: PERMISSIONS.PAGOS_ANULAR, label: 'Pagos · Anular' },
-  { key: PERMISSIONS.CUENTAS_VER, label: 'Cuentas · Ver' },
-  { key: PERMISSIONS.CUENTAS_CREAR, label: 'Cuentas · Crear' },
-  { key: PERMISSIONS.CUENTAS_EDITAR, label: 'Cuentas · Editar' },
-  { key: PERMISSIONS.CUENTAS_ELIMINAR, label: 'Cuentas · Eliminar' },
-  { key: PERMISSIONS.PLANES_CREAR, label: 'Paquetes · Crear' },
-  { key: PERMISSIONS.PLANES_EDITAR, label: 'Paquetes · Editar' },
-  { key: PERMISSIONS.PLANES_ELIMINAR, label: 'Paquetes · Eliminar' },
-];
-
-/** Módulos solo visibles para administrador_sistema (se gestionan por BD) */
 const MODULOS_SISTEMA = [MODULES.ADMIN_SUSCRIPCION, MODULES.CONFIG_DATOS];
 
 const Permisos = () => {
@@ -83,7 +184,7 @@ const Permisos = () => {
   const [rolSeleccionado, setRolSeleccionado] = useState('');
   const [permisosRolSeleccionados, setPermisosRolSeleccionados] = useState([]);
   const [guardando, setGuardando] = useState(false);
-  const [tab, setTab] = useState('usuarios');
+  const [tabPrincipal, setTabPrincipal] = useState('roles');
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -118,21 +219,15 @@ const Permisos = () => {
   };
 
   const togglePermiso = (key) => {
-    setPermisosSeleccionados((prev) => {
-      if (prev.includes(key)) {
-        return prev.filter((item) => item !== key);
-      }
-      return [...prev, key];
-    });
+    setPermisosSeleccionados((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   };
 
   const togglePermisoRol = (key) => {
-    setPermisosRolSeleccionados((prev) => {
-      if (prev.includes(key)) {
-        return prev.filter((item) => item !== key);
-      }
-      return [...prev, key];
-    });
+    setPermisosRolSeleccionados((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   };
 
   const guardarPermisos = async () => {
@@ -142,8 +237,7 @@ const Permisos = () => {
       await usuariosService.updatePermisos(usuarioSeleccionado.id, permisosSeleccionados);
       success('Permisos actualizados');
     } catch (err) {
-      const mensaje = err.response?.data?.error || 'Error al guardar permisos';
-      showError(mensaje);
+      showError(err.response?.data?.error || 'Error al guardar permisos');
     } finally {
       setGuardando(false);
     }
@@ -157,8 +251,7 @@ const Permisos = () => {
       setPermisosSeleccionados([]);
       success('Permisos restablecidos al rol');
     } catch (err) {
-      const mensaje = err.response?.data?.error || 'Error al restablecer permisos';
-      showError(mensaje);
+      showError(err.response?.data?.error || 'Error al restablecer permisos');
     } finally {
       setGuardando(false);
     }
@@ -170,8 +263,7 @@ const Permisos = () => {
       const data = await usuariosService.getPermisosRol(rol);
       setPermisosRolSeleccionados(data.permisos || []);
     } catch (err) {
-      const mensaje = err.response?.data?.error || 'Error al cargar permisos del rol';
-      showError(mensaje);
+      showError(err.response?.data?.error || 'Error al cargar permisos del rol');
       setPermisosRolSeleccionados([]);
     }
   };
@@ -183,8 +275,7 @@ const Permisos = () => {
       await usuariosService.updatePermisosRol(rolSeleccionado, permisosRolSeleccionados);
       success('Permisos de rol actualizados');
     } catch (err) {
-      const mensaje = err.response?.data?.error || 'Error al guardar permisos del rol';
-      showError(mensaje);
+      showError(err.response?.data?.error || 'Error al guardar permisos del rol');
     } finally {
       setGuardando(false);
     }
@@ -198,17 +289,11 @@ const Permisos = () => {
       setPermisosRolSeleccionados([]);
       success('Permisos del rol restablecidos');
     } catch (err) {
-      const mensaje = err.response?.data?.error || 'Error al restablecer permisos del rol';
-      showError(mensaje);
+      showError(err.response?.data?.error || 'Error al restablecer permisos del rol');
     } finally {
       setGuardando(false);
     }
   };
-
-  const usuarioLabel = useMemo(() => {
-    if (!usuarioSeleccionado) return 'Selecciona un usuario';
-    return usuarioSeleccionado.nombre_completo || usuarioSeleccionado.nombre_usuario;
-  }, [usuarioSeleccionado]);
 
   const usuariosVisibles = useMemo(() => {
     if (esAdminSistema) return usuarios;
@@ -220,39 +305,131 @@ const Permisos = () => {
     return roles.filter((r) => r !== ROLES.ADMIN_SISTEMA);
   }, [roles, esAdminSistema]);
 
-  const modulosVisibles = useMemo(() => {
-    if (esAdminSistema) return MODULOS;
-    return MODULOS.filter((m) => !MODULOS_SISTEMA.includes(m.key));
+  const modulosConAccionesVisibles = useMemo(() => {
+    if (esAdminSistema) return MODULOS_CON_ACCIONES;
+    return MODULOS_CON_ACCIONES.filter((m) => !MODULOS_SISTEMA.includes(m.key));
   }, [esAdminSistema]);
 
+  const modulosSoloAccesoVisibles = useMemo(() => {
+    if (esAdminSistema) return MODULOS_SOLO_ACCESO;
+    return MODULOS_SOLO_ACCESO.filter((m) => !MODULOS_SISTEMA.includes(m.key));
+  }, [esAdminSistema]);
+
+  const isRol = tabPrincipal === 'roles';
+  const permisosActuales = isRol ? permisosRolSeleccionados : permisosSeleccionados;
+  const toggleActual = isRol ? togglePermisoRol : togglePermiso;
+  const haySeleccion = isRol ? !!rolSeleccionado : !!usuarioSeleccionado;
+  const tituloSeleccion = isRol
+    ? (rolSeleccionado ? `Rol: ${rolSeleccionado}` : 'Selecciona un rol')
+    : (usuarioSeleccionado?.nombre_completo || usuarioSeleccionado?.nombre_usuario || 'Selecciona un usuario');
+  const onGuardar = isRol ? guardarPermisosRol : guardarPermisos;
+  const onRestablecer = isRol ? limpiarPermisosRol : limpiarPermisos;
+
+  const checkbox = (key, label, checked, onChange) => (
+    <label
+      key={key}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        padding: '0.5rem 0.75rem',
+        borderRadius: '0.375rem',
+        border: '1px solid #e2e8f0',
+        backgroundColor: checked ? '#eef2ff' : 'white',
+        cursor: 'pointer',
+        fontSize: '0.875rem',
+        fontWeight: '500',
+      }}
+    >
+      <input type="checkbox" checked={checked} onChange={() => onChange(key)} />
+      <span>{label}</span>
+    </label>
+  );
+
+  const seccionModulo = (modulo, acciones) => {
+    const Icon = modulo.icon;
+    const tieneAcceso = permisosActuales.includes(modulo.key);
+    return (
+      <div
+        key={modulo.key}
+        style={{
+          marginBottom: '1.5rem',
+          padding: '1.25rem',
+          backgroundColor: '#fafafa',
+          borderRadius: '0.75rem',
+          border: '1px solid #e5e7eb',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          {Icon && (
+            <div
+              style={{
+                width: '2.5rem',
+                height: '2.5rem',
+                borderRadius: '0.5rem',
+                backgroundColor: '#6366f120',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon size={20} color="#6366f1" />
+            </div>
+          )}
+          <h3 style={{ fontSize: '1.125rem', fontWeight: '700', margin: 0, color: '#111827' }}>
+            {modulo.label}
+          </h3>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          {checkbox(modulo.key, 'Acceso al módulo (ver en menú)', tieneAcceso, toggleActual)}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.5rem' }}>
+          {acciones.map((acc) =>
+            checkbox(acc.key, acc.label, permisosActuales.includes(acc.key), toggleActual)
+          )}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando usuarios...</div>;
+    return (
+      <div style={{ textAlign: 'center', padding: '3rem' }}>Cargando usuarios y roles...</div>
+    );
   }
 
   return (
     <div>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Roles y Permisos</h1>
-        <p style={{ color: '#6b7280' }}>
-          Define permisos por rol y permisos personalizados por usuario.
-          {!esAdminSistema && (
-            <span style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.9rem' }}>
-              Los permisos del administrador del sistema se gestionan exclusivamente por base de datos.
-            </span>
-          )}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+          Roles y Permisos
+        </h1>
+        <p style={{ color: '#6b7280', fontSize: '0.9375rem' }}>
+          Define permisos por rol y por usuario. Los cambios se guardan en la base de datos.
         </p>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem' }}>
+
+        {/* Pestañas principales */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '0',
+            borderBottom: '2px solid #e5e7eb',
+            marginTop: '1.25rem',
+          }}
+        >
           <button
             type="button"
-            onClick={() => setTab('roles')}
+            onClick={() => setTabPrincipal('roles')}
             style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '0.5rem',
-              border: '1px solid #e2e8f0',
-              backgroundColor: tab === 'roles' ? '#6366f1' : 'white',
-              color: tab === 'roles' ? 'white' : '#374151',
+              padding: '0.75rem 1.25rem',
               fontWeight: '600',
+              fontSize: '0.9375rem',
+              border: 'none',
+              borderBottom: tabPrincipal === 'roles' ? '2px solid #6366f1' : '2px solid transparent',
+              marginBottom: '-2px',
+              backgroundColor: 'transparent',
+              color: tabPrincipal === 'roles' ? '#6366f1' : '#6b7280',
               cursor: 'pointer',
             }}
           >
@@ -260,14 +437,16 @@ const Permisos = () => {
           </button>
           <button
             type="button"
-            onClick={() => setTab('usuarios')}
+            onClick={() => setTabPrincipal('usuarios')}
             style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '0.5rem',
-              border: '1px solid #e2e8f0',
-              backgroundColor: tab === 'usuarios' ? '#6366f1' : 'white',
-              color: tab === 'usuarios' ? 'white' : '#374151',
+              padding: '0.75rem 1.25rem',
               fontWeight: '600',
+              fontSize: '0.9375rem',
+              border: 'none',
+              borderBottom: tabPrincipal === 'usuarios' ? '2px solid #6366f1' : '2px solid transparent',
+              marginBottom: '-2px',
+              backgroundColor: 'transparent',
+              color: tabPrincipal === 'usuarios' ? '#6366f1' : '#6b7280',
               cursor: 'pointer',
             }}
           >
@@ -276,270 +455,206 @@ const Permisos = () => {
         </div>
       </div>
 
-      {tab === 'roles' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #e5e7eb' }}>
-            <div style={{ padding: '1rem', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>
-              Roles
-            </div>
-            <div style={{ maxHeight: '560px', overflowY: 'auto' }}>
-              {rolesVisibles.map((rol) => {
-                const activo = rolSeleccionado === rol;
-                return (
-                  <button
-                    key={rol}
-                    type="button"
-                    onClick={() => seleccionarRol(rol)}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '0.85rem 1rem',
-                      border: 'none',
-                      backgroundColor: activo ? '#eef2ff' : 'transparent',
-                      color: activo ? '#3730a3' : '#111827',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #f1f5f9',
-                    }}
-                  >
-                    <div style={{ fontWeight: '600', textTransform: 'capitalize' }}>{rol}</div>
-                  </button>
-                );
-              })}
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem', alignItems: 'start' }}>
+        {/* Columna izquierda: roles o usuarios */}
+        <div
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '0.75rem',
+            border: '1px solid #e5e7eb',
+            overflow: 'hidden',
+            position: 'sticky',
+            top: '1rem',
+          }}
+        >
+          <div
+            style={{
+              padding: '0.75rem 1rem',
+              borderBottom: '1px solid #e5e7eb',
+              fontWeight: '700',
+              fontSize: '0.875rem',
+              color: '#374151',
+            }}
+          >
+            {tabPrincipal === 'roles' ? 'Roles' : 'Usuarios'}
           </div>
-
-          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #e5e7eb', padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.25rem' }}>
-              {rolSeleccionado ? `Rol: ${rolSeleccionado}` : 'Selecciona un rol'}
-            </h2>
-            <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-              Marca los módulos y acciones permitidas para este rol.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              {modulosVisibles.map((modulo) => (
-                <label
-                  key={modulo.key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.6rem',
-                    padding: '0.75rem',
-                    borderRadius: '0.6rem',
-                    border: '1px solid #e2e8f0',
-                    backgroundColor: permisosRolSeleccionados.includes(modulo.key) ? '#eef2ff' : 'white',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={permisosRolSeleccionados.includes(modulo.key)}
-                    onChange={() => togglePermisoRol(modulo.key)}
-                  />
-                  <span style={{ fontWeight: '600', color: '#0f172a' }}>{modulo.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div style={{ marginTop: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.75rem', color: '#111827' }}>
-                Acciones
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                {ACCIONES.map((accion) => (
-                  <label
-                    key={accion.key}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.6rem',
-                      padding: '0.75rem',
-                      borderRadius: '0.6rem',
-                      border: '1px solid #e2e8f0',
-                      backgroundColor: permisosRolSeleccionados.includes(accion.key) ? '#eef2ff' : 'white',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={permisosRolSeleccionados.includes(accion.key)}
-                      onChange={() => togglePermisoRol(accion.key)}
-                    />
-                    <span style={{ fontWeight: '600', color: '#0f172a' }}>{accion.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-              <button
-                type="button"
-                onClick={limpiarPermisosRol}
-                disabled={!rolSeleccionado}
-                style={{
-                  padding: '0.7rem 1.2rem',
-                  borderRadius: '0.6rem',
-                  border: '1px solid #e2e8f0',
-                  backgroundColor: 'white',
-                  cursor: rolSeleccionado ? 'pointer' : 'not-allowed',
-                  fontWeight: '600',
-                  color: '#64748b',
-                }}
-              >
-                Restablecer rol
-              </button>
-              <button
-                type="button"
-                onClick={guardarPermisosRol}
-                disabled={!rolSeleccionado || guardando}
-                style={{
-                  padding: '0.7rem 1.4rem',
-                  borderRadius: '0.6rem',
-                  border: 'none',
-                  backgroundColor: '#4f46e5',
-                  color: 'white',
-                  cursor: !rolSeleccionado || guardando ? 'not-allowed' : 'pointer',
-                  fontWeight: '700',
-                }}
-              >
-                {guardando ? 'Guardando...' : 'Guardar permisos'}
-              </button>
-            </div>
+          <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            {isRol
+              ? rolesVisibles.map((rol) => {
+                  const activo = rolSeleccionado === rol;
+                  return (
+                    <button
+                      key={rol}
+                      type="button"
+                      onClick={() => seleccionarRol(rol)}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '0.75rem 1rem',
+                        border: 'none',
+                        borderBottom: '1px solid #f1f5f9',
+                        backgroundColor: activo ? '#eef2ff' : 'transparent',
+                        color: activo ? '#4338ca' : '#111827',
+                        cursor: 'pointer',
+                        fontWeight: activo ? '600' : '500',
+                        fontSize: '0.875rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span style={{ textTransform: 'capitalize' }}>{rol.replace(/_/g, ' ')}</span>
+                      {activo && <ChevronRight size={18} />}
+                    </button>
+                  );
+                })
+              : usuariosVisibles.map((u) => {
+                  const activo = usuarioSeleccionado?.id === u.id;
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => seleccionarUsuario(u)}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '0.75rem 1rem',
+                        border: 'none',
+                        borderBottom: '1px solid #f1f5f9',
+                        backgroundColor: activo ? '#eef2ff' : 'transparent',
+                        color: activo ? '#4338ca' : '#111827',
+                        cursor: 'pointer',
+                        fontWeight: activo ? '600' : '500',
+                        fontSize: '0.875rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: '500' }}>
+                          {u.nombre_completo || u.nombre_usuario}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{u.rol}</div>
+                      </div>
+                      {activo && <ChevronRight size={18} />}
+                    </button>
+                  );
+                })}
           </div>
         </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #e5e7eb' }}>
-            <div style={{ padding: '1rem', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>
-              Usuarios
-            </div>
-            <div style={{ maxHeight: '560px', overflowY: 'auto' }}>
-              {usuariosVisibles.map((usuario) => {
-                const activo = usuarioSeleccionado?.id === usuario.id;
-                return (
-                  <button
-                    key={usuario.id}
-                    type="button"
-                    onClick={() => seleccionarUsuario(usuario)}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '0.85rem 1rem',
-                      border: 'none',
-                      backgroundColor: activo ? '#eef2ff' : 'transparent',
-                      color: activo ? '#3730a3' : '#111827',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #f1f5f9',
-                    }}
-                  >
-                    <div style={{ fontWeight: '600' }}>
-                      {usuario.nombre_completo || usuario.nombre_usuario}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{usuario.rol}</div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
-          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #e5e7eb', padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.25rem' }}>{usuarioLabel}</h2>
-            <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-              Marca los módulos y acciones permitidas para este usuario.
-            </p>
+        {/* Columna derecha: permisos por módulo */}
+        <div
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '0.75rem',
+            border: '1px solid #e5e7eb',
+            padding: '1.5rem',
+            minHeight: '400px',
+          }}
+        >
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.25rem', color: '#111827' }}>
+            {tituloSeleccion}
+          </h2>
+          <p style={{ color: '#6b7280', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+            {haySeleccion
+              ? 'Marca el acceso a cada módulo y las acciones permitidas.'
+              : `Selecciona un ${isRol ? 'rol' : 'usuario'} en la lista para editar sus permisos.`}
+          </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              {modulosVisibles.map((modulo) => (
-                <label
-                  key={modulo.key}
+          {!haySeleccion ? (
+            <div
+              style={{
+                padding: '2rem',
+                textAlign: 'center',
+                color: '#9ca3af',
+                backgroundColor: '#f9fafb',
+                borderRadius: '0.5rem',
+              }}
+            >
+              Selecciona un {isRol ? 'rol' : 'usuario'} a la izquierda para ver y editar permisos.
+            </div>
+          ) : (
+            <>
+              {modulosConAccionesVisibles.map((mod) => seccionModulo(mod, mod.acciones))}
+
+              <div
+                style={{
+                  marginBottom: '1.5rem',
+                  padding: '1.25rem',
+                  backgroundColor: '#fafafa',
+                  borderRadius: '0.75rem',
+                  border: '1px solid #e5e7eb',
+                }}
+              >
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '700', margin: '0 0 1rem 0', color: '#111827' }}>
+                  Otros módulos (solo acceso al menú)
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.5rem' }}>
+                  {modulosSoloAccesoVisibles.map((m) =>
+                    checkbox(m.key, m.label, permisosActuales.includes(m.key), toggleActual)
+                  )}
+                </div>
+              </div>
+
+              {/* Botones de acción */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.75rem',
+                  marginTop: '1.5rem',
+                  paddingTop: '1.25rem',
+                  borderTop: '1px solid #e5e7eb',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={onRestablecer}
+                  disabled={!haySeleccion || guardando}
                   style={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.6rem',
-                    padding: '0.75rem',
-                    borderRadius: '0.6rem',
-                    border: '1px solid #e2e8f0',
-                    backgroundColor: permisosSeleccionados.includes(modulo.key) ? '#eef2ff' : 'white',
-                    cursor: 'pointer',
+                    gap: '0.5rem',
+                    padding: '0.75rem 1.25rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    cursor: haySeleccion && !guardando ? 'pointer' : 'not-allowed',
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={permisosSeleccionados.includes(modulo.key)}
-                    onChange={() => togglePermiso(modulo.key)}
-                  />
-                  <span style={{ fontWeight: '600', color: '#0f172a' }}>{modulo.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div style={{ marginTop: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.75rem', color: '#111827' }}>
-                Acciones
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                {ACCIONES.map((accion) => (
-                  <label
-                    key={accion.key}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.6rem',
-                      padding: '0.75rem',
-                      borderRadius: '0.6rem',
-                      border: '1px solid #e2e8f0',
-                      backgroundColor: permisosSeleccionados.includes(accion.key) ? '#eef2ff' : 'white',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={permisosSeleccionados.includes(accion.key)}
-                      onChange={() => togglePermiso(accion.key)}
-                    />
-                    <span style={{ fontWeight: '600', color: '#0f172a' }}>{accion.label}</span>
-                  </label>
-                ))}
+                  <RotateCcw size={18} />
+                  {isRol ? 'Restablecer rol' : 'Usar permisos del rol'}
+                </button>
+                <button
+                  type="button"
+                  onClick={onGuardar}
+                  disabled={!haySeleccion || guardando}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    backgroundColor: haySeleccion && !guardando ? '#6366f1' : '#9ca3af',
+                    color: 'white',
+                    fontWeight: '700',
+                    fontSize: '0.875rem',
+                    cursor: haySeleccion && !guardando ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  <Save size={18} />
+                  {guardando ? 'Guardando...' : 'Guardar permisos'}
+                </button>
               </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-              <button
-                type="button"
-                onClick={limpiarPermisos}
-                disabled={!usuarioSeleccionado}
-                style={{
-                  padding: '0.7rem 1.2rem',
-                  borderRadius: '0.6rem',
-                  border: '1px solid #e2e8f0',
-                  backgroundColor: 'white',
-                  cursor: usuarioSeleccionado ? 'pointer' : 'not-allowed',
-                  fontWeight: '600',
-                  color: '#64748b',
-                }}
-              >
-                Usar permisos del rol
-              </button>
-              <button
-                type="button"
-                onClick={guardarPermisos}
-                disabled={!usuarioSeleccionado || guardando}
-                style={{
-                  padding: '0.7rem 1.4rem',
-                  borderRadius: '0.6rem',
-                  border: 'none',
-                  backgroundColor: '#4f46e5',
-                  color: 'white',
-                  cursor: !usuarioSeleccionado || guardando ? 'not-allowed' : 'pointer',
-                  fontWeight: '700',
-                }}
-              >
-                {guardando ? 'Guardando...' : 'Guardar permisos'}
-              </button>
-            </div>
-          </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

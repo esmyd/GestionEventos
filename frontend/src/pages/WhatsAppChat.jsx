@@ -3,11 +3,19 @@ import { whatsappChatService } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
 import useIsMobile from '../hooks/useIsMobile';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission, PERMISSIONS, ROLES } from '../utils/roles';
 import { Image, FileText, Mic, Smile, Search, MessageSquare, ArrowLeft, Plus, Send, X, Camera } from 'lucide-react';
 
+const fallbackWhatsApp = [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR];
+
 const WhatsAppChat = () => {
+  const { usuario } = useAuth();
   const { toasts, removeToast, error: showError, success } = useToast();
   const isMobile = useIsMobile();
+  const puedeEnviarMensaje = hasPermission(usuario, PERMISSIONS.WHATSAPP_CHAT_ENVIAR_MENSAJE, fallbackWhatsApp);
+  const puedeModoHumano = hasPermission(usuario, PERMISSIONS.WHATSAPP_CHAT_MODO_HUMANO, fallbackWhatsApp);
+  const puedeReiniciar = hasPermission(usuario, PERMISSIONS.WHATSAPP_CHAT_REINICIAR, fallbackWhatsApp);
   const [conversaciones, setConversaciones] = useState([]);
   const [seleccion, setSeleccion] = useState(null);
   const [mensajes, setMensajes] = useState([]);
@@ -635,6 +643,7 @@ const WhatsAppChat = () => {
                   24h
                 </span>
               )}
+              {puedeModoHumano && (
               <button
                 type="button"
                 onClick={toggleModo}
@@ -654,6 +663,8 @@ const WhatsAppChat = () => {
               >
                 {seleccion?.bot_activo ? (isMobile ? '👤 Humano' : '👤 Modo humano') : (isMobile ? '🤖 Bot' : '🤖 Activar bot')}
               </button>
+              )}
+              {puedeReiniciar && (
               <button
                 type="button"
                 onClick={resetBot}
@@ -673,6 +684,7 @@ const WhatsAppChat = () => {
               >
                 {isMobile ? 'Reset' : 'Reiniciar'}
               </button>
+              )}
               {seleccion?.requiere_reengagement && (
                 <button
                   type="button"
@@ -870,6 +882,8 @@ const WhatsAppChat = () => {
               flexShrink: 0,
             }}
           >
+            {puedeEnviarMensaje ? (
+            <>
             {/* Botón + para adjuntos */}
             <div style={{ position: 'relative' }}>
               <button
@@ -1166,6 +1180,11 @@ const WhatsAppChat = () => {
             >
               <Send size={22} style={{ marginLeft: '2px' }} />
             </button>
+          </> ) : (
+            <div style={{ flex: 1, textAlign: 'center', color: '#8696a0', fontSize: '0.875rem' }}>
+              No tienes permiso para enviar mensajes
+            </div>
+          )}
           </div>
         </div>
         )}

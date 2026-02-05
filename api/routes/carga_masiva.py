@@ -6,7 +6,7 @@ from io import BytesIO
 from flask import Blueprint, jsonify, request, send_file
 from openpyxl import Workbook, load_workbook
 
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from modelos.base_datos import BaseDatos
 from modelos.categoria_modelo import CategoriaModelo
 from modelos.plan_modelo import PlanModelo
@@ -99,7 +99,7 @@ def _parse_int(valor, default=None):
 
 @carga_masiva_bp.route("/template/<tipo>", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("carga_masiva")
 def descargar_template(tipo):
     tipo = (tipo or "").strip().lower()
     columnas = TIPOS_PLANTILLA.get(tipo)
@@ -126,7 +126,7 @@ def descargar_template(tipo):
 
 @carga_masiva_bp.route("/<tipo>", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("carga_masiva")
 def cargar_excel(tipo):
     tipo = (tipo or "").strip().lower()
     columnas = TIPOS_PLANTILLA.get(tipo)

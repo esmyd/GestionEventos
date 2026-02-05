@@ -3,7 +3,7 @@ Rutas para gestión de reintentos de mensajes WhatsApp
 """
 from flask import Blueprint, request, jsonify
 from utilidades.reintentar_mensajes_whatsapp import ServicioReintentosWhatsApp
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 whatsapp_reintentos_bp = Blueprint('whatsapp_reintentos', __name__)
@@ -12,7 +12,7 @@ logger = obtener_logger()
 
 @whatsapp_reintentos_bp.route('/procesar', methods=['POST'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('whatsapp_chat')
 def procesar_reintentos():
     """Procesa mensajes pendientes de reintento"""
     try:
@@ -33,7 +33,7 @@ def procesar_reintentos():
 
 @whatsapp_reintentos_bp.route('/pendientes', methods=['GET'])
 @requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('whatsapp_chat')
 def obtener_pendientes():
     """Obtiene mensajes pendientes de reintento"""
     try:

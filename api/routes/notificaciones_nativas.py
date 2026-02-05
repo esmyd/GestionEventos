@@ -3,7 +3,7 @@ Rutas para gestión de notificaciones nativas (configuracion_notificaciones)
 """
 from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from modelos.notificacion_modelo import NotificacionModelo
 from modelos.evento_modelo import EventoModelo
 from integraciones.sistema_notificaciones import SistemaNotificaciones
@@ -18,7 +18,7 @@ evento_modelo = EventoModelo()
 
 @notificaciones_nativas_bp.route("/configuraciones", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("notificaciones_nativas")
 def listar_configuraciones():
     try:
         configuraciones = modelo.obtener_todas_configuraciones()
@@ -35,7 +35,7 @@ def listar_configuraciones():
 
 @notificaciones_nativas_bp.route("/configuraciones/<string:tipo_notificacion>", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("notificaciones_nativas")
 def obtener_configuracion(tipo_notificacion):
     try:
         configuracion = modelo.obtener_configuracion(tipo_notificacion)
@@ -49,7 +49,7 @@ def obtener_configuracion(tipo_notificacion):
 
 @notificaciones_nativas_bp.route("/configuraciones/<string:tipo_notificacion>", methods=["PUT"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("notificaciones_nativas")
 def actualizar_configuracion(tipo_notificacion):
     try:
         data = request.get_json() or {}
@@ -78,7 +78,7 @@ def actualizar_configuracion(tipo_notificacion):
 
 @notificaciones_nativas_bp.route("/configuraciones/<string:tipo_notificacion>/status", methods=["PATCH"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("notificaciones_nativas")
 def actualizar_estado(tipo_notificacion):
     try:
         data = request.get_json() or {}
@@ -101,7 +101,7 @@ def actualizar_estado(tipo_notificacion):
 
 @notificaciones_nativas_bp.route("/evento/<int:evento_id>/proximas", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("notificaciones_nativas")
 def proximas_notificaciones_evento(evento_id):
     try:
         evento = evento_modelo.obtener_evento_por_id(evento_id)
@@ -203,7 +203,7 @@ def proximas_notificaciones_evento(evento_id):
 
 @notificaciones_nativas_bp.route("/evento/<int:evento_id>/forzar", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("notificaciones_nativas")
 def forzar_notificacion_evento(evento_id):
     try:
         data = request.get_json() or {}

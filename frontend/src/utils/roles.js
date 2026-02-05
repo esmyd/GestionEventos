@@ -57,6 +57,12 @@ export const PERMISSIONS = {
   EVENTOS_GENERAR_SERVICIOS: 'eventos:generar_servicios',
   EVENTOS_DESCARTAR_SERVICIO: 'eventos:descartar_servicio',
   EVENTOS_ASIGNAR_COORDINADOR: 'eventos:asignar_coordinador',
+  EVENTOS_SOLICITAR_EVALUACION: 'eventos:solicitar_evaluacion',
+  EVENTOS_CALIFICAR_MANUAL: 'eventos:calificar_manual',
+  EVENTOS_VER_INFORMACION: 'eventos:ver_informacion',
+  EVENTOS_VER_OPCIONES_CLIENTE: 'eventos:ver_opciones_cliente',
+  EVENTOS_VER_RECORDATORIOS: 'eventos:ver_recordatorios',
+  EVENTOS_VER_FINANCIERO: 'eventos:ver_financiero',
   PAGOS_REGISTRAR: 'pagos:registrar',
   PAGOS_REEMBOLSAR: 'pagos:reembolsar',
   PAGOS_ELIMINAR: 'pagos:eliminar',
@@ -69,6 +75,26 @@ export const PERMISSIONS = {
   PLANES_CREAR: 'planes:crear',
   PLANES_EDITAR: 'planes:editar',
   PLANES_ELIMINAR: 'planes:eliminar',
+  SALONES_CREAR: 'salones:crear',
+  SALONES_EDITAR: 'salones:editar',
+  SALONES_ELIMINAR: 'salones:eliminar',
+  CLIENTES_CREAR: 'clientes:crear',
+  CLIENTES_EDITAR: 'clientes:editar',
+  CLIENTES_ELIMINAR: 'clientes:eliminar',
+  PRODUCTOS_CREAR: 'productos:crear',
+  PRODUCTOS_EDITAR: 'productos:editar',
+  PRODUCTOS_ELIMINAR: 'productos:eliminar',
+  CATEGORIAS_CREAR: 'categorias:crear',
+  CATEGORIAS_EDITAR: 'categorias:editar',
+  CATEGORIAS_ELIMINAR: 'categorias:eliminar',
+  USUARIOS_CREAR: 'usuarios:crear',
+  USUARIOS_EDITAR: 'usuarios:editar',
+  USUARIOS_ELIMINAR: 'usuarios:eliminar',
+  USUARIOS_CAMBIAR_CONTRASENA: 'usuarios:cambiar_contrasena',
+  REPORTES_EXPORTAR: 'reportes:exportar',
+  WHATSAPP_CHAT_ENVIAR_MENSAJE: 'whatsapp_chat:enviar_mensaje',
+  WHATSAPP_CHAT_MODO_HUMANO: 'whatsapp_chat:modo_humano',
+  WHATSAPP_CHAT_REINICIAR: 'whatsapp_chat:reiniciar',
 };
 
 const ROLE_ALIASES = {
@@ -117,6 +143,10 @@ export const getRoleLabel = (rawRole) => {
 
 export const hasRole = (userRole, allowedRoles = []) => isRoleAllowed(userRole, allowedRoles);
 
+/**
+ * Acceso a módulo (menú/página): si el usuario tiene permisos desde BD, se usa esa lista;
+ * si no tiene permisos definidos, se usa el fallback por rol.
+ */
 export const hasModuleAccess = (usuario, moduleKey, fallbackRoles = []) => {
   if (!usuario) return false;
   if (Array.isArray(usuario.permisos) && usuario.permisos.length > 0) {
@@ -125,6 +155,10 @@ export const hasModuleAccess = (usuario, moduleKey, fallbackRoles = []) => {
   return isRoleAllowed(usuario.rol, fallbackRoles);
 };
 
+/**
+ * Permiso para una acción (crear, editar, eliminar, etc.): si el usuario tiene permisos desde BD,
+ * se usa esa lista; si no, se usa el fallback por rol.
+ */
 export const hasPermission = (usuario, permiso, fallbackRoles = []) => {
   if (!usuario) return false;
   if (Array.isArray(usuario.permisos) && usuario.permisos.length > 0) {

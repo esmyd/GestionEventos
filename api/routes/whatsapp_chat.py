@@ -2,7 +2,7 @@
 Rutas para inbox y control de chat WhatsApp
 """
 from flask import Blueprint, jsonify, request, Response
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from integraciones.whatsapp_chat import WhatsAppChatService
 from utilidades.logger import obtener_logger
 
@@ -14,7 +14,7 @@ service = WhatsAppChatService()
 
 @whatsapp_chat_bp.route("/conversations", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat")
 def listar_conversaciones():
     try:
         conversaciones = service.modelo.listar_conversaciones()
@@ -26,7 +26,7 @@ def listar_conversaciones():
 
 @whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/messages", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat")
 def obtener_mensajes(conversacion_id):
     try:
         mensajes = service.modelo.obtener_mensajes(conversacion_id)
@@ -38,7 +38,7 @@ def obtener_mensajes(conversacion_id):
 
 @whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/send", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat", "whatsapp_chat:enviar_mensaje")
 def enviar_mensaje(conversacion_id):
     try:
         data = request.get_json() or {}
@@ -57,7 +57,7 @@ def enviar_mensaje(conversacion_id):
 
 @whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/send-media", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat", "whatsapp_chat:enviar_mensaje")
 def enviar_media(conversacion_id):
     try:
         archivo = request.files.get("archivo")
@@ -77,7 +77,7 @@ def enviar_media(conversacion_id):
 
 @whatsapp_chat_bp.route("/media/<string:media_id>", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat")
 def obtener_media(media_id):
     try:
         contenido, mime_type = service.whatsapp.descargar_media(media_id)
@@ -91,7 +91,7 @@ def obtener_media(media_id):
 
 @whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/modo", methods=["PATCH"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat", "whatsapp_chat:modo_humano")
 def cambiar_modo(conversacion_id):
     try:
         data = request.get_json() or {}
@@ -109,7 +109,7 @@ def cambiar_modo(conversacion_id):
 
 @whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/reset-bot", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat", "whatsapp_chat:reiniciar")
 def reset_bot(conversacion_id):
     try:
         service.modelo.limpiar_estado_bot(conversacion_id)
@@ -121,7 +121,7 @@ def reset_bot(conversacion_id):
 
 @whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/marcar-leido", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat")
 def marcar_leido(conversacion_id):
     """Marca una conversación como leída (resetea el contador de no leídos)"""
     try:
@@ -134,7 +134,7 @@ def marcar_leido(conversacion_id):
 
 @whatsapp_chat_bp.route("/conversations/<int:conversacion_id>/reenviar-fallidos", methods=["POST"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat")
 def reenviar_fallidos(conversacion_id):
     """Envía la plantilla de re-apertura 24h y reenvía los mensajes que fallaron por ventana 24h."""
     try:
@@ -149,7 +149,7 @@ def reenviar_fallidos(conversacion_id):
 
 @whatsapp_chat_bp.route("/no-leidos", methods=["GET"])
 @requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "coordinador")
+@requiere_permiso("whatsapp_chat")
 def obtener_no_leidos():
     """Obtiene el total de mensajes no leídos de todas las conversaciones"""
     try:

@@ -3,7 +3,7 @@ Rutas para gestión de planes
 """
 from flask import Blueprint, request, jsonify
 from modelos.plan_modelo import PlanModelo
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from utilidades.logger import obtener_logger
 
 planes_bp = Blueprint('planes', __name__)
@@ -44,8 +44,7 @@ def obtener_plan(plan_id):
 
 
 @planes_bp.route('', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('planes', 'planes:crear')
 def crear_plan():
     """Crea un nuevo plan"""
     try:
@@ -70,8 +69,7 @@ def crear_plan():
 
 
 @planes_bp.route('/<int:plan_id>', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('planes', 'planes:editar')
 def actualizar_plan(plan_id):
     """Actualiza un plan"""
     try:
@@ -91,8 +89,7 @@ def actualizar_plan(plan_id):
 
 
 @planes_bp.route('/<int:plan_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general')
+@requiere_permiso('planes', 'planes:eliminar')
 def eliminar_plan(plan_id):
     """Elimina (desactiva) un plan"""
     try:
@@ -109,8 +106,7 @@ def eliminar_plan(plan_id):
 
 
 @planes_bp.route('/<int:plan_id>/productos', methods=['POST'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('planes', 'planes:editar')
 def agregar_producto_plan(plan_id):
     """Agrega un producto a un plan"""
     try:
@@ -135,8 +131,7 @@ def agregar_producto_plan(plan_id):
 
 
 @planes_bp.route('/<int:plan_id>/productos/<int:producto_id>', methods=['DELETE'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('planes', 'planes:editar')
 def eliminar_producto_plan(plan_id, producto_id):
     """Elimina un producto de un plan"""
     try:
@@ -176,8 +171,7 @@ def obtener_servicios_plan(plan_id):
 
 
 @planes_bp.route('/<int:plan_id>/servicios', methods=['PUT'])
-@requiere_autenticacion
-@requiere_rol('administrador', 'gerente_general', 'coordinador')
+@requiere_permiso('planes', 'planes:editar')
 def reemplazar_servicios_plan(plan_id):
     """Reemplaza los servicios de un plan"""
     try:

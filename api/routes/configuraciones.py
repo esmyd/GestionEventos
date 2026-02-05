@@ -2,7 +2,7 @@
 Rutas para utilidades de configuracion (limpieza de datos de prueba)
 """
 from flask import Blueprint, jsonify, request
-from api.middleware import requiere_autenticacion, requiere_rol
+from api.middleware import requiere_autenticacion, requiere_permiso
 from modelos.base_datos import BaseDatos
 from utilidades.logger import obtener_logger
 from modelos.configuracion_general_modelo import ConfiguracionGeneralModelo
@@ -14,8 +14,7 @@ config_general = ConfiguracionGeneralModelo()
 
 
 @configuraciones_bp.route("/limpiar-datos-prueba", methods=["POST"])
-@requiere_autenticacion
-@requiere_rol("administrador_sistema")
+@requiere_permiso("config_datos")
 def limpiar_datos_prueba():
     """
     Elimina datos operativos de prueba:
@@ -51,8 +50,7 @@ def limpiar_datos_prueba():
 
 
 @configuraciones_bp.route("/nombre-plataforma", methods=["GET"])
-@requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("config_datos")
 def obtener_nombre_plataforma():
     try:
         configuracion = config_general.obtener_configuracion() or {}
@@ -65,8 +63,7 @@ def obtener_nombre_plataforma():
 
 
 @configuraciones_bp.route("/nombre-plataforma", methods=["PUT"])
-@requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("config_datos")
 def actualizar_nombre_plataforma():
     try:
         data = request.get_json() or {}
@@ -83,8 +80,7 @@ def actualizar_nombre_plataforma():
 
 
 @configuraciones_bp.route("/general", methods=["GET"])
-@requiere_autenticacion
-@requiere_rol("administrador", "gerente_general", "administrador_sistema")
+@requiere_permiso("config_datos")
 def obtener_configuracion_general():
     try:
         configuracion = config_general.obtener_configuracion() or {}
@@ -105,8 +101,7 @@ def obtener_configuracion_general_public():
 
 
 @configuraciones_bp.route("/general", methods=["PUT"])
-@requiere_autenticacion
-@requiere_rol("administrador", "gerente_general")
+@requiere_permiso("config_datos")
 def actualizar_configuracion_general():
     try:
         data = request.get_json() or {}

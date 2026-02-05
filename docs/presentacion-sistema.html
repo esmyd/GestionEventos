@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sistema de Gestión de Eventos | Siglo Tecnológico</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --secondary: #0f172a;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #334155;
+      --text-light: #64748b;
+      --bg: #ffffff;
+      --bg-light: #f8fafc;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .presentation {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100%;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.5s ease;
+      padding: 40px 50px 80px;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .slide.active { opacity: 1; transform: translateX(0); z-index: 10; visibility: visible; }
+    .slide.prev { transform: translateX(-100%); }
+
+    /* Slide 13 CTA: forzado por ID para que nada lo pise */
+    #slide-cta-final {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      visibility: visible !important;
+      background: linear-gradient(145deg, #2563eb 0%, #3b82f6 40%, #0ea5e9 100%) !important;
+    }
+    #slide-cta-final.active {
+      opacity: 1 !important;
+      transform: translateX(0) !important;
+      z-index: 10;
+      display: flex !important;
+      background: linear-gradient(145deg, #2563eb 0%, #3b82f6 40%, #0ea5e9 100%) !important;
+    }
+    #slide-cta-final .slide-content {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+      max-width: 900px !important;
+      width: 100% !important;
+      min-height: auto !important;
+      padding: 2rem !important;
+      position: relative !important;
+      z-index: 1 !important;
+      animation: none !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    #slide-cta-final h1,
+    #slide-cta-final .subtitle,
+    #slide-cta-final .cta-buttons,
+    #slide-cta-final .stats-grid { opacity: 1 !important; visibility: visible !important; }
+
+    .slide-content {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      text-align: center;
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .slide-content .two-cols,
+    .slide-content .features-grid,
+    .slide-content .flow-vertical { text-align: left; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Slide - Fondo alegre y con buen contraste */
+    .slide-hero {
+      background: linear-gradient(145deg, #2563eb 0%, #3b82f6 40%, #0ea5e9 100%);
+      color: #ffffff;
+      text-align: left;
+      position: relative;
+    }
+
+    .slide-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .slide-hero .slide-content { position: relative; z-index: 1; }
+
+    .slide-hero .slide-content {
+      max-width: 1400px;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    /* Slide CTA final: fondo forzado, una columna, contenido siempre visible */
+    .slide.slide-hero.slide-cta {
+      background: linear-gradient(145deg, #2563eb 0%, #3b82f6 40%, #0ea5e9 100%);
+    }
+
+    .slide.slide-hero.slide-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .slide-hero.slide-cta .slide-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      max-width: 900px;
+      width: 100%;
+      min-height: 60vh;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+      animation: none;
+      opacity: 1;
+    }
+
+    .slide-hero.slide-cta h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+    }
+
+    .slide-hero.slide-cta .subtitle {
+      margin-bottom: 1.5rem;
+      color: #ffffff;
+    }
+
+    .slide-hero.slide-cta .stats-grid { margin-top: 2rem; }
+
+    .hero-main {
+      text-align: center;
+    }
+
+    .slide-hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    .slide-hero .subtitle {
+      font-size: 1.3rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .slide-hero .cta {
+      display: inline-block;
+      padding: 16px 40px;
+      background: white;
+      color: var(--primary);
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: transform 0.3s;
+    }
+
+    .slide-hero .cta:hover { transform: translateY(-3px); }
+
+    /* Cuadro tipo website: header + menú ordenado + botones CTA */
+    .hero-side {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-width: 360px;
+    }
+
+    .hero-side-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hero-robot {
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .hero-side-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin: 0;
+      color: #ffffff;
+      text-align: left;
+    }
+
+    .hero-modules-list {
+      list-style: none;
+      padding: 12px 0;
+      margin: 0;
+      flex: 1;
+    }
+
+    .hero-modules-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 24px;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.95);
+      transition: background 0.2s;
+    }
+
+    .hero-modules-list li:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .hero-modules-list .mod-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-modules-list .mod-icon svg { width: 18px; height: 18px; }
+
+    .hero-side-buttons {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero-side-buttons a {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-align: center;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .hero-side-buttons a:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    .hero-btn-precios {
+      background: #ffffff;
+      color: #2563eb;
+      border: none;
+    }
+
+    .hero-btn-demo {
+      background: rgba(255,255,255,0.2);
+      color: #ffffff;
+      border: 2px solid rgba(255,255,255,0.8);
+    }
+
+    @media (max-width: 1024px) {
+      .slide-hero .slide-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .hero-side { max-width: 360px; margin: 0 auto; }
+      .slide-hero h1 { font-size: 2.5rem; }
+    }
+
+    @media (max-width: 600px) {
+      .slide-hero h1 { font-size: 2rem; }
+      .slide-hero .subtitle { font-size: 1.1rem; }
+      .hero-side { padding: 20px; }
+    }
+
+    /* Typography */
+    h2 {
+      font-size: 2.2rem;
+      color: var(--secondary);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 0.8rem;
+    }
+
+    .subtitle-section {
+      text-align: center;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    /* Feature Cards - más compactos para caber en pantalla */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 0.75rem;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.12);
+      border-color: var(--primary);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      color: white;
+    }
+
+    .feature-icon svg { width: 22px; height: 22px; }
+
+    .feature-card h4 {
+      font-size: 1.05rem;
+      color: var(--secondary);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    /* Flow Process - Vertical Steps */
+    .flow-vertical {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 1.5rem;
+    }
+
+    .flow-step {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border-left: 4px solid var(--primary);
+      position: relative;
+    }
+
+    .flow-step:nth-child(even) { border-left-color: var(--accent); }
+    .flow-step:nth-child(3n) { border-left-color: var(--success); }
+
+    .flow-step .step-num {
+      position: absolute;
+      top: -10px;
+      left: 16px;
+      background: var(--primary);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .flow-step:nth-child(even) .step-num { background: var(--accent); }
+    .flow-step:nth-child(3n) .step-num { background: var(--success); }
+
+    .flow-step h5 {
+      font-size: 1rem;
+      color: var(--secondary);
+      margin: 8px 0 6px;
+      font-weight: 600;
+    }
+
+    .flow-step p {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .flow-step .notification-badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    /* Modules Grid */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 1.5rem;
+    }
+
+    .module-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-align: center;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .module-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.12);
+      border-color: var(--primary);
+    }
+
+    .module-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      color: var(--primary);
+    }
+
+    .module-card h5 {
+      font-size: 0.95rem;
+      color: var(--secondary);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .module-card p {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    /* Roles Grid */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 1.5rem;
+    }
+
+    .role-card {
+      background: white;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      border-top: 4px solid var(--primary);
+    }
+
+    .role-card:nth-child(2) { border-top-color: var(--accent); }
+    .role-card:nth-child(3) { border-top-color: var(--success); }
+    .role-card:nth-child(4) { border-top-color: #8b5cf6; }
+
+    .role-card h4 {
+      font-size: 1.2rem;
+      color: var(--secondary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .role-card h4 svg {
+      width: 24px;
+      height: 24px;
+      color: var(--primary);
+    }
+
+    .role-card ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .role-card li {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .role-card li:last-child { border: none; }
+
+    .role-card li::before {
+      content: '✓';
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    /* Coming Soon */
+    .coming-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 1.5rem;
+    }
+
+    .coming-card {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px dashed #cbd5e1;
+      text-align: center;
+      opacity: 0.9;
+    }
+
+    .coming-card h5 {
+      font-size: 1rem;
+      color: var(--secondary);
+      margin-bottom: 6px;
+    }
+
+    .coming-card p {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin: 0 0 10px;
+    }
+
+    .coming-badge {
+      display: inline-block;
+      background: #e0e7ff;
+      color: var(--primary);
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    /* Stats - más compacto */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 1rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 14px 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      text-align: center;
+      border-top: 3px solid var(--primary);
+    }
+
+    .stat-number {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Security Cards */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 1.5rem;
+    }
+
+    .security-card {
+      background: white;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      border-top: 4px solid var(--primary);
+      transition: transform 0.3s;
+    }
+
+    .security-card:hover { transform: translateY(-4px); }
+    .security-card:nth-child(2) { border-top-color: var(--accent); }
+    .security-card:nth-child(3) { border-top-color: var(--success); }
+    .security-card:nth-child(4) { border-top-color: #8b5cf6; }
+
+    .security-card .icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      color: white;
+    }
+
+    .security-card h5 {
+      font-size: 1.1rem;
+      color: var(--secondary);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .security-card p {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    /* Controls */
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 30px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+      background: rgba(255,255,255,0.98);
+      padding: 10px 18px;
+      border-radius: 50px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .controls button {
+      width: 42px;
+      height: 42px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .controls button:hover { background: var(--primary-dark); transform: scale(1.05); }
+    .controls button:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+    .slide-counter {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--secondary);
+      padding: 0 8px;
+    }
+
+    /* Footer */
+    .presentation-footer {
+      position: fixed;
+      bottom: 24px;
+      left: 30px;
+      z-index: 100;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-light);
+    }
+
+    .presentation-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .presentation-footer a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    body:has(.slide-hero.active) .presentation-footer a {
+      color: rgba(255,255,255,0.9);
+    }
+
+    body:has(.slide-hero.active) .presentation-footer a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .presentation-footer { bottom: 18px; left: 20px; font-size: 0.8rem; }
+    }
+
+    /* Two Columns - más compacto */
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 800px) {
+      .two-cols { grid-template-columns: 1fr; gap: 16px; }
+    }
+
+    /* Responsive - solo padding y controles; el layout se mantiene centrado */
+    @media (max-width: 768px) {
+      .slide { padding: 30px 20px 80px; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+      .slide-hero h1 { font-size: 2.2rem; }
+      h2 { font-size: 1.7rem; }
+      .controls {
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        right: 16px;
+        padding: 8px 14px;
+      }
+      .controls button { width: 38px; height: 38px; }
+      .presentation-footer {
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        left: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .slide { padding: 24px 16px 80px; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="presentation">
+    <!-- Slide 1: Portada -->
+    <div class="slide slide-hero active">
+      <div class="slide-content">
+        <div class="hero-main">
+          <h1>Sistema de Gestión de Eventos</h1>
+          <p class="subtitle">La plataforma completa para transformar y escalar tu negocio</p>
+          <a href="#" class="cta" onclick="nextSlide(); return false;">Comenzar Presentación →</a>
+          <div class="stats-grid" style="margin-top:2.5rem;">
+            <div class="stat-card" style="background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border:none;">
+              <span class="stat-number" style="color:white;">+50%</span>
+              <span class="stat-label" style="color:rgba(255,255,255,0.9);">Más Eventos</span>
+            </div>
+            <div class="stat-card" style="background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border:none;">
+              <span class="stat-number" style="color:white;">-70%</span>
+              <span class="stat-label" style="color:rgba(255,255,255,0.9);">Tiempo Operativo</span>
+            </div>
+            <div class="stat-card" style="background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border:none;">
+              <span class="stat-number" style="color:white;">24/7</span>
+              <span class="stat-label" style="color:rgba(255,255,255,0.9);">Disponibilidad</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-side">
+          <div class="hero-side-header">
+            <svg class="hero-robot" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="60" cy="60" r="52" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+              <circle cx="45" cy="48" r="6" fill="#4f46e5"/>
+              <circle cx="75" cy="48" r="6" fill="#4f46e5"/>
+              <rect x="42" y="62" width="36" height="8" rx="2" fill="#64748b"/>
+              <path d="M55 78 L60 88 L65 78" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <rect x="28" y="38" width="12" height="20" rx="4" fill="rgba(255,255,255,0.9)"/>
+              <rect x="80" y="38" width="12" height="20" rx="4" fill="rgba(255,255,255,0.9)"/>
+              <circle cx="34" cy="44" r="2" fill="#10b981"/>
+              <circle cx="86" cy="44" r="2" fill="#10b981"/>
+            </svg>
+            <p class="hero-side-title">Módulos clave</p>
+          </div>
+          <ul class="hero-modules-list">
+            <li><span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></span>Eventos y cotizaciones</li>
+            <li><span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span>Clientes y pagos</li>
+            <li><span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>Reportes y dashboard</li>
+            <li><span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>WhatsApp y bot</li>
+            <li><span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>Notificaciones automáticas</li>
+            <li><span class="mod-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></span>Roles y permisos</li>
+          </ul>
+          <div class="hero-side-buttons">
+            <a href="https://pre.siglotecnologico.com/" target="_blank" rel="noopener" class="hero-btn-precios">PRECIOS</a>
+            <a href="https://gestioneventos.siglotecnologico.com/" target="_blank" rel="noopener" class="hero-btn-demo">DEMO</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 2: El Problema -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>¿Por qué necesitas este sistema?</h2>
+        <p class="subtitle-section">Problemas que resuelve desde el primer día</p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h4>Ahorro de Tiempo</h4>
+            <p>Automatiza cotizaciones, recordatorios y reportes. Reduce el tiempo de gestión en un 70%.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h4>Cero Errores</h4>
+            <p>Elimina errores en cotizaciones, pagos duplicados y olvidos de fechas importantes.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h4>Más Ingresos</h4>
+            <p>Gestiona más eventos con el mismo equipo. Escala sin contratar más personal.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <h4>Reportes Gerenciales</h4>
+            <p>Toma decisiones basadas en datos reales. Dashboard en tiempo real con métricas clave.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Flujo Completo -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Flujo Completo del Evento</h2>
+        <p class="subtitle-section">Desde el primer contacto hasta la calificación — con notificaciones automáticas en cada paso</p>
+        <div class="flow-vertical">
+          <div class="flow-step">
+            <span class="step-num">1</span>
+            <h5>Contacto / Lead</h5>
+            <p>Cliente contacta por WhatsApp, web o teléfono</p>
+            <span class="notification-badge">📱 Notifica al vendedor</span>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">2</span>
+            <h5>Cotización</h5>
+            <p>Genera cotización profesional en segundos con PDF</p>
+            <span class="notification-badge">📧 Email + WhatsApp al cliente</span>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">3</span>
+            <h5>Confirmación</h5>
+            <p>Cliente confirma, se bloquea fecha y salón</p>
+            <span class="notification-badge">✅ Notifica a coordinadores</span>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">4</span>
+            <h5>Reserva / Anticipo</h5>
+            <p>Registro del pago inicial, genera contrato</p>
+            <span class="notification-badge">💰 Notifica a administración</span>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">5</span>
+            <h5>Planificación</h5>
+            <p>Asignación de coordinador, menú, detalles</p>
+            <span class="notification-badge">📋 Checklist automático</span>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">6</span>
+            <h5>Recordatorios</h5>
+            <p>Alertas automáticas de pagos pendientes</p>
+            <span class="notification-badge">⏰ 3, 7 y 15 días antes</span>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">7</span>
+            <h5>Día del Evento</h5>
+            <p>Control de inventario, checklist de ejecución</p>
+            <span class="notification-badge">🎉 Coordinador notificado</span>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">8</span>
+            <h5>Cierre</h5>
+            <p>Pago final, documentos, fotos</p>
+            <span class="notification-badge">📄 Factura automática</span>
+          </div>
+          <div class="flow-step" style="border-left-color:var(--warning);">
+            <span class="step-num" style="background:var(--warning);">9</span>
+            <h5>Calificación</h5>
+            <p>Cliente califica el servicio (1-5 estrellas)</p>
+            <span class="notification-badge">⭐ Reporte de satisfacción</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Módulos Principales -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Módulos del Sistema</h2>
+        <p class="subtitle-section">Todo integrado en una sola plataforma</p>
+        <div class="modules-grid">
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <h5>Clientes</h5>
+            <p>Historial, preferencias, contacto</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            <h5>Eventos</h5>
+            <p>Crear, cotizar, gestionar</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <h5>Pagos</h5>
+            <p>Cuotas, abonos, recordatorios</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            <h5>Inventario</h5>
+            <p>Stock, alertas, disponibilidad</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+            <h5>WhatsApp</h5>
+            <p>Bot, chat humano, masivos</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <h5>Reportes</h5>
+            <p>Ventas, eventos, Excel/PDF</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            <h5>Portal Cliente</h5>
+            <p>Acceso web para clientes</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+            <h5>Notificaciones</h5>
+            <p>Email, WhatsApp, alertas</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <h5>Calificaciones</h5>
+            <p>Valoración del cliente</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <h5>Calendario</h5>
+            <p>Agenda, disponibilidad</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            <h5>Salones</h5>
+            <p>Lugares, capacidad</p>
+          </div>
+          <div class="module-card">
+            <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <h5>Carga Masiva</h5>
+            <p>Importar desde Excel</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Roles y Perfiles -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Roles y Perfiles de Usuario</h2>
+        <p class="subtitle-section">Cada usuario tiene acceso solo a lo que necesita</p>
+        <div class="roles-grid">
+          <div class="role-card">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Administrador
+            </h4>
+            <ul>
+              <li>Acceso total al sistema</li>
+              <li>Configuración general</li>
+              <li>Gestión de usuarios y roles</li>
+              <li>Reportes gerenciales</li>
+              <li>Métricas de rendimiento</li>
+            </ul>
+          </div>
+          <div class="role-card">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              Coordinador
+            </h4>
+            <ul>
+              <li>Gestión de eventos asignados</li>
+              <li>Checklist de ejecución</li>
+              <li>Control de inventario</li>
+              <li>Comunicación con clientes</li>
+              <li>Reportes de eventos</li>
+            </ul>
+          </div>
+          <div class="role-card">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Vendedor
+            </h4>
+            <ul>
+              <li>Crear cotizaciones</li>
+              <li>Gestión de clientes</li>
+              <li>Seguimiento de leads</li>
+              <li>Ver calendario de eventos</li>
+              <li>Registro de pagos</li>
+            </ul>
+          </div>
+          <div class="role-card">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+              Cliente (Portal)
+            </h4>
+            <ul>
+              <li>Ver su evento y detalles</li>
+              <li>Consultar pagos pendientes</li>
+              <li>Descargar documentos</li>
+              <li>Confirmar asistencias</li>
+              <li>Calificar el servicio</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 6: Reportes Gerenciales -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Reportes Gerenciales</h2>
+        <p class="subtitle-section">Información en tiempo real para tomar mejores decisiones</p>
+        <div class="two-cols">
+          <div>
+            <div class="features-grid" style="grid-template-columns:1fr;">
+              <div class="feature-card">
+                <h4>📊 Dashboard en Tiempo Real</h4>
+                <p>Ventas del mes, eventos próximos, pagos pendientes, ocupación de salones.</p>
+              </div>
+              <div class="feature-card">
+                <h4>💰 Reporte de Ventas</h4>
+                <p>Por período, vendedor, tipo de evento. Comparativas mes a mes.</p>
+              </div>
+              <div class="feature-card">
+                <h4>📅 Reporte de Eventos</h4>
+                <p>Confirmados, pendientes, realizados. Filtros por fecha, salón, coordinador.</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="features-grid" style="grid-template-columns:1fr;">
+              <div class="feature-card">
+                <h4>💳 Reporte de Pagos</h4>
+                <p>Cobrado vs pendiente. Alertas de morosidad. Proyección de ingresos.</p>
+              </div>
+              <div class="feature-card">
+                <h4>⭐ Reporte de Calificaciones</h4>
+                <p>Satisfacción del cliente. Promedio por coordinador. Áreas de mejora.</p>
+              </div>
+              <div class="feature-card">
+                <h4>📦 Reporte de Inventario</h4>
+                <p>Stock actual, productos más usados, alertas de reposición.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stats-grid" style="margin-top:2rem;">
+          <div class="stat-card">
+            <span class="stat-number">Excel</span>
+            <span class="stat-label">Exportación</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number">PDF</span>
+            <span class="stat-label">Impresión</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number">24/7</span>
+            <span class="stat-label">Acceso</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 7: Seguridad -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Seguridad y Disponibilidad</h2>
+        <p class="subtitle-section">Tu información protegida y disponible siempre</p>
+        <div class="security-grid">
+          <div class="security-card">
+            <div class="icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h5>Encriptación SSL</h5>
+            <p>Todos los datos viajan encriptados. Mismo nivel de seguridad que bancos.</p>
+          </div>
+          <div class="security-card">
+            <div class="icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            </div>
+            <h5>Backups Automáticos</h5>
+            <p>Respaldo diario de toda tu información. Recuperación ante emergencias.</p>
+          </div>
+          <div class="security-card">
+            <div class="icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h5>99.9% Uptime</h5>
+            <p>Disponible 24/7/365. Accede desde cualquier dispositivo.</p>
+          </div>
+          <div class="security-card">
+            <div class="icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <h5>Control de Acceso</h5>
+            <p>Roles y permisos personalizados. Cada usuario ve solo lo que necesita.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 8: Automatización con Bot y Notificaciones -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Automatización Inteligente</h2>
+        <p class="subtitle-section">El bot trabaja 24/7 — ahorra tiempo y dinero en personal</p>
+        <div class="two-cols">
+          <div>
+            <h3>🤖 Bot de WhatsApp</h3>
+            <div class="features-grid" style="grid-template-columns:1fr;">
+              <div class="feature-card">
+                <h4>Respuestas Automáticas</h4>
+                <p>Atiende consultas frecuentes sin intervención humana: horarios, precios, disponibilidad.</p>
+              </div>
+              <div class="feature-card">
+                <h4>Menú Interactivo</h4>
+                <p>El cliente elige opciones y el bot responde al instante. Deriva a humano si es necesario.</p>
+              </div>
+              <div class="feature-card">
+                <h4>Confirmaciones Automáticas</h4>
+                <p>Envía confirmaciones de citas, recordatorios de pagos, sin que tengas que hacerlo manualmente.</p>
+              </div>
+              <div class="feature-card">
+                <h4>Recopilación de Datos</h4>
+                <p>El bot pregunta nombre, fecha del evento, número de personas y registra todo automáticamente.</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3>📬 Notificaciones Automáticas</h3>
+            <div class="features-grid" style="grid-template-columns:1fr;">
+              <div class="feature-card">
+                <h4>Recordatorios de Pago</h4>
+                <p>Envía alertas 15, 7 y 3 días antes del vencimiento. Por email y WhatsApp.</p>
+              </div>
+              <div class="feature-card">
+                <h4>Alertas de Eventos</h4>
+                <p>Notifica al coordinador 7 días antes, 3 días antes y el día del evento.</p>
+              </div>
+              <div class="feature-card">
+                <h4>Notificaciones al Cliente</h4>
+                <p>Confirmación de pago recibido, recordatorio del evento, solicitud de calificación.</p>
+              </div>
+              <div class="feature-card">
+                <h4>Alertas de Inventario</h4>
+                <p>Notifica cuando un producto está por agotarse o no hay stock suficiente.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;padding:24px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:12px;border:2px solid var(--success);text-align:center;">
+          <h3 style="color:#065f46;margin-bottom:8px;">💰 Ahorro Real: Equivale a 1 persona trabajando 8 hrs/día</h3>
+          <p style="margin:0;color:#047857;font-size:1.05rem;">El bot + notificaciones automáticas reemplaza tareas que antes requerían una persona dedicada.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 9: Acceso Multi-Dispositivo -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Acceso Desde Cualquier Dispositivo</h2>
+        <p class="subtitle-section">100% Responsive — úsalo donde quieras, cuando quieras</p>
+        <div class="two-cols">
+          <div>
+            <div class="features-grid" style="grid-template-columns:1fr;">
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <h4>💻 Computadora</h4>
+                <p>Acceso completo desde cualquier navegador: Chrome, Firefox, Safari, Edge. Windows, Mac o Linux.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </div>
+                <h4>📱 Tablet y Celular</h4>
+                <p>Interfaz adaptada para pantallas táctiles. Gestiona eventos desde tu celular en cualquier momento.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                </div>
+                <h4>🌐 Sin Instalación</h4>
+                <p>No necesitas instalar nada. Solo abre tu navegador e inicia sesión. Funciona con internet.</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="features-grid" style="grid-template-columns:1fr;">
+              <div class="feature-card" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-left:4px solid var(--accent);">
+                <h4>✅ Características</h4>
+                <ul style="list-style:none;padding:0;margin:0;font-size:0.9rem;">
+                  <li style="padding:4px 0;border-bottom:1px solid #e2e8f0;">📍 Acceso desde cualquier ubicación</li>
+                  <li style="padding:4px 0;border-bottom:1px solid #e2e8f0;">🔄 Sincronización en tiempo real</li>
+                  <li style="padding:4px 0;border-bottom:1px solid #e2e8f0;">👥 Múltiples usuarios simultáneos</li>
+                  <li style="padding:4px 0;border-bottom:1px solid #e2e8f0;">🔒 Conexión segura HTTPS</li>
+                  <li style="padding:4px 0;border-bottom:1px solid #e2e8f0;">⚡ Carga rápida optimizada</li>
+                  <li style="padding:4px 0;">🎨 Diseño moderno y fácil de usar</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><span class="stat-number">100%</span><span class="stat-label">Web</span></div>
+          <div class="stat-card"><span class="stat-number">24/7</span><span class="stat-label">Disponible</span></div>
+          <div class="stat-card"><span class="stat-number">0</span><span class="stat-label">Instalación</span></div>
+          <div class="stat-card"><span class="stat-number">∞</span><span class="stat-label">Usuarios</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 10: Implementación Completa -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Implementación Completa</h2>
+        <p class="subtitle-section">Todo lo que incluye para poner tu sistema en producción</p>
+        <div class="two-cols">
+          <div>
+            <div class="role-card" style="margin-bottom:16px;">
+              <h4>🚀 Puesta en Producción</h4>
+              <ul>
+                <li>Hosting profesional (servidor dedicado)</li>
+                <li>Dominio personalizado (tuempresa.com)</li>
+                <li>Certificado SSL (conexión segura)</li>
+                <li>Configuración de DNS</li>
+                <li>Plantilla personalizada con tu logo</li>
+              </ul>
+            </div>
+            <div class="role-card">
+              <h4>⚙️ Configuración Inicial</h4>
+              <ul>
+                <li>Carga de catálogo de productos</li>
+                <li>Configuración de planes y precios</li>
+                <li>Creación de usuarios y roles</li>
+                <li>Configuración de salones</li>
+                <li>Plantillas de email y WhatsApp</li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <div class="role-card" style="margin-bottom:16px;">
+              <h4>📚 Capacitación</h4>
+              <ul>
+                <li>2 sesiones de capacitación en vivo</li>
+                <li>Manual de usuario digital</li>
+                <li>Videos tutoriales</li>
+                <li>Soporte por WhatsApp</li>
+                <li>Resolución de dudas inicial</li>
+              </ul>
+            </div>
+            <div class="role-card">
+              <h4>🔧 Soporte Técnico</h4>
+              <ul>
+                <li>Mantenimiento del servidor</li>
+                <li>Backups automáticos diarios</li>
+                <li>Actualizaciones de seguridad</li>
+                <li>Soporte técnico por incidencias</li>
+                <li>Monitoreo de disponibilidad</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;padding:20px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;border:2px solid var(--warning);text-align:center;">
+          <h3 style="color:#92400e;margin-bottom:8px;">🎯 Listo para usar en 5-10 días hábiles</h3>
+          <p style="margin:0;color:#78350f;">Desde la confirmación del proyecto hasta que tu equipo esté operando el sistema.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 10: Módulos en Desarrollo -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>Módulos en Desarrollo</h2>
+        <p class="subtitle-section">Innovación continua — el sistema evoluciona contigo</p>
+        <div class="coming-grid">
+          <div class="coming-card">
+            <h5>📱 App Móvil Nativa</h5>
+            <p>Aplicación iOS y Android para gestión completa desde el celular</p>
+            <span class="coming-badge">Q2 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>🧾 Facturación Electrónica</h5>
+            <p>Integración con SRI (Ecuador), SAT (México), DIAN (Colombia), SUNAT (Perú)</p>
+            <span class="coming-badge">Q3 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>💵 Integración Contable</h5>
+            <p>Exportar a Mónica, SAP, QuickBooks, Contpaq, Siigo</p>
+            <span class="coming-badge">Q3 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>🌐 Reservas en Línea</h5>
+            <p>Widget para tu web: clientes reservan y pagan online directamente</p>
+            <span class="coming-badge">Q2 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>📍 Geolocalización</h5>
+            <p>Tracking GPS de coordinadores, rutas optimizadas de entrega</p>
+            <span class="coming-badge">Q4 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>🤖 IA Predictiva</h5>
+            <p>Predicción de demanda, precios dinámicos, recomendaciones personalizadas</p>
+            <span class="coming-badge">Q4 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>📊 Business Intelligence</h5>
+            <p>Dashboards avanzados, análisis predictivo, métricas de rentabilidad por evento</p>
+            <span class="coming-badge">Q3 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>🔗 Integraciones API</h5>
+            <p>Conecta con Stripe, PayPal, Mercado Pago, Google Calendar, Zoom</p>
+            <span class="coming-badge">Q2 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>📸 Galería de Eventos</h5>
+            <p>Sube fotos del evento, comparte con clientes, genera álbumes automáticos</p>
+            <span class="coming-badge">Q3 2026</span>
+          </div>
+          <div class="coming-card">
+            <h5>💬 Chat en Vivo</h5>
+            <p>Chat integrado en el portal del cliente para soporte instantáneo</p>
+            <span class="coming-badge">Q4 2026</span>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:2rem;padding:24px;background:#f0fdf4;border-radius:12px;border:2px solid var(--success);">
+          <h3 style="color:var(--success);margin-bottom:8px;">🎁 Adicional: $90/mes — Acceso a Todo lo Nuevo</h3>
+          <p style="margin:0;color:var(--text);font-size:1.05rem;">Todos estos módulos incluidos sin costo adicional cuando estén disponibles. Actualizaciones ilimitadas.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 11: Valor de la Inversión -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>El Valor de Esta Inversión</h2>
+        <p class="subtitle-section">No es un gasto — es una inversión que genera retorno</p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <h4>ROI en 3 Meses</h4>
+            <p>Recupera tu inversión rápidamente. Gestiona más eventos con el mismo equipo.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20m0-20a8 8 0 018 8m-8-8a8 8 0 00-8 8m8 12a8 8 0 008-8m-8 8a8 8 0 01-8-8"/></svg>
+            </div>
+            <h4>Escalabilidad</h4>
+            <p>Crece sin límites. El sistema se adapta a tu crecimiento sin costos adicionales.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <h4>Ventaja Competitiva</h4>
+            <p>Destaca frente a la competencia con una experiencia profesional y moderna.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h4>Más Tiempo para Ti</h4>
+            <p>Automatiza lo operativo. Enfócate en hacer crecer tu negocio y tu familia.</p>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:2rem;">
+          <h3 style="color:var(--primary);margin-bottom:0.5rem;">Cada evento gestionado eficientemente es dinero que ganas</h3>
+          <p style="font-size:1.1rem;color:var(--text);">Tiempo ahorrado = más eventos = más ingresos.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 13: CTA Final - misma estructura que slide 12 (solo .slide + .slide-content) -->
+    <div class="slide">
+      <div class="slide-content">
+        <h2>¿Listo para Transformar tu Negocio?</h2>
+        <p class="subtitle-section">Comienza hoy y ve resultados desde el primer día</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:1.5rem 0;">
+          <a href="https://api.whatsapp.com/send?phone=593994281769&text=%C2%A1Hola!%20Vi%20la%20presentaci%C3%B3n%20y%20quiero%20adquirir%20el%20Sistema%20de%20Gesti%C3%B3n%20de%20Eventos." style="display:inline-block;padding:14px 28px;background:var(--primary);color:#fff;border-radius:50px;font-weight:700;text-decoration:none;" target="_blank" rel="noopener">Quiero el Sistema →</a>
+          <a href="https://pre.siglotecnologico.com/" style="display:inline-block;padding:14px 28px;background:transparent;color:var(--primary);border:2px solid var(--primary);border-radius:50px;font-weight:700;text-decoration:none;" target="_blank" rel="noopener">Ver Precios</a>
+          <a href="https://gestioneventos.siglotecnologico.com/" style="display:inline-block;padding:14px 28px;background:var(--accent);color:#fff;border-radius:50px;font-weight:700;text-decoration:none;" target="_blank" rel="noopener">Ver Demo</a>
+        </div>
+        <div class="stats-grid" style="margin-top:2rem;">
+          <div class="stat-card"><span class="stat-number">+50%</span><span class="stat-label">Capacidad</span></div>
+          <div class="stat-card"><span class="stat-number">-70%</span><span class="stat-label">Tiempo</span></div>
+          <div class="stat-card"><span class="stat-number">100%</span><span class="stat-label">Control</span></div>
+          <div class="stat-card"><span class="stat-number">⭐⭐⭐⭐⭐</span><span class="stat-label">Satisfacción</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controles -->
+  <footer class="presentation-footer">
+    <a href="https://sigloetecnologico.com" target="_blank" rel="noopener">sigloetecnologico.com</a>
+  </footer>
+
+  <div class="controls">
+    <button id="prevBtn" onclick="prevSlide()">←</button>
+    <div class="slide-counter">
+      <span id="currentSlide">1</span> / <span id="totalSlides">13</span>
+    </div>
+    <button id="nextBtn" onclick="nextSlide()">→</button>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const currentSlideSpan = document.getElementById('currentSlide');
+    document.getElementById('totalSlides').textContent = totalSlides;
+
+    function updateSlide() {
+      slides.forEach((slide, index) => {
+        slide.classList.remove('active', 'prev');
+        if (index === currentSlide) {
+          slide.classList.add('active');
+          if (slide.id === 'slide-cta-final') {
+            slide.style.display = 'flex';
+            slide.style.visibility = 'visible';
+            slide.style.opacity = '1';
+            slide.style.transform = 'translateX(0)';
+            slide.style.background = 'linear-gradient(145deg, #2563eb 0%, #3b82f6 40%, #0ea5e9 100%)';
+          }
+        } else {
+          if (slide.id === 'slide-cta-final') {
+            slide.style.display = '';
+            slide.style.visibility = '';
+            slide.style.opacity = '';
+            slide.style.transform = '';
+            slide.style.background = '';
+          }
+          if (index < currentSlide) slide.classList.add('prev');
+        }
+      });
+      currentSlideSpan.textContent = currentSlide + 1;
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) { currentSlide++; updateSlide(); }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) { currentSlide--; updateSlide(); }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>

@@ -5,11 +5,13 @@ Incluye control de acceso a módulos según plan de suscripción
 from functools import wraps
 from flask import request, jsonify
 from modelos.usuario_modelo import UsuarioModelo
+from modelos.permiso_modelo import PermisoModelo
 from api.jwt_utils import verificar_token, extraer_token_del_header
 from utilidades.logger import obtener_logger
 
 logger = obtener_logger()
 usuario_modelo = UsuarioModelo()
+permiso_modelo = PermisoModelo()
 
 # Cache para módulos (evitar consultas repetidas)
 _cache_modulos = {}
@@ -112,6 +114,53 @@ def requiere_rol(*roles_permitidos):
 def obtener_usuario_actual():
     """Helper para obtener el usuario actual del request"""
     return getattr(request, 'usuario_actual', None)
+
+
+def _cargar_permisos_usuario(usuario_id, rol):
+    """Permisos efectivos: del usuario si tiene asignados; si no, del rol (herencia)."""
+    return permiso_modelo.obtener_permisos_efectivos(usuario_id, rol)
+
+
+# Rol que siempre tiene acceso cuando el rol no tiene permisos definidos en BD (red de seguridad).
+ROL_FALLBACK_SIN_PERMISOS_BD = 'administrador_sistema'
+
+
+def requiere_permiso(*codigos_permiso):
+    """
+    Autorización dinámica desde BD (rol_permisos / usuario_permisos).
+    Permite acceso si el usuario tiene al menos uno de los códigos en sus permisos.
+    Si el rol no tiene permisos definidos en BD, solo se permite al rol administrador_sistema.
+    No se queman roles en código: quién puede acceder se define en Roles y Permisos.
+    Uso: @requiere_permiso('clientes')  o  @requiere_permiso('clientes', 'clientes:crear')
+    """
+    if not codigos_permiso:
+        raise ValueError("requiere_permiso: al menos un código de permiso/módulo")
+
+    def decorator(f):
+        @wraps(f)
+        @requiere_autenticacion
+        def decorated_function(*args, **kwargs):
+            if not hasattr(request, 'usuario_actual'):
+                return jsonify({'error': 'No autenticado'}), 401
+
+            usuario = request.usuario_actual
+            usuario_id = usuario.get('id')
+            rol = usuario.get('rol')
+            permisos = _cargar_permisos_usuario(usuario_id, rol)
+
+            if permisos is not None and len(permisos) > 0:
+                # Permisos definidos en BD: permitir si tiene al menos uno de los códigos
+                if any(cod in permisos for cod in codigos_permiso):
+                    return f(*args, **kwargs)
+                return jsonify({'error': 'Permisos insuficientes'}), 403
+
+            # Sin permisos en BD: solo permitir administrador_sistema (red de seguridad)
+            if rol == ROL_FALLBACK_SIN_PERMISOS_BD:
+                return f(*args, **kwargs)
+            return jsonify({'error': 'Permisos insuficientes'}), 403
+
+        return decorated_function
+    return decorator
 
 
 def requiere_modulo(codigo_modulo):

@@ -116,6 +116,23 @@ const EventoDetalle = () => {
   const puedeEliminarEvento = hasPermission(usuario, PERMISSIONS.EVENTOS_ELIMINAR, [ROLES.ADMIN, ROLES.MANAGER]);
   const puedeFinalizarEventoPermiso = hasPermission(usuario, PERMISSIONS.EVENTOS_FINALIZAR, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
   const puedeAsignarCoordinador = hasPermission(usuario, PERMISSIONS.EVENTOS_ASIGNAR_COORDINADOR, [ROLES.ADMIN, ROLES.MANAGER]);
+  const puedeSolicitarEvaluacion = hasPermission(usuario, PERMISSIONS.EVENTOS_SOLICITAR_EVALUACION, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeCalificarManual = hasPermission(usuario, PERMISSIONS.EVENTOS_CALIFICAR_MANUAL, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeVerInformacion = hasPermission(usuario, PERMISSIONS.EVENTOS_VER_INFORMACION, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]);
+  const puedeVerOpcionesCliente = hasPermission(usuario, PERMISSIONS.EVENTOS_VER_OPCIONES_CLIENTE, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeVerRecordatorios = hasPermission(usuario, PERMISSIONS.EVENTOS_VER_RECORDATORIOS, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]);
+  const puedeVerFinanciero = hasPermission(usuario, PERMISSIONS.EVENTOS_VER_FINANCIERO, [ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]);
+  const tabsDetalleConfig = useMemo(() => [
+    { id: 'informacion', label: 'Información', icon: Calendar, puedeVer: puedeVerInformacion },
+    { id: 'opciones', label: 'Opciones del Cliente', icon: ListChecks, puedeVer: puedeVerOpcionesCliente },
+    { id: 'recordatorios', label: 'Recordatorios', icon: Bell, puedeVer: puedeVerRecordatorios },
+    { id: 'financiero', label: 'Financiero', icon: DollarSign, puedeVer: puedeVerFinanciero },
+  ], [puedeVerInformacion, puedeVerOpcionesCliente, puedeVerRecordatorios, puedeVerFinanciero]);
+  const tabsDetalleVisibles = useMemo(() => tabsDetalleConfig.filter((t) => t.puedeVer), [tabsDetalleConfig]);
+  useEffect(() => {
+    const ids = tabsDetalleVisibles.map((t) => t.id);
+    if (ids.length && !ids.includes(tabDetalleActivo)) setTabDetalleActivo(ids[0]);
+  }, [tabsDetalleVisibles, tabDetalleActivo]);
   const puedeNotificarPago = Boolean(evento?.email || evento?.telefono);
   const puedeRegistrarPago = (usuario?.rol === ROLES.CLIENT || hasPermission(usuario, PERMISSIONS.PAGOS_REGISTRAR, [ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]));
   const puedeReembolsar = hasPermission(usuario, PERMISSIONS.PAGOS_REEMBOLSAR, [ROLES.ADMIN, ROLES.MANAGER]);
@@ -1087,7 +1104,7 @@ const EventoDetalle = () => {
                 Finalizar evento
               </button>
             )}
-            {evento?.estado === 'completado' && (
+            {evento?.estado === 'completado' && puedeSolicitarEvaluacion && (
               <button
                 type="button"
                 onClick={enviarNotificacionEvaluacion}
@@ -1111,7 +1128,7 @@ const EventoDetalle = () => {
                 {enviandoEvaluacion ? 'Enviando...' : '⭐ Solicitar Evaluación'}
               </button>
             )}
-            {evento.estado === 'completado' && (
+            {evento?.estado === 'completado' && puedeCalificarManual && (
               <button
                 type="button"
                 onClick={abrirModalCalificacionManual}
@@ -1175,7 +1192,8 @@ const EventoDetalle = () => {
         </div>
       )}
 
-      {/* Tabs para detalles del evento */}
+      {/* Tabs para detalles del evento (visibles según permisos) */}
+      {tabsDetalleVisibles.length > 0 && (
       <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
         <div
           style={{
@@ -1186,12 +1204,7 @@ const EventoDetalle = () => {
             flexWrap: 'wrap',
           }}
         >
-          {[
-            { id: 'informacion', label: 'Información', icon: Calendar },
-            { id: 'opciones', label: 'Opciones del Cliente', icon: ListChecks },
-            { id: 'recordatorios', label: 'Recordatorios', icon: Bell },
-            { id: 'financiero', label: 'Financiero', icon: DollarSign },
-          ].map((tab) => {
+          {tabsDetalleVisibles.map((tab) => {
             const IconTab = tab.icon;
             const activo = tabDetalleActivo === tab.id;
             return (
@@ -1940,6 +1953,7 @@ const EventoDetalle = () => {
         )}
 
       </div>
+      )}
 
       {/* Plan, Servicios y Observaciones - solo en tab Información */}
       {tabDetalleActivo === 'informacion' && (
@@ -2427,6 +2441,7 @@ const EventoDetalle = () => {
           </div>
         )}
       </div>
+      
 
       {/* Información de Finalización - Solo visible si el evento está completado */}
       {evento.estado === 'completado' && (

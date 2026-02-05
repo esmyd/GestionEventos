@@ -120,7 +120,7 @@ function AppRoutes() {
         <Route
           path="calendario"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.CALENDARIO} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.CALENDARIO} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Calendario />
             </RoleProtectedRoute>
           }
@@ -150,7 +150,7 @@ function AppRoutes() {
         <Route
           path="eventos"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.EVENTOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.EVENTOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Eventos />
             </RoleProtectedRoute>
           }
@@ -158,15 +158,15 @@ function AppRoutes() {
         <Route
           path="eventos/nuevo"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.EVENTOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+<RoleProtectedRoute moduleKey={MODULES.EVENTOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <EventoNuevo />
             </RoleProtectedRoute>
           }
-        />
-        <Route
+          />
+          <Route
           path="eventos/editar/:id"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.EVENTOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.EVENTOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <EventoNuevo />
             </RoleProtectedRoute>
           }
@@ -174,7 +174,7 @@ function AppRoutes() {
         <Route
           path="eventos/:id"
           element={
-            <RoleProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
+            <RoleProtectedRoute allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR, ROLES.CLIENT]}>
               <EventoDetalle />
             </RoleProtectedRoute>
           }
@@ -184,7 +184,7 @@ function AppRoutes() {
         <Route
           path="clientes"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.CLIENTES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.CLIENTES} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Clientes />
             </RoleProtectedRoute>
           }
@@ -194,7 +194,7 @@ function AppRoutes() {
         <Route
           path="productos"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.PRODUCTOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.PRODUCTOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Productos />
             </RoleProtectedRoute>
           }
@@ -204,7 +204,7 @@ function AppRoutes() {
         <Route
           path="categorias"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.CATEGORIAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.CATEGORIAS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Categorias />
             </RoleProtectedRoute>
           }
@@ -214,7 +214,7 @@ function AppRoutes() {
         <Route
           path="planes"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.PLANES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.PLANES} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Planes />
             </RoleProtectedRoute>
           }
@@ -224,7 +224,7 @@ function AppRoutes() {
         <Route
           path="pagos"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.PAGOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.PAGOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Pagos />
             </RoleProtectedRoute>
           }
@@ -232,7 +232,7 @@ function AppRoutes() {
         <Route
           path="pagos/evento/:id"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.PAGOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.PAGOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <PagosEvento />
             </RoleProtectedRoute>
           }
@@ -242,7 +242,7 @@ function AppRoutes() {
         <Route
           path="cuentas"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.CUENTAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.CUENTAS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <Cuentas />
             </RoleProtectedRoute>
           }
@@ -252,7 +252,7 @@ function AppRoutes() {
         <Route
           path="inventario"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.INVENTARIO} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.INVENTARIO} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Inventario />
             </RoleProtectedRoute>
           }
@@ -262,7 +262,7 @@ function AppRoutes() {
         <Route
           path="salones"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.SALONES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
+            <RoleProtectedRoute moduleKey={MODULES.SALONES} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <Salones />
             </RoleProtectedRoute>
           }
@@ -282,7 +282,7 @@ function AppRoutes() {
         <Route
           path="notificaciones-nativas"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.NOTIFICACIONES_NATIVAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.NOTIFICACIONES_NATIVAS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <NotificacionesNativas />
             </RoleProtectedRoute>
           }
@@ -290,7 +290,7 @@ function AppRoutes() {
         <Route
           path="notificaciones-nativas/:tipo"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.NOTIFICACIONES_NATIVAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.NOTIFICACIONES_NATIVAS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <NotificacionNativaEditar />
             </RoleProtectedRoute>
           }
@@ -298,7 +298,7 @@ function AppRoutes() {
         <Route
           path="configuraciones/integraciones-whatsapp"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.INTEGRACIONES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.INTEGRACIONES} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <IntegracionesWhatsApp />
             </RoleProtectedRoute>
           }
@@ -306,7 +306,7 @@ function AppRoutes() {
         <Route
           path="configuraciones/whatsapp-chat"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_CHAT} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_CHAT} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER, ROLES.COORDINATOR]}>
               <WhatsAppChat />
             </RoleProtectedRoute>
           }
@@ -314,7 +314,7 @@ function AppRoutes() {
         <Route
           path="configuraciones/whatsapp-panel"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_METRICAS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_METRICAS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <WhatsAppMetricas />
             </RoleProtectedRoute>
           }
@@ -322,7 +322,7 @@ function AppRoutes() {
         <Route
           path="configuraciones/whatsapp-plantillas"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_TEMPLATES} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.WHATSAPP_TEMPLATES} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <WhatsAppPlantillas />
             </RoleProtectedRoute>
           }
@@ -330,7 +330,7 @@ function AppRoutes() {
         <Route
           path="configuraciones/carga-masiva"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.CARGA_MASIVA} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.CARGA_MASIVA} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <CargaMasiva />
             </RoleProtectedRoute>
           }
@@ -349,7 +349,7 @@ function AppRoutes() {
         <Route
           path="usuarios"
           element={
-            <RoleProtectedRoute moduleKey={MODULES.USUARIOS} allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
+            <RoleProtectedRoute moduleKey={MODULES.USUARIOS} allowedRoles={[ROLES.ADMIN_SISTEMA, ROLES.ADMIN, ROLES.MANAGER]}>
               <Usuarios />
             </RoleProtectedRoute>
           }
