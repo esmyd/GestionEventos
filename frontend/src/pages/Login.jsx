@@ -424,7 +424,7 @@ const Login = () => {
           </form>
 
           {/* Usuarios de prueba */}
-          <div style={{ 
+          {/*<div style={{ 
             marginTop: '2rem', 
             padding: '1.25rem',
             backgroundColor: '#f9fafb',
@@ -494,7 +494,7 @@ const Login = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div>*/}
 
           <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
             <Link

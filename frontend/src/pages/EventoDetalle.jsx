@@ -1036,15 +1036,16 @@ const EventoDetalle = () => {
             }}
           >
             <ArrowLeft size={isMobile ? 14 : 16} />
-            Volver
+            {/** icono atraves del arrow left */}
+          
           </button>
         )}
         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
+            <p style={{ color: '#6b7280', fontSize: isMobile ? '0.875rem' : '1rem' }}>Detalle del evento</p>
             <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
               {evento.nombre_evento || 'Evento'}
             </h1>
-            <p style={{ color: '#6b7280', fontSize: isMobile ? '0.875rem' : '1rem' }}>Detalle del evento</p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'stretch' : 'flex-end', gap: '1rem', width: isMobile ? '100%' : 'auto' }}>
             {/* Información Financiera - arriba a la derecha */}
@@ -1058,13 +1059,8 @@ const EventoDetalle = () => {
                 minWidth: isMobile ? 'auto' : '260px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '2px solid #e2e8f0' }}>
-                <div style={{ width: 40, height: 40, borderRadius: '0.5rem', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <DollarSign size={20} color="white" />
-                </div>
-                <span style={{ fontSize: '1rem', fontWeight: '700', color: '#1e293b', letterSpacing: '-0.02em' }}>Información Financiera</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            
+              <div style={{ display: 'flex',flexWrap: 'wrap', width: '100%', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '0.5rem' }}>
                   <span style={{ color: '#64748b', fontSize: '0.8125rem', fontWeight: '500' }}>Total del Evento</span>
                   <span style={{ fontWeight: '700', fontSize: '1.125rem', color: '#1e293b' }}>{formatearMoneda(parseFloat(evento.total) || 0)}</span>
