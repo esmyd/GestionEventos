@@ -212,7 +212,7 @@ def generar_pdf_contrato(evento):
         texto_style
     ))
     elements.append(Paragraph(
-        "EL CLIENTE es una persona natural, interesado en contratar los servicios de <b>LIRIOS EVENTOS</b> dirigidos "
+        "EL CLIENTE es una persona natural, interesado en contratar los servicios de <b>Gestión de Eventos</b> dirigidos "
         "por nuestra organizadora de eventos a fin de que se encargue de la coordinacion y ejecucion del evento "
         "que se detallara en clausulas posteriores.",
         texto_style
@@ -270,7 +270,7 @@ def generar_pdf_contrato(evento):
         "personas adicionales a la cantidad cotizada durante el evento, se descontara el valor de $15 por persona "
         "del valor entregado como garantia, cubriendo asi costos adicionales de servicio y menaje del salon.",
         "5.6 Se tomaran fotos durante el evento, las mismas seran utilizadas con fines de publicidad a favor de "
-        "Lirios Eventos.",
+        "Gestión de Eventos.",
         "5.7 Realizacion del evento sera guiado por el protocolo o cronograma que proveera el cliente con cinco dias "
         "de anticipacion, asi mismo la asistencia de las personas sera controlada con la lista de invitados "
         "proporcionada por el cliente, las actividades del festejo deben realizarse dentro de las 6 horas de servicio "

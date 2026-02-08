@@ -1,5 +1,5 @@
 """
-Paleta de colores del branding Lirios Eventos
+Paleta de colores del branding Gestión de Eventos
 Colores del logo: Dorado/Bronce, Blanco, Negro
 """
 class ColoresBranding:

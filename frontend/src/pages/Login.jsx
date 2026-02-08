@@ -16,7 +16,7 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [loginConfig, setLoginConfig] = useState({
-    nombre_plataforma: 'Lirios Eventos',
+    nombre_plataforma: 'Gestión de Eventos',
     login_titulo: 'Bienvenido de vuelta',
     login_subtitulo: 'Ingresa con tu usuario y contrasena.',
     login_boton_texto: 'Ingresar',

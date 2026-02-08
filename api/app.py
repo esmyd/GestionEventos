@@ -76,7 +76,7 @@ def create_app(config_name='development'):
     @app.route('/api/health')
     def health_check():
         from flask import jsonify
-        nombre_plataforma = "Lirios Eventos"
+        nombre_plataforma = "Gestión de Eventos"
         try:
             config = ConfiguracionGeneralModelo().obtener_configuracion() or {}
             nombre_plataforma = config.get("nombre_plataforma") or nombre_plataforma

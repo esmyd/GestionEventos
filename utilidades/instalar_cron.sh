@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 echo ""
 echo "============================================================"
-echo "  LIRIOS EVENTOS - Instalador de Cron para Notificaciones"
+echo "  Gestión de Eventos - Instalador de Cron para Notificaciones"
 echo "============================================================"
 echo ""
 

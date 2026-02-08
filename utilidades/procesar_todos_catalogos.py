@@ -222,7 +222,7 @@ def generar_sql(paquetes):
     salones_unicos = set(p['salon'] for p in paquetes)
     
     sql = """-- ============================================================================
--- DATOS DEL CATÁLOGO OFICIAL - LIRIOS EVENTOS
+-- DATOS DEL CATÁLOGO OFICIAL - Gestión de Eventos
 -- ============================================================================
 -- Este archivo contiene TODOS los datos reales del catálogo oficial
 -- Generado automáticamente desde los PDFs del catálogo
@@ -537,11 +537,11 @@ ON DUPLICATE KEY UPDATE nombre=nombre;
 -- ============================================================================
 -- NOTAS
 -- ============================================================================
--- Este archivo contiene todos los datos oficiales del catálogo de Lirios Eventos
+-- Este archivo contiene todos los datos oficiales del catálogo de Gestión de Eventos
 -- - Categorías: 18 categorías organizadas
 -- - Productos: 16 productos/servicios del catálogo oficial
 -- - Paquetes: """ + str(len(paquetes)) + """ paquetes para diferentes capacidades
--- - Salones: Salones oficiales de Lirios Eventos
+-- - Salones: Salones oficiales de Gestión de Eventos
 --
 -- NOTA IMPORTANTE: Una vez reservado el evento, en caso de suspender por razones
 -- ajenas a nosotros (cuarentena, PANDEMIA, inundaciones, apagones, paralizaciones

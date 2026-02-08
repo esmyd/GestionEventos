@@ -1,5 +1,5 @@
 """
-Aplicación principal del sistema Lirios Eventos
+Aplicación principal del sistema Gestión de Eventos
 """
 import tkinter as tk
 from vistas.login import VentanaLogin
@@ -50,7 +50,7 @@ class Aplicacion:
 if __name__ == "__main__":# Punto de entrada de la aplicación
     logger = obtener_logger() # crea una instancia del logger
     logger.info("=" * 50)
-    logger.info("Iniciando aplicación Lirios Eventos") # inicia la aplicación
+    logger.info("Iniciando aplicación Gestión de Eventos") # inicia la aplicación
     logger.info("=" * 50)
     
     try:

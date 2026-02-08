@@ -14,10 +14,10 @@ class VentanaLogin:
     
     def __init__(self, root, callback_login_exitoso):
         self.root = root
-        self.root.title("Lirios Eventos - Inicio de Sesión")
+        self.root.title("Gestión de Eventos - Inicio de Sesión")
         self.root.geometry("800x600")# define el tamaño de la ventana
         
-        # Paleta de colores del branding Lirios Eventos (logo)
+        # Paleta de colores del branding Gestión de Eventos (logo)
         # Colores: Muted Gold/Bronce, Blanco, Negro
         self.color_fondo_oscuro = '#000000'  # Negro del logo
         self.color_fondo_medio = '#1a1a1a'  # Negro ligeramente claro

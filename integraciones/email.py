@@ -27,7 +27,7 @@ class IntegracionEmail:
         self.email_password = None
         self.use_tls = True
         self.use_ssl = False
-        self.email_from_name = "Lirios Eventos"
+        self.email_from_name = "Gestión de Eventos"
         self.cargar_configuracion()
     
     def cargar_configuracion(self):
@@ -37,7 +37,7 @@ class IntegracionEmail:
         smtp_port_str = os.getenv('SMTP_PORT', '587').strip()
         self.email_from = os.getenv('EMAIL_FROM', '').strip()
         self.email_password = os.getenv('EMAIL_PASSWORD', '').strip()
-        self.email_from_name = os.getenv('EMAIL_FROM_NAME', 'Lirios Eventos').strip()
+        self.email_from_name = os.getenv('EMAIL_FROM_NAME', 'Gestión de Eventos').strip()
         
         # Convertir puerto a entero
         try:
@@ -206,7 +206,7 @@ Estimado/a cliente,
 Su evento '{evento['nombre_evento']}' ha sido confirmado para el día {evento['fecha_evento']} a las {evento.get('hora_inicio', '')}.
 
 Saludos,
-Lirios Eventos
+Gestión de Eventos
             """,
             'recordatorio': f"""
 Estimado/a cliente,
@@ -214,7 +214,7 @@ Estimado/a cliente,
 Este es un recordatorio de que su evento '{evento['nombre_evento']}' está programado para el {evento['fecha_evento']}.
 
 Saludos,
-Lirios Eventos
+Gestión de Eventos
             """,
             'pago_pendiente': f"""
 Estimado/a cliente,
@@ -224,9 +224,9 @@ Le recordamos que tiene un saldo pendiente de ${evento.get('saldo_pendiente', 0)
 Por favor, contacte con nosotros para realizar el pago.
 
 Saludos,
-Lirios Eventos
+Gestión de Eventos
             """
         }
         
-        return asuntos.get(tipo_notificacion, "Notificación de Lirios Eventos"), cuerpos.get(tipo_notificacion, "")
+        return asuntos.get(tipo_notificacion, "Notificación de Gestión de Eventos"), cuerpos.get(tipo_notificacion, "")
 

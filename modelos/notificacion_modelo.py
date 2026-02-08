@@ -67,10 +67,10 @@ class NotificacionModelo:
             "<p>Hola {nombre_cliente},</p>"
             "<p>Este es un recordatorio de tu evento \"{nombre_evento}\" programado para {fecha_evento} a las {hora_inicio}.</p>"
             "<p>Quedan {dias_restantes} dias. Si necesitas coordinacion adicional, estamos atentos.</p>"
-            "<p>Gracias por confiar en Lirios Eventos.</p>"
+            "<p>Gracias por confiar en Gestión de Eventos.</p>"
         )
         plantilla_whatsapp = (
-            "Lirios Eventos: recordatorio del evento \"{nombre_evento}\" el {fecha_evento} "
+            "Gestión de Eventos: recordatorio del evento \"{nombre_evento}\" el {fecha_evento} "
             "a las {hora_inicio}. Quedan {dias_restantes} dias."
         )
         insertar = """

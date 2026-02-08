@@ -11,7 +11,7 @@ if sys.stdout.encoding != 'utf-8':
 def configurar_email():
     """Guía interactiva para configurar el archivo .env"""
     print("="*60)
-    print("Configuración de Email - Lirios Eventos")
+    print("Configuración de Email - Gestión de Eventos")
     print("="*60)
     print("\nEste script te ayudará a configurar las credenciales de email.")
     print("Las credenciales se guardarán en el archivo .env\n")
@@ -55,7 +55,7 @@ def configurar_email():
         if smtp_port not in ["25", "465", "587"]:
             smtp_port = "587"
     
-    email_from_name = input("Nombre del remitente [Lirios Eventos]: ").strip() or "Lirios Eventos"
+    email_from_name = input("Nombre del remitente [Gestión de Eventos]: ").strip() or "Gestión de Eventos"
     
     # Crear contenido del archivo .env
     contenido = f"""# Configuración de Email (SMTP)

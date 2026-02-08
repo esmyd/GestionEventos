@@ -55,7 +55,7 @@ def obtener_nombre_plataforma():
     try:
         configuracion = config_general.obtener_configuracion() or {}
         return jsonify({
-            "nombre_plataforma": configuracion.get("nombre_plataforma") or "Lirios Eventos"
+            "nombre_plataforma": configuracion.get("nombre_plataforma") or "Gestión de Eventos"
         }), 200
     except Exception as e:
         logger.error(f"Error al obtener nombre de plataforma: {e}")

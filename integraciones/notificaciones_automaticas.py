@@ -29,9 +29,9 @@ class NotificacionesAutomaticas:
     def _obtener_nombre_plataforma(self):
         try:
             config = self.config_general.obtener_configuracion() or {}
-            return config.get("nombre_plataforma") or "Lirios Eventos"
+            return config.get("nombre_plataforma") or "Gestión de Eventos"
         except Exception:
-            return "Lirios Eventos"
+            return "Gestión de Eventos"
 
     def _render_parametros(self, plantilla_texto, datos):
         if not plantilla_texto:
@@ -160,7 +160,7 @@ class NotificacionesAutomaticas:
           <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
             <tr>
               <td style="background-color:#111827; color:#ffffff; padding:24px 32px;">
-                <div style="font-size:18px; font-weight:700;">Lirios Eventos</div>
+                <div style="font-size:18px; font-weight:700;">Gestión de Eventos</div>
                 <div style="font-size:14px; opacity:0.85; margin-top:4px;">{titulo}</div>
               </td>
             </tr>
@@ -178,7 +178,7 @@ class NotificacionesAutomaticas:
             </tr>
             <tr>
               <td style="padding:20px 32px; border-top:1px solid #e5e7eb; font-size:12px; color:#6b7280;">
-                Lirios Eventos · Gracias por confiar en nosotros.
+                Gestión de Eventos · Gracias por confiar en nosotros.
               </td>
             </tr>
           </table>

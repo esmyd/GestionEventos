@@ -1,5 +1,5 @@
 """
-API REST para el sistema Lirios Eventos
+API REST para el sistema Gestión de Eventos
 """
 from flask import Flask
 from flask_cors import CORS

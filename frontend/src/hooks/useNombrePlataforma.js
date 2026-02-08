@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { configuracionesService } from '../services/api';
 
-const DEFAULT_NAME = 'Lirios Eventos';
+const DEFAULT_NAME = 'Gestión de Eventos';
 const STORAGE_KEY = 'nombre_plataforma';
 
 export const useNombrePlataforma = () => {

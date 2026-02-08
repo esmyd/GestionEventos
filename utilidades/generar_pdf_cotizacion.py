@@ -115,7 +115,7 @@ def generar_pdf_cotizacion(evento, productos_adicionales=None):
     header_style = ParagraphStyle('Header', parent=texto_style, fontSize=12, fontName='Helvetica-Bold', textColor=colors.black)
     
     emisor_data = [
-        [Paragraph("<b>LIRIOS EVENTOS</b>", header_style), 
+        [Paragraph("<b>Gestión de Eventos</b>", header_style), 
          Paragraph("COTIZACIÓN", titulo_style)],
         [Paragraph("Sistema de Gestión de Eventos", texto_style),
          Paragraph(f"No. {evento.get('id_evento', 'N/A')}", texto_style)],

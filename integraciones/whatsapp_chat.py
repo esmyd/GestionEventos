@@ -260,9 +260,9 @@ class WhatsAppChatService:
     def _obtener_nombre_plataforma(self):
         try:
             configuracion = self.config_general.obtener_configuracion() or {}
-            return configuracion.get("nombre_plataforma") or "Lirios Eventos"
+            return configuracion.get("nombre_plataforma") or "Gestión de Eventos"
         except Exception:
-            return "Lirios Eventos"
+            return "Gestión de Eventos"
 
     def _obtener_precio_whatsapp(self):
         try:

@@ -41,7 +41,7 @@ class VentanaPrincipal:
         self.usuario = usuario
         self.autenticacion = autenticacion
         
-        # Paleta de colores del branding Lirios Eventos
+        # Paleta de colores del branding Gestión de Eventos
         self.color_fondo_oscuro = '#000000'  # Negro
         self.color_fondo_medio = '#1a1a1a'  # Negro claro
         self.color_dorado_principal = '#d4af37'  # Dorado principal
@@ -54,7 +54,7 @@ class VentanaPrincipal:
         self.color_texto_oscuro = '#1a1a1a'
         self.color_texto_gris = '#757575'
         
-        self.root.title(f"Lirios Eventos - {usuario['nombre_completo']}")
+        self.root.title(f"Gestión de Eventos - {usuario['nombre_completo']}")
         
         # Obtener dimensiones de la pantalla
         ancho_pantalla = self.root.winfo_screenwidth()
@@ -125,7 +125,7 @@ class VentanaPrincipal:
         
         tk.Label(
             titulo_frame,
-            text="LIRIOS EVENTOS",
+            text="Gestión de Eventos",
             font=('Arial', 20, 'bold'),
             bg=self.color_fondo_oscuro,
             fg=self.color_dorado_principal

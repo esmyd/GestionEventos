@@ -229,8 +229,8 @@ class SistemaNotificaciones:
         try:
             contenido = (plantilla or "").format(**datos)
             nombre_plataforma = self._obtener_nombre_plataforma()
-            if nombre_plataforma and nombre_plataforma != "Lirios Eventos":
-                contenido = contenido.replace("Lirios Eventos", nombre_plataforma)
+            if nombre_plataforma and nombre_plataforma != "Gestión de Eventos":
+                contenido = contenido.replace("Gestión de Eventos", nombre_plataforma)
             return contenido
         except KeyError:
             faltantes = self._obtener_placeholders_faltantes(plantilla, datos)
@@ -240,8 +240,8 @@ class SistemaNotificaciones:
                 )
             contenido = (plantilla or "").format_map(SafeDict(datos))
             nombre_plataforma = self._obtener_nombre_plataforma()
-            if nombre_plataforma and nombre_plataforma != "Lirios Eventos":
-                contenido = contenido.replace("Lirios Eventos", nombre_plataforma)
+            if nombre_plataforma and nombre_plataforma != "Gestión de Eventos":
+                contenido = contenido.replace("Gestión de Eventos", nombre_plataforma)
             return contenido
         except Exception as e:
             self.logger.error(
@@ -255,7 +255,7 @@ class SistemaNotificaciones:
         texto = contenido.lower()
         return "<html" in texto or "<body" in texto or "<table" in texto
 
-    def _extraer_layout(self, contenido, default_header="Lirios Eventos", default_footer="Lirios Eventos · Estamos para ayudarte."):
+    def _extraer_layout(self, contenido, default_header="Gestión de Eventos", default_footer="Gestión de Eventos · Estamos para ayudarte."):
         nombre_plataforma = self._obtener_nombre_plataforma()
         header = default_header or nombre_plataforma
         footer = default_footer or f"{nombre_plataforma} · Estamos para ayudarte."
@@ -342,9 +342,9 @@ class SistemaNotificaciones:
     def _obtener_nombre_plataforma(self):
         try:
             configuracion = self.config_general.obtener_configuracion() or {}
-            return configuracion.get("nombre_plataforma") or "Lirios Eventos"
+            return configuracion.get("nombre_plataforma") or "Gestión de Eventos"
         except Exception:
-            return "Lirios Eventos"
+            return "Gestión de Eventos"
 
     def _limpiar_layout(self, contenido):
         if not contenido:

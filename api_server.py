@@ -1,5 +1,5 @@
 """
-Servidor API REST para Lirios Eventos
+Servidor API REST para Gestión de Eventos
 """
 from api.app import create_app
 from utilidades.logger import obtener_logger
@@ -7,7 +7,7 @@ from utilidades.logger import obtener_logger
 if __name__ == '__main__':
     logger = obtener_logger()
     logger.info("=" * 50)
-    logger.info("Iniciando servidor API Lirios Eventos")
+    logger.info("Iniciando servidor API Gestión de Eventos")
     logger.info("=" * 50)
     
     app = create_app()

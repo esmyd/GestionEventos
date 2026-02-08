@@ -1,5 +1,5 @@
 """
-Utilidades para estilizar formularios con el branding de Lirios Eventos
+Utilidades para estilizar formularios con el branding de Gestión de Eventos
 """
 import tkinter as tk
 from tkinter import ttk
